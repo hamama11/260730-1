@@ -263,35 +263,109 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             };
 
-            // 화면 캡처 버튼 — html2canvas로 현재 학생 페이지 자동 캡처
+            // 화면 캡처 버튼 — getDisplayMedia API로 교차 출처(CORS) 제한 없이 보이는 화면 전체/탭 캡처
             captureBtn.addEventListener('click', async () => {
-                if (typeof html2canvas === 'undefined') {
-                    alert('캡처 라이브러리가 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.');
-                    return;
-                }
                 try {
                     captureBtn.disabled = true;
                     captureBtn.innerHTML = '📸 캡처 중...';
 
-                    // 학생 화면 전체(body)를 자동 캡처 — 화면 공유 팝업 없음
-                    const canvas = await html2canvas(document.body, {
-                        useCORS: true,
-                        allowTaint: false,
-                        logging: false,
-                        scale: 0.75,          // 해상도 줄여 용량 절감
-                        ignoreElements: (el) => el.id === 'image-preview-modal' || el.id === 'reset-modal'
-                    });
+                    // DOM 업데이트 및 전환 연출 대기
+                    await new Promise(resolve => setTimeout(resolve, 250));
 
-                    let dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                    let byteLen = Math.ceil(dataUrl.split(',')[1].length * 0.75);
+                    let dataUrl = null;
+                    let byteLen = 0;
 
-                    // 500KB 초과 시 품질 낮춤
-                    if (byteLen > 500 * 1024) {
-                        dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    // 1. 최신 브라우저의 Screen Capture API 지원 여부 확인
+                    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                        try {
+                            const stream = await navigator.mediaDevices.getDisplayMedia({
+                                video: {
+                                    displaySurface: "browser" // 브라우저 탭 선택 우선 제안
+                                },
+                                audio: false
+                            });
+
+                            // 비디오 스트림을 캔버스에 그리기 위해 video 엘리먼트 바인딩
+                            const video = document.createElement('video');
+                            video.srcObject = stream;
+                            video.playsInline = true;
+
+                            await new Promise((resolve, reject) => {
+                                video.onloadedmetadata = () => {
+                                    video.play().then(resolve).catch(reject);
+                                };
+                                video.onerror = reject;
+                            });
+
+                            // 프레임 렌더링 안정화를 위해 아주 잠깐 대기
+                            await new Promise(resolve => setTimeout(resolve, 150));
+
+                            const canvas = document.createElement('canvas');
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                            // 스트림 즉시 정리 및 종료
+                            stream.getTracks().forEach(track => track.stop());
+                            video.srcObject = null;
+
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                            byteLen = Math.ceil(dataUrl.split(',')[1].length * 0.75);
+                        } catch (captureErr) {
+                            // 사용자가 취소(NotAllowedError)한 경우 프로세스 중단
+                            if (captureErr.name === 'NotAllowedError') {
+                                console.log('사용자가 화면 공유를 취소했습니다.');
+                                return;
+                            }
+                            throw captureErr; // 다른 에러는 fallback 처리 또는 예외 처리로 보냄
+                        }
+                    }
+
+                    // 2. getDisplayMedia 미지원 또는 실패 시 html2canvas 캡처 fallback 실행 (시뮬레이션 iframe 제외)
+                    if (!dataUrl) {
+                        if (typeof html2canvas === 'undefined') {
+                            alert('캡처 라이브러리가 로드되지 않아 캡처를 완료할 수 없습니다.');
+                            return;
+                        }
+                        const canvas = await html2canvas(document.body, {
+                            useCORS: true,
+                            allowTaint: false,
+                            logging: false,
+                            scale: 0.75,
+                            ignoreElements: (el) => 
+                                el.id === 'image-preview-modal' || 
+                                el.id === 'reset-modal' || 
+                                el.tagName === 'IFRAME' || 
+                                el.classList.contains('simulation-container')
+                        });
+                        dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                         byteLen = Math.ceil(dataUrl.split(',')[1].length * 0.75);
                     }
+
+                    // 500KB 제한에 맞추어 품질 단계별 압축
                     if (byteLen > 500 * 1024) {
-                        alert('캡처 이미지가 500KB를 초과합니다. 브라우저 창을 줄이거나 zoom을 낮춰 주세요.');
+                        const imgTemp = new Image();
+                        imgTemp.src = dataUrl;
+                        await new Promise(r => imgTemp.onload = r);
+                        
+                        const canvasComp = document.createElement('canvas');
+                        canvasComp.width = imgTemp.width;
+                        canvasComp.height = imgTemp.height;
+                        const ctxComp = canvasComp.getContext('2d');
+                        ctxComp.drawImage(imgTemp, 0, 0);
+
+                        dataUrl = canvasComp.toDataURL('image/jpeg', 0.5);
+                        byteLen = Math.ceil(dataUrl.split(',')[1].length * 0.75);
+
+                        if (byteLen > 500 * 1024) {
+                            dataUrl = canvasComp.toDataURL('image/jpeg', 0.3);
+                            byteLen = Math.ceil(dataUrl.split(',')[1].length * 0.75);
+                        }
+                    }
+
+                    if (byteLen > 500 * 1024) {
+                        alert('캡처 이미지 크기(500KB)를 초과하여 첨부할 수 없습니다. 브라우저 창 크기를 줄여 시도해 주세요.');
                         return;
                     }
 
@@ -305,7 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     renderCapturePreviews();
 
                 } catch (err) {
-                    console.error('화면 캡처 에러:', err);
+                    console.error('화면 캡처 오류:', err);
                     alert('화면 캡처에 실패했습니다: ' + err.message);
                 } finally {
                     captureBtn.disabled = false;
