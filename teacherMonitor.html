@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 모니터링 - 교사용</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Dashboard Header -->
+        <header class="dashboard-navbar">
+            <div class="logo-area">
+                <span class="pulse-indicator"></span>
+                <h1>📊 실시간 탐구 모니터링 대시보드</h1>
+            </div>
+            <div class="actions-area">
+                <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary btn-sm" style="border-color: rgba(255,255,255,0.15);">
+                    🏠 홈으로
+                </button>
+                <button type="button" id="btn-copy-dashboard-link" class="btn btn-secondary btn-sm">
+                    🔗 모니터링 주소 복사
+                </button>
+                <button type="button" id="btn-download-csv" class="btn btn-accent btn-sm">
+                    📥 수업 종료 후 CSV 엑셀 다운로드
+                </button>
+                <button type="button" id="btn-reset-data" class="btn btn-secondary btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2);">
+                    🗑️ 제출 데이터 초기화
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Container -->
+        <main class="dashboard-content">
+            <!-- Room Info Header -->
+            <section class="room-info-card">
+                <div class="info-row">
+                    <div>
+                        <span class="info-label">수업 ID:</span>
+                        <span id="info-room-id" class="info-val">-</span>
+                    </div>
+                    <div>
+                        <span class="info-label">연동 시뮬레이션:</span>
+                        <span id="info-sim-source" class="info-val">-</span>
+                    </div>
+                    <div>
+                        <span class="info-label">제출된 학생 수:</span>
+                        <span id="info-student-count" class="info-val badge">0명</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Real-time submissions list -->
+            <section class="submissions-section">
+                <h3 class="section-title">학생 제출 현황 (실시간 업데이트)</h3>
+                <div id="submissions-container" class="cards-grid">
+                    <!-- Dynamic submission card items will go here -->
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <p>아직 제출한 학생이 없습니다. 학생들이 학생 링크를 통해 답안을 제출하면 실시간으로 반영됩니다.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Reset Warning Modal -->
+    <div id="reset-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div class="card" style="max-width: 500px; width: 90%; padding: 2.5rem; text-align: center; border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 32px rgba(239, 68, 68, 0.25); background: var(--bg-secondary);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #f87171; margin-bottom: 0.8rem;">제출 데이터 초기화 경고</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                이 작업은 복구할 수 없습니다. 현재 수업방의 모든 학생 제출 데이터가 영구적으로 삭제됩니다.<br>
+                <strong style="color: #fbbf24; display: block; margin-top: 0.5rem;">기존 데이터를 CSV 파일로 다운로드하셨나요?</strong>
+            </p>
+            <div class="form-group" style="margin-bottom: 1.8rem; text-align: left;">
+                <label for="reset-confirm-text" style="display: block; margin-bottom: 0.6rem; font-weight: 500; font-size: 0.85rem; color: var(--text-secondary);">확인을 위해 아래에 <strong>"초기화"</strong> 라고 정확히 입력해 주세요.</label>
+                <input type="text" id="reset-confirm-text" placeholder="초기화" style="border-color: rgba(239, 68, 68, 0.3);">
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" id="btn-reset-cancel" class="btn btn-secondary" style="flex: 1;">취소</button>
+                <button type="button" id="btn-reset-confirm" class="btn btn-primary" style="flex: 1; background: var(--danger);" disabled>삭제 실행</button>
+            </div>
+        </div>
+    </div>
+    <!-- Google Login Fullscreen Overlay for dashboard protection -->
+    <div id="login-overlay" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 2000;">
+        <div class="card" style="max-width: 400px; width: 90%; text-align: center; padding: 3rem 2rem; background: var(--bg-secondary);">
+            <span style="font-size: 3rem; margin-bottom: 1.5rem; display: block;">🔒</span>
+            <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">교사 인증 필요</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; font-size: 0.95rem;">대시보드를 조회하려면 이 수업방을 개설한 교사의 구글 계정으로 로그인해야 합니다.</p>
+            <button type="button" id="btn-overlay-login" class="btn btn-primary btn-block" style="padding: 1rem;">Google 로그인</button>
+            <button type="button" id="btn-overlay-back" class="btn btn-secondary btn-block" style="padding: 1rem; margin-top: 0.75rem;">메인 화면으로</button>
+        </div>
+    </div>
+
+    <!-- Image Zoom/Preview Modal -->
+    <div id="image-preview-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; align-items: center; justify-content: center; z-index: 3000; cursor: zoom-out;">
+        <img id="zoomed-image" src="" alt="Zoomed View" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    </div>
+
+    <script type="module" src="src/admin.js"></script>
+</body>
+</html>

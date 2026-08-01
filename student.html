@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 탐구 활동지 - 학생용</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+    <div id="student-view" class="student-layout">
+        <!-- Left Pane: Simulation Frame -->
+        <section class="simulation-container">
+            <div class="simulation-header">
+                <span class="pulse-indicator"></span>
+                <span class="sim-title">실시간 탐구 시뮬레이션 연결됨</span>
+            </div>
+            <div class="iframe-wrapper">
+                <iframe id="student-iframe" title="Simulation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- Right Pane: Inquiry Activity Form -->
+        <aside class="student-panel">
+            <header class="panel-header">
+                <span class="badge badge-accent">Inquiry Worksheet</span>
+                <h2>🔬 실시간 탐구 활동지</h2>
+                <p class="panel-desc">시뮬레이션을 실행하고 관찰 및 추론한 바를 아래 양식에 정성껏 작성해 주세요.</p>
+            </header>
+
+            <form id="student-submit-form" class="student-form">
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="student-id">학번</label>
+                        <input type="text" id="student-id" placeholder="예: 30101" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-name">이름</label>
+                        <input type="text" id="student-name" placeholder="예: 홍길동" required>
+                    </div>
+                </div>
+
+                <!-- Dynamic questions container -->
+                <div id="dynamic-questions-container">
+                    <!-- Questions will render here dynamically -->
+                </div>
+
+                <button type="submit" id="btn-submit-answer" class="btn btn-primary btn-block">
+                    <span class="btn-text">답안 제출</span>
+                    <div class="spinner hidden"></div>
+                </button>
+            </form>
+
+            <!-- AI Hint Box -->
+            <div id="student-ai-box" class="ai-box hidden">
+                <div class="ai-header">
+                    <span class="ai-avatar">✅</span>
+                    <h3>제출 되었습니다.</h3>
+                </div>
+                <div class="ai-body">
+                    <p id="student-ai-feedback">답변을 바탕으로 생성된 AI 힌트가 여기에 출력됩니다.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>

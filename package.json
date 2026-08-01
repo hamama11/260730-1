@@ -1,0 +1,19 @@
+{
+  "name": "realtime-inquiry-worksheet-generator",
+  "version": "1.0.0",
+  "description": "Real-time Inquiry Worksheet Generator using Vite and Firebase SDK v10",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "firebase": "^10.8.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.25.1",
+    "vite": "^5.1.0"
+  }
+}

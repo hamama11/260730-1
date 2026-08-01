@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{teacherUid}/rooms/{roomId} {
+      // Anyone can read room settings (students need this)
+      allow read: if true;
+      // Only the owner teacher can create, update, or delete rooms under their UID
+      allow create, update, delete: if request.auth != null && request.auth.uid == teacherUid;
+      
+      match /submissions/{studentId} {
+        // Anyone can check duplicate and write their own response
+        allow get, create, update: if true;
+        // Only the owner teacher can list or reset student responses
+        allow list, delete: if request.auth != null && request.auth.uid == teacherUid;
+      }
+    }
+  }
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 탐구 학습지 생성기 - 수업방 생성</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/main-B9yPCJB5.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebaseConfig-DIj8sDHY.js">
+  <link rel="stylesheet" crossorigin href="/assets/firebaseConfig-Dv_gazBw.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Configuration Card -->
+        <main class="card container">
+            <header class="section-header">
+                <span class="badge">Teacher Mode</span>
+                <h1>실시간 탐구 활동지 생성</h1>
+                <p class="subtitle font-main-desc">기존 웹 시뮬레이션(GeoGebra, PhET 등) 주소만 넣으면 10초 만에 실시간 탐구 활동지 완성!</p>
+            </header>
+
+            <!-- Google Auth Section -->
+            <div id="auth-section" style="margin-bottom: 2rem; padding: 1.2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div id="auth-user-info" style="display: flex; align-items: center; gap: 0.85rem; overflow: hidden;">
+                    <img id="auth-photo" src="" alt="Profile" class="hidden" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
+                    <span id="auth-avatar" style="font-size: 1.8rem; background: rgba(255,255,255,0.08); padding: 0.4rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">👤</span>
+                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <div id="auth-status" style="font-size: 0.95rem; font-weight: 600; color: #f8fafc;">로그인 한 번으로 수업방 고정 URL 생성, 데이터 통합 관리, 안전한 데이터 리셋까지.</div>
+                        <div id="auth-email" style="font-size: 0.8rem; color: var(--text-secondary);" class="hidden"></div>
+                    </div>
+                </div>
+                <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm" style="padding: 0.6rem 1.2rem; font-size: 0.9rem; border-color: rgba(99,102,241,0.3); flex-shrink: 0;">Google 로그인</button>
+            </div>
+
+            <form id="create-room-form" class="hidden">
+                <!-- Simulation Source Option -->
+                <div class="form-group">
+                    <label>시뮬레이션 연동 방식</label>
+                    <div class="tabs">
+                        <button type="button" class="tab-btn active" data-tab="tab-url">옵션 A: 웹 주소 (URL)</button>
+                        <button type="button" class="tab-btn" data-tab="tab-html">옵션 B: HTML 코드</button>
+                    </div>
+                </div>
+
+                <!-- Tab A: URL Input -->
+                <div id="tab-url" class="tab-content">
+                    <div class="form-group">
+                        <label for="simulation-url">시뮬레이션 웹 주소 (HTTPS URL)</label>
+                        <input type="url" id="simulation-url" placeholder="https://scratch.mit.edu/projects/10128410/embed" value="https://scratch.mit.edu/projects/10128410/embed" required>
+                        <p class="warning-text" style="line-height: 1.6; margin-top: 0.6rem;">
+                            <svg class="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            ※ iframe 연동 가능 여부 가이드:<br>
+                            - 🟢 <strong>사용 가능</strong>: Vercel, Netlify, Github Pages, GeoGebra, PhET, Scratch 임베드 링크 등<br>
+                            - 🔴 <strong>사용 불가 (임베드 차단)</strong>: Google, Naver, Daum, YouTube 단독 링크, 티스토리 등
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tab B: HTML Input -->
+                <div id="tab-html" class="tab-content hidden">
+                    <div class="form-group">
+                        <label for="simulation-html">HTML 소스 코드 직접 입력</label>
+                        <textarea id="simulation-html" rows="8" placeholder="<!DOCTYPE html>&#10;<html>&#10;<body>&#10;  <h1>나의 커스텀 시뮬레이션</h1>&#10;</body>&#10;</html>"></textarea>
+                    </div>
+                </div>
+
+                <!-- Custom Room ID Input Field -->
+                <div class="form-group" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <label for="custom-room-id" style="font-weight: 600;">수업방 고유 ID 설정</label>
+                    <input type="text" id="custom-room-id" placeholder="예: physics-lab-1 (영문, 숫자, 하이픈만 가능)" required style="font-family: inherit;">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.4rem;">교사가 직접 수업방 주소에 사용할 ID를 지정합니다. 이미 생성된 다른 ID와 중복될 수 없습니다.</p>
+                </div>
+
+                <!-- 질문 설정 구역 -->
+                <div class="form-group question-config-container" style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <label style="font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">✏️ 탐구 질문 설정</label>
+                    <p class="subtitle" style="margin-bottom: 1.2rem; font-size: 0.9rem;">학생들이 시뮬레이션을 탐구하며 답변할 질문을 맞춤 구성하세요.</p>
+                    <div id="questions-list" class="questions-list">
+                        <!-- Dynamic question elements will be inserted here -->
+                    </div>
+                    <div class="question-add-actions" style="margin-top: 1.2rem; display: flex; gap: 0.75rem;">
+                        <button type="button" id="btn-add-subjective" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.6rem 1rem; font-size: 0.9rem;">
+                            + 주관식 질문 추가
+                        </button>
+                        <button type="button" id="btn-add-objective" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.6rem 1rem; font-size: 0.9rem;">
+                            + 객관식 질문 추가
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit & Preview Buttons -->
+                <div class="actions" style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="button" id="btn-preview" class="btn btn-secondary" style="flex: 1; padding: 1rem; font-size: 1rem;">👀 학생 화면 미리보기</button>
+                    <button type="submit" id="btn-create-room" class="btn btn-primary" style="flex: 2; padding: 1rem; font-size: 1rem;">
+                        <span class="btn-text">🚀 10초 만에 수업방 만들기</span>
+                        <div class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Created Room Links View -->
+            <div id="created-links-box" class="share-box hidden">
+                <div class="success-banner">
+                    <div class="success-icon">🎉</div>
+                    <h3>실시간 탐구 수업방이 생성되었습니다!</h3>
+                </div>
+
+                <div class="link-group">
+                    <label>🙋‍♂️ 학생 접속용 링크 (학생에게 복사해서 공유)</label>
+                    <div class="input-copy-group" style="display: flex; gap: 0.5rem; width: 100%;">
+                        <input type="text" id="student-link-input" readonly style="flex: 1;">
+                        <button type="button" id="btn-copy-student" class="btn btn-accent" style="flex-shrink: 0; min-width: 60px;">복사</button>
+                        <button type="button" id="btn-enter-student" class="btn btn-primary" style="flex-shrink: 0; min-width: 80px; background: #6366f1;">방 입장</button>
+                    </div>
+                </div>
+
+                <div class="link-group">
+                    <label>🛡️ 교사용 실시간 모니터링 링크 (절대 노출 금지 / 즐겨찾기 권장)</label>
+                    <div class="input-copy-group" style="display: flex; gap: 0.5rem; width: 100%;">
+                        <input type="text" id="dashboard-link-input" readonly style="flex: 1;">
+                        <button type="button" id="btn-copy-dashboard" class="btn btn-primary" style="flex-shrink: 0; min-width: 60px;">복사</button>
+                        <button type="button" id="btn-enter-dashboard" class="btn btn-accent" style="flex-shrink: 0; min-width: 100px; background: #10b981;">모니터링 입장</button>
+                    </div>
+                </div>
+
+                <div class="qr-container">
+                    <p class="qr-label">📱 모바일 기기 간편 접속 QR 코드</p>
+                    <div class="qr-code-frame" style="display: inline-block; padding: 10px; background: white; border-radius: 8px;">
+                        <canvas id="qr-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Classrooms List Dashboard -->
+            <div id="my-rooms-section" class="hidden" style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                    🏫 내가 관리하는 탐구 수업방 목록
+                </h3>
+                <div id="my-rooms-list" style="display: grid; grid-template-columns: 1fr; gap: 1.2rem;">
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem; background: rgba(255,255,255,0.01); border: 1px dashed var(--border-color); border-radius: 12px;">
+                        불러오는 중...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cute Loading Modal -->
+    <div id="cute-loader-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        <div class="card" style="max-width: 420px; width: 90%; text-align: center; padding: 3rem 2rem; border-color: rgba(99,102,241,0.4); box-shadow: 0 0 32px rgba(99,102,241,0.25); background: var(--bg-secondary);">
+            <div class="cute-science-animation" style="font-size: 4rem; margin-bottom: 1.5rem; display: inline-block; animation: bounceCute 2s infinite ease-in-out;">🧪</div>
+            <h3 style="font-size: 1.4rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.8rem;">실시간 탐구 학습지 생성 중...</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">
+                시뮬레이션을 연결하고 탐구 문제지를 빌드하고 있습니다.<br>
+                <strong style="color: #6366f1;">✨ 약 10초 내로 완성됩니다!</strong>
+            </p>
+            <div class="cute-progress-bar" style="width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; position: relative;">
+                <div class="cute-progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #6366f1, #a5b4fc); border-radius: 3px; position: absolute; left: 0; top: 0; animation: fillCuteProgress 4s forwards linear;"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
