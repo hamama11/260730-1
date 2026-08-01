@@ -1,16 +1,16 @@
 :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-card: rgba(30, 41, 59, 0.75);
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --accent: #10b981;
-    --accent-hover: #059669;
-    --danger: #ef4444;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --bg-primary: #FAF6F0;
+    --bg-secondary: #F4EAE1;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --text-primary: #4A3E3D;
+    --text-secondary: #8A7A78;
+    --primary: #E07A5F;
+    --primary-hover: #C9644B;
+    --accent: #81B29A;
+    --accent-hover: #6CA085;
+    --danger: #DF5E5E;
+    --border-color: rgba(224, 122, 95, 0.15);
+    --glass-shadow: 0 8px 30px rgba(74, 62, 61, 0.06);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -22,7 +22,7 @@
 
 body {
     font-family: 'Outfit', 'Noto Sans KR', sans-serif;
-    background: radial-gradient(circle at top right, #1e1b4b, #0f172a 70%);
+    background: radial-gradient(circle at top right, #FFF2EC, #FAF6F0 75%);
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;
@@ -101,7 +101,7 @@ body {
 .section-header h1 {
     font-size: 2.2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #e07a5f 0%, #c9644b 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.75rem;
@@ -121,9 +121,9 @@ body {
 label {
     display: block;
     margin-bottom: 0.6rem;
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: #e2e8f0;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #2C2221;
 }
 
 input[type="url"],
@@ -132,7 +132,7 @@ input[type="text"],
 textarea {
     width: 100%;
     padding: 0.9rem 1.1rem;
-    background: rgba(15, 23, 42, 0.6);
+    background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     color: var(--text-primary);
@@ -145,12 +145,12 @@ input:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 0 3px rgba(224, 122, 95, 0.2);
 }
 
 .warning-text {
     font-size: 0.85rem;
-    color: #fbbf24;
+    color: #b45309;
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
@@ -173,10 +173,10 @@ textarea:focus {
 .tabs {
     display: flex;
     gap: 0.5rem;
-    background: rgba(15, 23, 42, 0.4);
-    padding: 0.3rem;
+    background: rgba(74, 62, 61, 0.08);
+    padding: 0.4rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(74, 62, 61, 0.12);
 }
 
 .tab-btn {
@@ -184,22 +184,26 @@ textarea:focus {
     padding: 0.8rem;
     background: transparent;
     border: none;
-    color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 0.9rem;
+    color: var(--text-primary);
+    opacity: 0.75;
+    font-weight: 700;
+    font-size: 0.95rem;
     cursor: pointer;
     border-radius: 10px;
     transition: var(--transition);
 }
 
 .tab-btn:hover {
+    opacity: 1;
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .tab-btn.active {
     background: var(--primary);
-    color: var(--text-primary);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    color: #ffffff;
+    opacity: 1;
+    box-shadow: 0 4px 14px rgba(224, 122, 95, 0.25);
 }
 
 /* Buttons */
@@ -226,17 +230,17 @@ textarea:focus {
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(74, 62, 61, 0.06);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
 }
 .btn-secondary:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(74, 62, 61, 0.12);
 }
 
 .btn-accent {
     background: var(--accent);
-    color: var(--text-primary);
+    color: #ffffff;
 }
 .btn-accent:hover:not(:disabled) {
     background: var(--accent-hover);
@@ -276,8 +280,8 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(129, 178, 154, 0.15);
+    border: 1px solid rgba(129, 178, 154, 0.3);
     padding: 1rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
@@ -288,7 +292,7 @@ textarea:focus {
 }
 
 .success-banner h3 {
-    color: #34d399;
+    color: #4a6b5a;
     font-size: 1.05rem;
     font-weight: 600;
 }

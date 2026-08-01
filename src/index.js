@@ -144,8 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                         <div>
-                            <h4 style="font-size: 1.1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.25rem;">
-                                📍 수업방 ID: <code style="color: #a5b4fc;">${roomId}</code>
+                            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+                                📍 수업방 ID: <code style="color: var(--primary);">${roomId}</code>
                             </h4>
                             <div class="room-meta-info">
                                 <span class="room-meta-item">연동: <strong>${roomData.simType === 'url' ? '웹 주소' : 'HTML 코드'}</strong></span>
@@ -157,9 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="room-actions">
                         <button type="button" class="btn btn-secondary btn-enter-room" data-id="${roomId}">🔗 방 입장</button>
-                        <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">📊 모니터링</a>
+                        <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">📊 모니터링</a>
                         <button type="button" class="btn btn-accent btn-download-room-csv" data-id="${roomId}">📥 CSV 다운로드</button>
-                        <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.2); max-width: 140px;">🗑️ 삭제</button>
+                        <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2); max-width: 140px;">🗑️ 삭제</button>
                     </div>
                 `;
 
@@ -214,12 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const authPhoto = document.getElementById('auth-photo');
             const authAvatar = document.getElementById('auth-avatar');
 
+            const authDesc = document.getElementById('auth-desc');
             if (user) {
                 currentUser = user;
                 authStatus.textContent = `안녕하세요, ${user.displayName || "교사"}님!`;
-                authEmail.textContent = `(${user.email}) - 로그인 한 번으로 수업방 고정 URL 생성, 데이터 통합 관리, 안전한 데이터 리셋까지.`;
+                authEmail.textContent = `(${user.email})`;
                 authEmail.classList.remove('hidden');
                 btnLogin.textContent = "로그아웃";
+
+                if (authDesc) authDesc.classList.add('hidden');
 
                 if (user.photoURL) {
                     authPhoto.src = user.photoURL;
@@ -238,12 +241,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupMyRoomsListener(user.uid);
             } else {
                 currentUser = null;
-                authStatus.textContent = "로그인 한 번으로 수업방 고정 URL 생성, 데이터 통합 관리, 안전한 데이터 리셋까지.";
+                authStatus.textContent = "로그인해 주세요.";
                 authEmail.textContent = "";
                 authEmail.classList.add('hidden');
                 authPhoto.classList.add('hidden');
                 authAvatar.classList.remove('hidden');
                 btnLogin.textContent = "Google 로그인";
+
+                if (authDesc) authDesc.classList.remove('hidden');
 
                 // Hide room creation form and my rooms section
                 createRoomForm.classList.add('hidden');

@@ -20,27 +20,65 @@
             <header class="section-header">
                 <span class="badge">Teacher Mode</span>
                 <h1>실시간 탐구 활동지 생성</h1>
-                <p class="subtitle font-main-desc">기존 웹 시뮬레이션(GeoGebra, PhET 등) 주소만 넣으면 10초 만에 실시간 탐구 활동지 완성!</p>
+                <p class="subtitle font-main-desc" style="margin-bottom: 1.5rem;">기존 웹 시뮬레이션(GeoGebra, PhET 등) 주소만 넣으면 실시간 탐구 활동지 완성!</p>
+                
+                <!-- Warm Hero Illustration -->
+                <div class="hero-illustration" style="display: flex; justify-content: center; margin-bottom: 2.2rem; padding: 1.5rem; background: rgba(224, 122, 95, 0.04); border-radius: 20px; border: 1px dashed rgba(224, 122, 95, 0.15);">
+                    <svg width="240" height="150" viewBox="0 0 240 150" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto;">
+                        <!-- Background Warm Circle -->
+                        <circle cx="120" cy="75" r="60" fill="#FFF2EC" />
+                        <circle cx="80" cy="90" r="45" fill="#FAF8F5" opacity="0.8" />
+                        
+                        <!-- Tablet Screen -->
+                        <rect x="75" y="45" width="90" height="65" rx="6" fill="#4A3E3D" />
+                        <rect x="80" y="50" width="80" height="55" rx="3" fill="#ffffff" />
+                        
+                        <!-- Graph inside Tablet (Inquiry concept) -->
+                        <path d="M90 90 L105 75 L120 80 L135 60 L150 70" stroke="#E07A5F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="105" cy="75" r="3.5" fill="#E07A5F" />
+                        <circle cx="135" cy="60" r="3.5" fill="#E07A5F" />
+                        
+                        <!-- Small Cute Elements -->
+                        <!-- Pencil -->
+                        <g transform="translate(60, 80) rotate(-45)">
+                            <rect x="0" y="0" width="8" height="24" rx="1.5" fill="#81B29A" />
+                            <path d="M0 0 L4 -6 L8 0 Z" fill="#F4A261" />
+                        </g>
+                        <!-- Science Beaker -->
+                        <g transform="translate(165, 75)">
+                            <path d="M5 25 L15 25 L17 10 L13 10 Z" fill="none" stroke="#4A3E3D" stroke-width="2" />
+                            <path d="M6 24 L14 24 L16 13 L12 13 Z" fill="#81B29A" opacity="0.75" />
+                            <circle cx="10" cy="18" r="1.5" fill="#ffffff" />
+                            <circle cx="13" cy="21" r="1" fill="#ffffff" />
+                        </g>
+                        <!-- Sparkles / Ideas -->
+                        <path d="M120 20 L122 25 L127 27 L122 29 L120 34 L118 29 L113 27 L118 25 Z" fill="#F4A261" />
+                        <path d="M55 45 L56 48 L59 49 L56 50 L55 53 L54 50 L51 49 L54 48 Z" fill="#E07A5F" opacity="0.6" />
+                        <path d="M185 40 L186 43 L189 44 L186 45 L185 48 L184 45 L181 44 L184 43 Z" fill="#81B29A" opacity="0.6" />
+                    </svg>
+                </div>
             </header>
 
             <!-- Google Auth Section -->
             <div id="auth-section"
-                style="margin-bottom: 2rem; padding: 1.2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                <div id="auth-user-info" style="display: flex; align-items: center; gap: 0.85rem; overflow: hidden;">
-                    <img id="auth-photo" src="" alt="Profile" class="hidden"
-                        style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
-                    <span id="auth-avatar"
-                        style="font-size: 1.8rem; background: rgba(255,255,255,0.08); padding: 0.4rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">👤</span>
-                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <div id="auth-status" style="font-size: 0.95rem; font-weight: 600; color: #f8fafc;">로그인 한 번으로
-                            수업방 고정 URL 생성, 데이터 통합 관리, 안전한 데이터 리셋까지.</div>
-                        <div id="auth-email" style="font-size: 0.8rem; color: var(--text-secondary);" class="hidden">
+                style="margin-bottom: 2rem; padding: 1.2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%;">
+                    <div id="auth-user-info" style="display: flex; align-items: center; gap: 0.85rem; overflow: hidden;">
+                        <img id="auth-photo" src="" alt="Profile" class="hidden"
+                            style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
+                        <span id="auth-avatar"
+                            style="font-size: 1.8rem; background: rgba(255,255,255,0.08); padding: 0.4rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">👤</span>
+                        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <div id="auth-status" style="font-size: 0.95rem; font-weight: 600; color: #f8fafc;">로그인해 주세요.</div>
+                            <div id="auth-email" style="font-size: 0.8rem; color: var(--text-secondary);" class="hidden"></div>
                         </div>
                     </div>
+                    <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
+                        style="padding: 0.6rem 1.2rem; font-size: 0.9rem; border-color: rgba(99,102,241,0.3); flex-shrink: 0;">Google 로그인</button>
                 </div>
-                <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
-                    style="padding: 0.6rem 1.2rem; font-size: 0.9rem; border-color: rgba(99,102,241,0.3); flex-shrink: 0;">Google
-                    로그인</button>
+                <p id="auth-desc" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem; width: 100%;">
+                    💡 로그인 한 번으로 URL 생성, 데이터 통합 관리, 안전한 데이터 리셋까지 지원합니다.
+                </p>
             </div>
 
             <form id="create-room-form" class="hidden">
@@ -60,23 +98,24 @@
                         <input type="url" id="simulation-url"
                             placeholder="https://scratch.mit.edu/projects/10128410/embed"
                             value="https://scratch.mit.edu/projects/10128410/embed" required>
-                        <p class="warning-text" style="line-height: 1.6; margin-top: 0.6rem;">
-                            <svg class="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
-                                </path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            ※ 시뮬레이션 웹 주소 연동 여부 안내:<br>
-                            - 🟢 <strong>연동 가능 (화면 표시 가능)</strong>: GeoGebra, PhET, Scratch 임베드 주소, GitHub Pages,
-                            Vercel, Netlify 등 외부 임베드를 허용하는 사이트<br>
-                            - 🔴 <strong>연동 불가 (보안상 차단됨)</strong>: 일반 포털(Google, Naver, Daum 등), YouTube 일반 페이지, 티스토리 등
-                            외부 임베드를 차단한 사이트
-                        </p>
+                            <div style="margin-top: 0.8rem; line-height: 1.6;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700; color: #b45309; font-size: 0.9rem; margin-bottom: 0.6rem;">
+                                    <svg class="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px; color: #b45309;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    ※ 시뮬레이션 웹 주소 연동 여부 안내:
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                                    <div style="background: rgba(129, 178, 154, 0.12); border-left: 4px solid var(--accent); padding: 0.6rem 0.8rem; border-radius: 4px 8px 8px 4px; font-size: 0.85rem; color: var(--text-primary);">
+                                        🟢 <strong>연동 가능 (화면 표시 가능):</strong><br>
+                                        GeoGebra, PhET, Scratch 임베드 주소, GitHub Pages, Vercel, Netlify 등 외부 임베드를 허용하는 사이트
+                                    </div>
+                                    <div style="background: rgba(223, 94, 94, 0.08); border-left: 4px solid var(--danger); padding: 0.6rem 0.8rem; border-radius: 4px 8px 8px 4px; font-size: 0.85rem; color: var(--text-primary);">
+                                        🔴 <strong>연동 불가 (보안상 차단됨):</strong><br>
+                                        일반 포털(Google, Naver, Daum 등), YouTube 일반 페이지, 티스토리 등 외부 임베드를 차단한 사이트
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
                 <!-- Tab B: HTML Input -->
                 <div id="tab-html" class="tab-content hidden">
@@ -174,7 +213,7 @@
             <div id="my-rooms-section" class="hidden"
                 style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
                 <h3
-                    style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                    style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
                     🏫 내가 관리하는 탐구 수업방 목록
                 </h3>
                 <div id="my-rooms-list" style="display: grid; grid-template-columns: 1fr; gap: 1.2rem;">
@@ -189,22 +228,22 @@
 
     <!-- Cute Loading Modal -->
     <div id="cute-loader-modal" class="modal hidden"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
         <div class="card"
-            style="max-width: 420px; width: 90%; text-align: center; padding: 3rem 2rem; border-color: rgba(99,102,241,0.4); box-shadow: 0 0 32px rgba(99,102,241,0.25); background: var(--bg-secondary);">
+            style="max-width: 420px; width: 90%; text-align: center; padding: 3rem 2rem; border-color: rgba(224, 122, 95, 0.3); box-shadow: 0 0 32px rgba(224, 122, 95, 0.15); background: var(--bg-card);">
             <div class="cute-science-animation"
                 style="font-size: 4rem; margin-bottom: 1.5rem; display: inline-block; animation: bounceCute 2s infinite ease-in-out;">
                 🧪</div>
-            <h3 style="font-size: 1.4rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.8rem;">실시간 탐구 학습지 생성 중...
+            <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 0.8rem;">실시간 탐구 학습지 생성 중...
             </h3>
             <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">
                 시뮬레이션을 연결하고 탐구 문제지를 빌드하고 있습니다.<br>
-                <strong style="color: #6366f1;">✨ 약 10초 내로 완성됩니다!</strong>
+                <strong style="color: var(--primary);">✨ 약 10초 내로 완성됩니다!</strong>
             </p>
             <div class="cute-progress-bar"
-                style="width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; position: relative;">
+                style="width: 100%; height: 6px; background: rgba(74, 62, 61, 0.08); border-radius: 3px; overflow: hidden; position: relative;">
                 <div class="cute-progress-fill"
-                    style="width: 0%; height: 100%; background: linear-gradient(90deg, #6366f1, #a5b4fc); border-radius: 3px; position: absolute; left: 0; top: 0; animation: fillCuteProgress 4s forwards linear;">
+                    style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; position: absolute; left: 0; top: 0; animation: fillCuteProgress 4s forwards linear;">
                 </div>
             </div>
         </div>
