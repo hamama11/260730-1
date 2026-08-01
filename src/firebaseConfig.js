@@ -17,6 +17,7 @@ let googleProvider = null;
 let isFirebaseInitialized = false;
 
 try {
+    console.log("Attempting Firebase initialization with config:", firebaseConfig);
     // Check if configuration is set
     if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "your_firebase_api_key_here") {
         const app = initializeApp(firebaseConfig);
@@ -26,10 +27,10 @@ try {
         isFirebaseInitialized = true;
         console.log("Firebase initialized successfully via environment variables.");
     } else {
-        console.warn("Firebase configuration credentials not set in .env. Running in Offline/Preview mode.");
+        console.error("Firebase configuration credentials not set in .env or contains placeholder key. Running in Offline/Preview mode.", firebaseConfig);
     }
 } catch (e) {
-    console.error("Firebase initialization failed:", e);
+    console.error("Firebase initialization failed with exception:", e);
     isFirebaseInitialized = false;
     db = null;
     auth = null;

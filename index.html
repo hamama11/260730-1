@@ -49,9 +49,9 @@
                         <input type="url" id="simulation-url" placeholder="https://scratch.mit.edu/projects/10128410/embed" value="https://scratch.mit.edu/projects/10128410/embed" required>
                         <p class="warning-text" style="line-height: 1.6; margin-top: 0.6rem;">
                             <svg class="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                            ※ iframe 연동 가능 여부 가이드:<br>
-                            - 🟢 <strong>사용 가능</strong>: Vercel, Netlify, Github Pages, GeoGebra, PhET, Scratch 임베드 링크 등<br>
-                            - 🔴 <strong>사용 불가 (임베드 차단)</strong>: Google, Naver, Daum, YouTube 단독 링크, 티스토리 등
+                            ※ 시뮬레이션 웹 주소 연동 여부 안내:<br>
+                            - 🟢 <strong>연동 가능 (화면 표시 가능)</strong>: GeoGebra, PhET, Scratch 임베드 주소, GitHub Pages, Vercel, Netlify 등 외부 임베드를 허용하는 사이트<br>
+                            - 🔴 <strong>연동 불가 (보안상 차단됨)</strong>: 일반 포털(Google, Naver, Daum 등), YouTube 일반 페이지, 티스토리 등 외부 임베드를 차단한 사이트
                         </p>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                 <div class="actions" style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
                     <button type="button" id="btn-preview" class="btn btn-secondary" style="flex: 1; padding: 1rem; font-size: 1rem;">👀 학생 화면 미리보기</button>
                     <button type="submit" id="btn-create-room" class="btn btn-primary" style="flex: 2; padding: 1rem; font-size: 1rem;">
-                        <span class="btn-text">🚀 10초 만에 수업방 만들기</span>
+                        <span class="btn-text">🚀 방 만들기</span>
                         <div class="spinner hidden"></div>
                     </button>
                 </div>

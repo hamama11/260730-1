@@ -432,6 +432,10 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         if (!isFirebaseInitialized || !db) {
+            console.error("수업방 생성 실패: Firebase가 초기화되지 않았거나 db 인스턴스가 존재하지 않습니다.", {
+                isFirebaseInitialized,
+                db
+            });
             alert("Firebase 연동에 실패하여 수업방을 만들 수 없습니다. 에뮬레이터 또는 호스팅 서버에서 실행해 주세요. 대신 '학생 화면 미리보기'는 이용하실 수 있습니다.");
             return;
         }
