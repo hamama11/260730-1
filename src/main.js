@@ -5,6 +5,162 @@ document.addEventListener('DOMContentLoaded', async () => {
     const studentSubmitForm = document.getElementById('student-submit-form');
     if (!studentSubmitForm) return;
 
+    // ── Drawing Canvas Overlay Setup ──
+    const canvas = document.getElementById('drawing-canvas');
+    let ctx = null;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let currentTool = 'interact'; // 'interact', 'pen', 'eraser'
+    let strokeColor = '#E07A5F';
+
+    if (canvas) {
+        ctx = canvas.getContext('2d');
+        
+        // Resize canvas to match its bounding box
+        const resizeCanvas = () => {
+            const rect = canvas.getBoundingClientRect();
+            
+            // Backup content before resizing clears the canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            // Restore backed up content
+            ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
+            
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+        // Delay slightly to ensure iframe wrapper layout is established
+        setTimeout(resizeCanvas, 500);
+
+        // Drawing Toolbar elements
+        const btnDrawMode = document.getElementById('btn-draw-mode');
+        const btnDrawPen = document.getElementById('btn-draw-pen');
+        const btnDrawEraser = document.getElementById('btn-draw-eraser');
+        const btnDrawClear = document.getElementById('btn-draw-clear');
+        const colorPicker = document.getElementById('draw-color-picker');
+        const opacitySlider = document.getElementById('draw-opacity-slider');
+
+        const setTool = (tool) => {
+            currentTool = tool;
+            
+            // Reset active classes
+            if (btnDrawMode) btnDrawMode.classList.remove('active');
+            if (btnDrawPen) btnDrawPen.classList.remove('active');
+            if (btnDrawEraser) btnDrawEraser.classList.remove('active');
+            
+            if (btnDrawMode) { btnDrawMode.style.background = ''; btnDrawMode.style.color = ''; }
+            if (btnDrawPen) { btnDrawPen.style.background = ''; btnDrawPen.style.color = ''; }
+            if (btnDrawEraser) { btnDrawEraser.style.background = ''; btnDrawEraser.style.color = ''; }
+
+            if (tool === 'interact') {
+                canvas.style.pointerEvents = 'none';
+                if (btnDrawMode) {
+                    btnDrawMode.classList.add('active');
+                    btnDrawMode.style.background = 'var(--primary)';
+                    btnDrawMode.style.color = 'white';
+                }
+            } else {
+                canvas.style.pointerEvents = 'auto';
+                if (tool === 'pen' && btnDrawPen) {
+                    btnDrawPen.classList.add('active');
+                    btnDrawPen.style.background = 'var(--primary)';
+                    btnDrawPen.style.color = 'white';
+                } else if (tool === 'eraser' && btnDrawEraser) {
+                    btnDrawEraser.classList.add('active');
+                    btnDrawEraser.style.background = 'var(--primary)';
+                    btnDrawEraser.style.color = 'white';
+                }
+            }
+        };
+
+        if (btnDrawMode) btnDrawMode.addEventListener('click', () => setTool('interact'));
+        if (btnDrawPen) btnDrawPen.addEventListener('click', () => setTool('pen'));
+        if (btnDrawEraser) btnDrawEraser.addEventListener('click', () => setTool('eraser'));
+        if (btnDrawClear) btnDrawClear.addEventListener('click', () => {
+            if (confirm("필기된 내용을 모두 지우시겠습니까?")) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+        if (colorPicker) colorPicker.addEventListener('input', (e) => {
+            strokeColor = e.target.value;
+        });
+        if (opacitySlider) opacitySlider.addEventListener('input', (e) => {
+            canvas.style.opacity = e.target.value;
+        });
+
+        // Initialize tool to interact
+        setTool('interact');
+
+        const startDrawing = (x, y) => {
+            if (currentTool === 'interact') return;
+            isDrawing = true;
+            [lastX, lastY] = [x, y];
+        };
+
+        const draw = (x, y) => {
+            if (!isDrawing || currentTool === 'interact') return;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+
+            if (currentTool === 'pen') {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 4;
+                ctx.globalCompositeOperation = 'source-over';
+            } else if (currentTool === 'eraser') {
+                ctx.lineWidth = 24;
+                ctx.globalCompositeOperation = 'destination-out';
+            }
+            
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+        };
+
+        const stopDrawing = () => {
+            isDrawing = false;
+        };
+
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            startDrawing(e.clientX - rect.left, e.clientY - rect.top);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            draw(e.clientX - rect.left, e.clientY - rect.top);
+        });
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Touch events for tablets/mobiles
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                const rect = canvas.getBoundingClientRect();
+                startDrawing(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+                if (currentTool !== 'interact') e.preventDefault();
+            }
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                const rect = canvas.getBoundingClientRect();
+                draw(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+                if (currentTool !== 'interact') e.preventDefault();
+            }
+        });
+        canvas.addEventListener('touchend', stopDrawing);
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get('id');
     const teacherId = urlParams.get('teacherId');
@@ -527,6 +683,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         let aiHint = "";
         let functionSuccess = false;
 
+        const canvasElement = document.getElementById('drawing-canvas');
+        let drawingImg = null;
+        if (canvasElement) {
+            drawingImg = canvasElement.toDataURL('image/png');
+        }
+
         try {
             const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
             const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
@@ -546,7 +708,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     studentName,
                     answers,
                     copyCount,
-                    pasteCount
+                    pasteCount,
+                    drawingImg
                 })
             });
 
@@ -575,6 +738,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         answers,
                         copyCount,
                         pasteCount,
+                        drawingImg,
                         timestamp: serverTimestamp()
                     };
                     await setDoc(subDocRef, submissionData);

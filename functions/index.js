@@ -23,7 +23,7 @@ exports.getAiHint = onRequest({ cors: true }, async (req, res) => {
 
     cors(req, res, async () => {
         try {
-            const { teacherId, roomId, studentId, studentName, answerA, answerB, answers, copyCount, pasteCount } = req.body;
+            const { teacherId, roomId, studentId, studentName, answerA, answerB, answers, copyCount, pasteCount, drawingImg } = req.body;
 
             if (!roomId || !studentName || !teacherId) {
                 res.status(400).json({
@@ -94,6 +94,7 @@ exports.getAiHint = onRequest({ cors: true }, async (req, res) => {
                 aiHint,
                 copyCount: copyCount || 0,
                 pasteCount: pasteCount || 0,
+                drawingImg: drawingImg || null,
                 timestamp: admin.firestore.FieldValue.serverTimestamp()
             };
 

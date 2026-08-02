@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                 }
 
+                let drawingHtml = '';
+                if (sub.drawingImg) {
+                    drawingHtml = `
+                        <div class="response-block" style="border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 0.8rem;">
+                            <strong>🎨 시뮬레이션 필기 / 그리기 캡처</strong>
+                            <div style="margin-top: 0.5rem; background: #ffffff; padding: 6px; border-radius: 8px; border: 1px solid var(--border-color); display: inline-block;">
+                                <img src="${sub.drawingImg}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; height: auto; border: 1px solid var(--border-color); cursor: zoom-in;" alt="Student Drawing">
+                            </div>
+                        </div>
+                    `;
+                }
+
                 card.innerHTML = `
                     <div class="card-header" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <span class="student-meta">${sub.studentId || "학번없음"} ${sub.studentName}</span>
@@ -169,6 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         ${answersHtml}
+                        ${drawingHtml}
                         <div class="response-block feedback-block">
                             <strong>✅ 제출 되었습니다.</strong>
                             <p>${sub.aiHint}</p>

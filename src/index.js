@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 📍 수업방 ID: <code style="color: var(--primary);">${roomId}</code>
                             </h4>
                             <div class="room-meta-info">
-                                <span class="room-meta-item">연동: <strong>${roomData.simType === 'url' ? '웹 주소' : 'HTML 코드'}</strong></span>
                                 <span class="room-meta-item">질문 수: <strong>${(roomData.questions || []).length}개</strong></span>
                                 <span class="room-meta-item">제출 인원: <strong class="student-count-badge-${roomId}">0명</strong></span>
                                 <span class="room-meta-item">생성일: <strong>${createdDate}</strong></span>
