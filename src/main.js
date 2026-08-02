@@ -612,6 +612,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 wrapper.appendChild(viewer);
                 wrapper.appendChild(canvas);
                 
+                // Add warning banner if external link URL
+                appendUrlBannerIfNeeded(wrapper, file, viewer);
+
                 // Add zoom controls
                 addZoomControls(wrapper, viewer);
 
@@ -642,6 +645,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 wrapper.appendChild(viewer);
                 wrapper.appendChild(canvas);
+
+                // Add warning banner if external link URL
+                appendUrlBannerIfNeeded(wrapper, file, viewer);
 
                 addZoomControls(wrapper, viewer);
                 mealkitViewportsBody.appendChild(wrapper);
@@ -718,6 +724,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 wrapper.appendChild(viewer);
                 wrapper.appendChild(canvas);
 
+                // Add warning banner if external link URL
+                appendUrlBannerIfNeeded(wrapper, file, viewer);
+
                 addZoomControls(wrapper, viewer);
                 mealkitViewportsBody.appendChild(wrapper);
                 activeCanvases.push(canvas);
@@ -728,9 +737,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateCanvasPointerEvents();
     }
 
+    function appendUrlBannerIfNeeded(wrapper, file, viewer) {
+        if (file.type === 'url') {
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; background: rgba(224, 122, 95, 0.18); backdrop-filter: blur(4px); padding: 0.45rem 0.8rem; font-size: 0.75rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); color: var(--text-primary); z-index: 15; box-sizing: border-box;';
+            banner.innerHTML = `
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 0.5rem; text-align: left; font-weight: 500;">🌐 외부 링크 연결됨 (보안 정책 등으로 화면이 나오지 않을 때 우측 버튼을 누르세요)</span>
+                <a href="${file.url}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; color: #a5b4fc; text-decoration: none; border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.1); flex-shrink: 0; border-radius: 4px; border-style: solid; border-width: 1px; display: inline-block;">새 창으로 열기 ↗</a>
+            `;
+            wrapper.appendChild(banner);
+            viewer.style.paddingTop = '32px';
+            viewer.style.boxSizing = 'border-box';
+        }
+    }
+
     function createViewerElement(file) {
         let viewer;
-        if (file.type === 'html') {
+        if (file.type === 'html' || file.type === 'url') {
             viewer = document.createElement('iframe');
             viewer.src = file.url;
             viewer.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";

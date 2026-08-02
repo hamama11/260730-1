@@ -98,7 +98,7 @@
                 <div class="form-group">
                     <label style="font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">📂 수업 자료 등록 (최대 10개)</label>
                     <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 0.8rem;">
-                        HTML 시뮬레이션, PDF 교안, 이미지 파일(.png, .jpg, .jpeg, .webp)을 드래그하여 등록하세요. (권장 5개 이내)
+                        HTML 시뮬레이션, PDF 교안, 이미지 파일(.png, .jpg, .jpeg, .webp), 웹 URL 링크를 등록하세요. (권장 5개 이내)
                     </p>
                     
                     <!-- Drag & Drop Zone -->
@@ -107,10 +107,20 @@
                         <span id="mealkit-dropzone-text" style="font-size: 0.95rem; color: var(--text-secondary); display: block; line-height: 1.5;">
                             이곳에 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요.
                         </span>
+                        <span style="font-size: 0.8rem; color: var(--accent); display: block; margin-top: 0.4rem; font-weight: 600;">
+                            💡 Tip: 캡처 도구 등으로 화면 캡처 후 이 창에 바로 Ctrl+V(Cmd+V)를 눌러 이미지를 붙여넣을 수 있습니다!
+                        </span>
                         <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.4rem;">
-                            허용 확장자: .html, .pdf, .png, .jpg, .jpeg, .webp (전체 합계 30MB 이내)
+                            허용 확장자: .html, .pdf, .png, .jpg, .jpeg, .webp (전체 파일 합계 30MB 이내)
                         </span>
                         <input type="file" id="mealkit-file-input" accept=".html,.pdf,.png,.jpg,.jpeg,.webp" multiple style="display: none;">
+                    </div>
+
+                    <!-- URL Link Input Group -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 1.2rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 1.2rem;">🔗</span>
+                        <input type="url" id="mealkit-url-input" placeholder="연동할 시뮬레이션 또는 웹사이트 URL 입력 (https://...)" style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-primary); background: rgba(15,23,42,0.4);">
+                        <button type="button" id="btn-mealkit-add-url" class="btn btn-accent btn-sm" style="padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; height: 38px;">링크 추가</button>
                     </div>
 
                     <!-- 보안 안내 경고 -->
@@ -121,7 +131,7 @@
 
                     <!-- Uploaded Files List -->
                     <div id="mealkit-files-container" class="hidden" style="margin-bottom: 1.8rem; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem;">
-                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--primary);">등록된 파일 목록 (<span id="mealkit-files-count">0</span>/10)</h4>
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--primary);">등록된 자료 목록 (<span id="mealkit-files-count">0</span>/10)</h4>
                         <div id="mealkit-files-list" style="display: flex; flex-direction: column; gap: 0.85rem;">
                             <!-- Dynamically filled with javascript -->
                         </div>

@@ -537,6 +537,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const mealkitFilesCount = document.getElementById('mealkit-files-count');
     const layoutModeWarning = document.getElementById('layout-mode-warning');
 
+    // URL link elements
+    const mealkitUrlInput = document.getElementById('mealkit-url-input');
+    const btnMealkitAddUrl = document.getElementById('btn-mealkit-add-url');
+
     // Layout buttons
     const layoutSelector = document.getElementById('layout-mode-selector');
     const layoutBtns = layoutSelector ? layoutSelector.querySelectorAll('.tab-btn') : [];
@@ -547,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const mode = btn.dataset.layout;
             if (mode === 'split' && mealkitFiles.length >= 4) {
-                alert("파일이 4개 이상일 때는 다단 분할 모드를 선택할 수 없습니다.");
+                alert("자료가 4개 이상일 때는 다단 분할 모드를 선택할 수 없습니다.");
                 return;
             }
             layoutBtns.forEach(b => b.classList.remove('active'));
@@ -581,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Render Uploaded Files
+    // Render Uploaded Files & URLs
     function renderMealkitFilesList() {
         if (!mealkitFilesList) return;
         mealkitFilesList.innerHTML = '';
@@ -600,65 +604,104 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.6rem 0.9rem; flex-wrap: wrap;';
 
-            // Extension icon
+            // Extension icon or link icon
             let icon = '📄';
-            if (file.name.toLowerCase().endsWith('.pdf')) icon = '📕';
-            else if (file.name.toLowerCase().endsWith('.html')) icon = '🌐';
-            else if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) icon = '🖼️';
+            let subtitle = '';
+
+            if (file.type === 'url') {
+                icon = '🔗';
+                subtitle = file.url;
+            } else {
+                if (file.name.toLowerCase().endsWith('.pdf')) icon = '📕';
+                else if (file.name.toLowerCase().endsWith('.html')) icon = '🌐';
+                else if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) icon = '🖼️';
+                subtitle = `${(file.size / 1024).toFixed(1)} KB`;
+            }
 
             const infoArea = document.createElement('div');
-            infoArea.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px;';
+            infoArea.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 220px; max-width: 320px; overflow: hidden;';
             infoArea.innerHTML = `
                 <span style="font-size: 1.2rem;">${icon}</span>
-                <div style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${file.name}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-secondary);">${(file.size / 1024).toFixed(1)} KB</span>
+                <div style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: calc(100% - 2rem);">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden;">${file.name}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden;">${subtitle}</span>
                 </div>
             `;
 
             // Tab label editor input
             const labelGroup = document.createElement('div');
-            labelGroup.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; min-width: 180px; flex: 1;';
+            labelGroup.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; min-width: 160px; flex: 1;';
             labelGroup.innerHTML = `
                 <span style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">탭 이름:</span>
-                <input type="text" value="${file.label}" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;" placeholder="기본 파일명">
+                <input type="text" value="${file.label}" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; color: var(--text-primary); background: rgba(15,23,42,0.4);" placeholder="탭 표시 이름">
             `;
             const labelInput = labelGroup.querySelector('input');
             labelInput.addEventListener('input', (e) => {
-                file.label = e.target.value.trim() || file.name.substring(0, file.name.lastIndexOf('.'));
+                file.label = e.target.value.trim() || file.name;
             });
 
             // Action buttons
             const actions = document.createElement('div');
             actions.style.cssText = 'display: flex; gap: 0.4rem;';
-            actions.innerHTML = `
-                <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🔄 교체</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
-            `;
 
-            // Replace handler
-            actions.querySelectorAll('button')[0].addEventListener('click', () => {
-                replaceTargetId = file.id;
-                if (mealkitFileInput) mealkitFileInput.click();
-            });
+            if (file.type === 'url') {
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-secondary btn-sm btn-edit-url" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">✏️ URL 수정</button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
+                `;
 
-            // Delete handler
-            actions.querySelectorAll('button')[1].addEventListener('click', async () => {
-                if (confirm(`'${file.name}' 파일을 수업 목록에서 제외하시겠습니까?`)) {
-                    // If file already exists in Storage, delete it
-                    if (file.storagePath && isFirebaseInitialized && storage) {
+                // URL modify handler
+                actions.querySelector('.btn-edit-url').addEventListener('click', () => {
+                    const newUrl = prompt("수정할 외부 웹사이트/시뮬레이션 주소(URL)를 입력해 주세요:", file.url);
+                    if (newUrl !== null && newUrl.trim()) {
+                        file.url = newUrl.trim();
+                        file.name = newUrl.trim();
                         try {
-                            const fileRef = ref(storage, file.storagePath);
-                            await deleteObject(fileRef);
-                            console.log("Firebase Storage asset deleted:", file.storagePath);
-                        } catch (err) {
-                            console.warn("Storage deletion error (non-fatal):", err);
+                            const urlObj = new URL(file.url);
+                            file.label = urlObj.hostname.replace('www.', '');
+                        } catch (e) {
+                            file.label = '웹 링크';
                         }
+                        renderMealkitFilesList();
                     }
-                    mealkitFiles.splice(index, 1);
-                    renderMealkitFilesList();
-                }
-            });
+                });
+
+                // Delete URL handler
+                actions.querySelectorAll('button')[1].addEventListener('click', () => {
+                    if (confirm(`'${file.label}' 링크를 목록에서 삭제하시겠습니까?`)) {
+                        mealkitFiles.splice(index, 1);
+                        renderMealkitFilesList();
+                    }
+                });
+            } else {
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-secondary btn-sm btn-replace-file" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🔄 교체</button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
+                `;
+
+                // Replace handler
+                actions.querySelector('.btn-replace-file').addEventListener('click', () => {
+                    replaceTargetId = file.id;
+                    if (mealkitFileInput) mealkitFileInput.click();
+                });
+
+                // Delete handler
+                actions.querySelectorAll('button')[1].addEventListener('click', async () => {
+                    if (confirm(`'${file.name}' 파일을 수업 목록에서 제외하시겠습니까?`)) {
+                        if (file.storagePath && isFirebaseInitialized && storage) {
+                            try {
+                                const fileRef = ref(storage, file.storagePath);
+                                await deleteObject(fileRef);
+                                console.log("Firebase Storage asset deleted:", file.storagePath);
+                            } catch (err) {
+                                console.warn("Storage deletion error (non-fatal):", err);
+                            }
+                        }
+                        mealkitFiles.splice(index, 1);
+                        renderMealkitFilesList();
+                    }
+                });
+            }
 
             item.appendChild(infoArea);
             item.appendChild(labelGroup);
@@ -694,21 +737,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Total size check
-            const currentTotalSize = mealkitFiles.reduce((sum, f) => sum + f.size, 0);
+            const currentTotalSize = mealkitFiles.reduce((sum, f) => f.type !== 'url' ? sum + f.size : sum, 0);
             if (currentTotalSize + file.size > 30 * 1024 * 1024) {
                 alert(`전체 파일의 합계 용량이 30MB를 초과하여 추가할 수 없습니다: ${file.name}`);
                 break;
             }
 
-            // Default label: filename without extension
-            const defaultLabel = file.name.substring(0, file.name.lastIndexOf('.'));
+            // Default label: screenshot or filename without extension
+            let defaultLabel = file.name.substring(0, file.name.lastIndexOf('.'));
+            if (file.name.startsWith('screenshot_')) {
+                const screenshotNum = mealkitFiles.filter(f => f.name.startsWith('screenshot_')).length + 1;
+                defaultLabel = `스크린샷_${screenshotNum}`;
+            }
 
             if (replaceTargetId) {
-                // Perform file replacement (Keep the label and id, update the file data)
+                // Perform file replacement
                 const targetIdx = mealkitFiles.findIndex(f => f.id === replaceTargetId);
                 if (targetIdx !== -1) {
                     const prevFile = mealkitFiles[targetIdx];
-                    // Delete old Storage path if present
                     if (prevFile.storagePath && isFirebaseInitialized && storage) {
                         try {
                             const fileRef = ref(storage, prevFile.storagePath);
@@ -723,17 +769,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         size: file.size,
                         type: ext,
                         fileObject: file,
-                        label: prevFile.label, // maintain tab label
-                        url: '', // resets url
+                        label: prevFile.label, // maintain label
+                        url: '',
                         storagePath: ''
                     };
                 }
                 replaceTargetId = null;
-                break; // Replace works for single file selection
+                break;
             } else {
-                // Add new file if list not full
                 if (mealkitFiles.length >= 10) {
-                    alert("수업 자료는 최대 10개까지만 등록할 수 있습니다.");
+                    alert("자료는 최대 10개까지만 등록할 수 있습니다.");
                     break;
                 }
                 mealkitFiles.push({
@@ -750,8 +795,71 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         renderMealkitFilesList();
-        if (mealkitFileInput) mealkitFileInput.value = ''; // reset input
+        if (mealkitFileInput) mealkitFileInput.value = '';
     }
+
+    // Bind URL Link Add
+    if (btnMealkitAddUrl && mealkitUrlInput) {
+        btnMealkitAddUrl.addEventListener('click', () => {
+            const urlVal = mealkitUrlInput.value.trim();
+            if (!urlVal) {
+                alert("웹 링크 주소를 입력해 주세요.");
+                return;
+            }
+            if (!urlVal.startsWith('http://') && !urlVal.startsWith('https://')) {
+                alert("올바른 웹 주소 형식이 아닙니다. http:// 또는 https:// 포함 주소 전체를 입력해 주세요.");
+                return;
+            }
+
+            if (mealkitFiles.length >= 10) {
+                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
+                return;
+            }
+
+            // Extract domain name for default label
+            let domainLabel = '웹 링크';
+            try {
+                const urlObj = new URL(urlVal);
+                domainLabel = urlObj.hostname.replace('www.', '');
+            } catch (e) {
+                const linkNum = mealkitFiles.filter(f => f.type === 'url').length + 1;
+                domainLabel = `웹 링크 ${linkNum}`;
+            }
+
+            mealkitFiles.push({
+                id: generateId(),
+                name: urlVal,
+                size: 0,
+                type: 'url',
+                fileObject: null,
+                label: domainLabel,
+                url: urlVal,
+                storagePath: ''
+            });
+
+            mealkitUrlInput.value = '';
+            renderMealkitFilesList();
+        });
+    }
+
+    // Bind Clipboard Paste (Ctrl+V) for Screenshots
+    document.addEventListener('paste', (e) => {
+        // Only trigger if focus is not in textarea/input
+        const activeTag = document.activeElement.tagName.toLowerCase();
+        if (activeTag === 'textarea' || (activeTag === 'input' && document.activeElement.type !== 'file')) {
+            return; 
+        }
+
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                const screenshotFile = new File([blob], `screenshot_${Date.now()}.png`, { type: blob.type });
+                processSelectedFiles([screenshotFile]);
+                console.log("Clipboard screenshot converted and added to mealkit list.");
+            }
+        }
+    });
 
     // Bind mealkit Dropzone
     if (mealkitDropzone && mealkitFileInput) {
@@ -792,17 +900,17 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         if (mealkitFiles.length === 0) {
-            alert("최소 한 개 이상의 수업 자료를 드래그하거나 선택하여 업로드해 주세요.");
+            alert("최소 한 개 이상의 수업 자료를 등록해 주세요.");
             return;
         }
 
         if (!isFirebaseInitialized || !db || !storage) {
-            console.error("수업방 생성 실패: Firebase가 초기화되지 않았거나 db/storage 인스턴스가 존재하지 않습니다.", {
+            console.error("수업방 생성 실패: Firebase가 초기화되지 않았습니다.", {
                 isFirebaseInitialized,
                 db,
                 storage
             });
-            alert("Firebase 연동에 실패하여 수업방을 만들 수 없습니다. 에뮬레이터 또는 호스팅 서버에서 실행해 주세요. 대신 '학생 화면 미리보기'는 이용하실 수 있습니다.");
+            alert("Firebase 연동에 실패하여 수업방을 만들 수 없습니다.");
             return;
         }
 
@@ -815,22 +923,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (cleanRoomId !== roomId) {
-            alert("수업방 고유 ID는 영문, 숫자, 하이픈(-)만 사용할 수 있으며 공백을 포함할 수 없습니다.");
+            alert("수업방 고유 ID는 영문, 숫자, 하이픈(-)만 사용할 수 있습니다.");
             return;
         }
 
         const teacherUid = auth.currentUser ? auth.currentUser.uid : "offline";
         const newRoomRef = doc(db, "users", teacherUid, "rooms", roomId);
 
-        // Check duplicate room ID
         try {
             const checkDoc = await getDoc(newRoomRef);
             if (checkDoc.exists()) {
-                const overwrite = confirm("이미 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까? (기존 데이터가 변경됩니다)");
+                const overwrite = confirm("이미 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까?");
                 if (!overwrite) return;
             }
         } catch (err) {
-            console.warn("중복 방 ID 조회 실패:", err);
+            console.warn("중복 ID 조회 실패:", err);
         }
 
         // Validate questions
@@ -866,12 +973,21 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCreateRoom.disabled = true;
 
         try {
-            // Upload files to Firebase Storage
+            // Upload files & link URLs
             const finalFilesList = [];
             for (let i = 0; i < mealkitFiles.length; i++) {
                 const file = mealkitFiles[i];
 
-                if (file.url) {
+                if (file.type === 'url') {
+                    finalFilesList.push({
+                        id: file.id,
+                        name: file.name,
+                        label: file.label,
+                        type: 'url',
+                        url: file.url,
+                        storagePath: ''
+                    });
+                } else if (file.url) {
                     // Already uploaded
                     finalFilesList.push({
                         id: file.id,
@@ -901,7 +1017,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Get selected canvas policy option
             const canvasOptionEl = document.querySelector('input[name="canvas-option"]:checked');
             const globalCanvas = canvasOptionEl ? (canvasOptionEl.value === 'global') : false;
 
@@ -984,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPreview) {
         btnPreview.addEventListener('click', async () => {
             if (mealkitFiles.length === 0) {
-                alert("미리보기를 하기 전에 파일을 1개 이상 추가해 주세요.");
+                alert("미리보기를 하기 전에 자료를 1개 이상 추가해 주세요.");
                 return;
             }
             for (let i = 0; i < questions.length; i++) {
@@ -1000,7 +1115,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = mealkitFiles[i];
                 let fileDataUrl = '';
 
-                if (file.url) {
+                if (file.type === 'url') {
+                    fileDataUrl = file.url;
+                } else if (file.url) {
                     fileDataUrl = file.url;
                 } else {
                     fileDataUrl = await new Promise((resolve) => {
@@ -1014,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: file.id,
                     name: file.name,
                     label: file.label,
-                    type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
+                    type: file.type,
                     url: fileDataUrl
                 });
             }
