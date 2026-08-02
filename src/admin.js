@@ -331,7 +331,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Student QR code display handler
     const btnShowStudentQr = document.getElementById('btn-show-student-qr');
-    const studentQrModal = document.getElementById('student-qr-modal');
     const btnCloseMonitorQr = document.getElementById('btn-close-monitor-qr');
     const btnCloseMonitorQrConfirm = document.getElementById('btn-close-monitor-qr-confirm');
     const monitorQrCanvas = document.getElementById('monitor-qr-canvas');
