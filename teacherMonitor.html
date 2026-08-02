@@ -18,7 +18,7 @@
                 <h1>📊 실시간 탐구 모니터링 대시보드</h1>
             </div>
             <div class="actions-area">
-                <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary btn-sm" style="border-color: rgba(255,255,255,0.15);">
+                <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary btn-sm">
                     🏠 홈으로
                 </button>
                 <button type="button" id="btn-copy-dashboard-link" class="btn btn-secondary btn-sm">
@@ -27,7 +27,7 @@
                 <button type="button" id="btn-download-csv" class="btn btn-accent btn-sm">
                     📥 수업 종료 후 CSV 엑셀 다운로드
                 </button>
-                <button type="button" id="btn-reset-data" class="btn btn-secondary btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2);">
+                <button type="button" id="btn-reset-data" class="btn btn-secondary btn-sm" style="background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2);">
                     🗑️ 제출 데이터 초기화
                 </button>
             </div>
@@ -88,11 +88,11 @@
     </div>
     <!-- Google Login Fullscreen Overlay for dashboard protection -->
     <div id="login-overlay" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="card" style="max-width: 400px; width: 90%; text-align: center; padding: 3rem 2rem; background: var(--bg-secondary);">
+        <div class="card" style="max-width: 400px; width: 90%; text-align: center; padding: 3rem 2rem;">
             <span style="font-size: 3rem; margin-bottom: 1.5rem; display: block;">🔒</span>
-            <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">교사 인증 필요</h2>
+            <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; background: linear-gradient(135deg, #e07a5f 0%, #c9644b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">교사 인증 필요</h2>
             <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; font-size: 0.95rem;">대시보드를 조회하려면 이 수업방을 개설한 교사의 구글 계정으로 로그인해야 합니다.</p>
-            <button type="button" id="btn-overlay-login" class="btn btn-primary btn-block" style="padding: 1rem;">Google 로그인</button>
+            <button type="button" id="btn-overlay-login" class="btn btn-primary btn-block" style="padding: 1rem; color: #ffffff;">Google 로그인</button>
             <button type="button" id="btn-overlay-back" class="btn btn-secondary btn-block" style="padding: 1rem; margin-top: 0.75rem;">메인 화면으로</button>
         </div>
     </div>

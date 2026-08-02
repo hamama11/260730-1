@@ -19,16 +19,35 @@
                     <span class="sim-title">실시간 탐구 시뮬레이션 연결됨</span>
                 </div>
                 <!-- Drawing Toolbar -->
-                <div id="drawing-toolbar" style="display: flex; align-items: center; gap: 0.4rem; background: rgba(74, 62, 61, 0.08); padding: 0.3rem 0.6rem; border-radius: 8px;">
+                <div id="drawing-toolbar" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(74, 62, 61, 0.08); padding: 0.4rem 0.8rem; border-radius: 12px; flex-wrap: wrap;">
                     <button type="button" id="btn-draw-mode" class="btn btn-secondary btn-sm active" style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: var(--primary); color: white;">🖱️ 조작</button>
                     <button type="button" id="btn-draw-pen" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">✏️ 펜</button>
                     <button type="button" id="btn-draw-eraser" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">🧽 지우개</button>
                     <button type="button" id="btn-draw-clear" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2);">전체 지우기</button>
-                    <input type="color" id="draw-color-picker" value="#E07A5F" style="width: 24px; height: 24px; border: none; border-radius: 4px; padding: 0; cursor: pointer; background: transparent;">
                     
-                    <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.4rem;">
-                        <span>투명도</span>
-                        <input type="range" id="draw-opacity-slider" min="0.1" max="1.0" step="0.05" value="1.0" style="width: 60px; cursor: pointer; accent-color: var(--primary);">
+                    <!-- Color Quick Presets -->
+                    <div class="color-presets" style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid var(--border-color); padding-left: 0.5rem;">
+                        <button type="button" class="preset-btn active" data-color="#DF5E5E" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#4F8FC4" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#81B29A" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#F4A261" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#4A3E3D" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4A3E3D; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                    </div>
+
+                    <!-- Custom Color Trigger -->
+                    <button type="button" id="btn-custom-color" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; padding: 0;" title="세밀한 색상 조절">🎨</button>
+                    <input type="color" id="draw-color-picker" value="#DF5E5E" style="display: none;">
+                    
+                    <!-- Sliders -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); border-left: 1px solid var(--border-color); padding-left: 0.5rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.2rem;">
+                            <span>두께</span>
+                            <input type="range" id="draw-thickness-slider" min="1" max="20" step="1" value="4" style="width: 50px; cursor: pointer; accent-color: var(--primary);">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.2rem;">
+                            <span>투명도</span>
+                            <input type="range" id="draw-opacity-slider" min="0.1" max="1.0" step="0.05" value="1.0" style="width: 50px; cursor: pointer; accent-color: var(--primary);">
+                        </div>
                     </div>
                 </div>
             </div>

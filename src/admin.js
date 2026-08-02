@@ -103,10 +103,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return result;
                 };
 
-                // Copy/paste badge string
-                const hasCopyPaste = (sub.copyCount !== undefined || sub.pasteCount !== undefined);
-                const copyPasteBadge = hasCopyPaste
-                    ? `<span class="paste-tracker-badge" title="학생 복사/붙여넣기 이력">📋 복사 ${sub.copyCount || 0}회 &nbsp;|&nbsp; 📝 붙여넣기 ${sub.pasteCount || 0}회</span>`
+                // Paste tracking badge string (removed copy tracking as requested)
+                const hasPaste = (sub.pasteCount !== undefined);
+                const copyPasteBadge = hasPaste && sub.pasteCount > 0
+                    ? `<span class="paste-tracker-badge" title="학생 붙여넣기 이력">📝 외부 텍스트 붙여넣기: ${sub.pasteCount || 0}회</span>`
                     : '';
 
                 // Build answers body dynamically

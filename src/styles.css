@@ -483,8 +483,8 @@ textarea:focus {
 /* AI Feedback Box */
 .ai-box {
     margin-top: 2rem;
-    background: rgba(99, 102, 241, 0.12);
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: rgba(129, 178, 154, 0.12);
+    border: 1px solid rgba(129, 178, 154, 0.25);
     border-radius: 16px;
     padding: 1.2rem;
     animation: fadeIn 0.4s ease;
@@ -503,19 +503,19 @@ textarea:focus {
 
 .ai-header h3 {
     font-size: 0.95rem;
-    color: #a5b4fc;
+    color: var(--accent);
     font-weight: 600;
 }
 
 .ai-body {
     font-size: 0.9rem;
     line-height: 1.6;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 /* Teacher Dashboard Header / Navbar */
 .dashboard-navbar {
-    background: rgba(30, 41, 59, 0.9);
+    background: var(--bg-card);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     padding: 1rem 2rem;
@@ -525,6 +525,7 @@ textarea:focus {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 10px rgba(74, 62, 61, 0.03);
 }
 
 .logo-area {
@@ -598,11 +599,11 @@ textarea:focus {
 }
 
 .submission-card {
-    background: rgba(30, 41, 59, 0.6);
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    box-shadow: var(--glass-shadow);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -611,8 +612,8 @@ textarea:focus {
 
 .submission-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(224, 122, 95, 0.1);
 }
 
 .card-header {
@@ -626,7 +627,7 @@ textarea:focus {
 .student-meta {
     font-weight: 700;
     font-size: 1.05rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .time-meta {
@@ -647,33 +648,33 @@ textarea:focus {
 
 .response-block strong {
     display: block;
-    color: #a5b4fc;
+    color: var(--primary);
     margin-bottom: 0.25rem;
 }
 
 .response-block p {
-    color: #cbd5e1;
-    background: rgba(15, 23, 42, 0.4);
+    color: var(--text-primary);
+    background: rgba(74, 62, 61, 0.03);
     padding: 0.6rem 0.8rem;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
     white-space: pre-wrap;
 }
 
 .feedback-block strong {
-    color: #34d399;
+    color: var(--accent);
 }
 
 .feedback-block p {
-    background: rgba(16, 185, 129, 0.05);
-    border: 1px solid rgba(16, 185, 129, 0.12);
+    background: rgba(129, 178, 154, 0.1);
+    border: 1px solid rgba(129, 178, 154, 0.25);
 }
 
 .empty-state {
     grid-column: 1 / -1;
     text-align: center;
     padding: 5rem 2rem;
-    background: rgba(30, 41, 59, 0.3);
+    background: rgba(74, 62, 61, 0.02);
     border: 1px dashed var(--border-color);
     border-radius: 16px;
     color: var(--text-secondary);
@@ -881,8 +882,9 @@ textarea:focus {
 .paste-tracker-badge {
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(224, 122, 95, 0.08);
+    border: 1px solid rgba(224, 122, 95, 0.2);
     border-radius: 9999px;
-    color: var(--text-secondary);
+    color: var(--primary);
+    font-weight: 600;
 }

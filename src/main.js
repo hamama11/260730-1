@@ -49,6 +49,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnDrawClear = document.getElementById('btn-draw-clear');
         const colorPicker = document.getElementById('draw-color-picker');
         const opacitySlider = document.getElementById('draw-opacity-slider');
+        const thicknessSlider = document.getElementById('draw-thickness-slider');
+        const btnCustomColor = document.getElementById('btn-custom-color');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+
+        let strokeWidth = 4;
 
         const setTool = (tool) => {
             currentTool = tool;
@@ -91,12 +96,55 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         });
-        if (colorPicker) colorPicker.addEventListener('input', (e) => {
-            strokeColor = e.target.value;
+
+        // Custom color triggers custom color picker
+        if (btnCustomColor && colorPicker) {
+            btnCustomColor.addEventListener('click', () => {
+                colorPicker.click();
+            });
+        }
+
+        if (colorPicker) {
+            colorPicker.addEventListener('input', (e) => {
+                strokeColor = e.target.value;
+                // Deactivate preset indicators since user is picking a custom color
+                presetBtns.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.transform = '';
+                    p.style.boxShadow = '0 0 0 1px rgba(74,62,61,0.2)';
+                });
+                setTool('pen');
+            });
+        }
+
+        // Color quick presets handler
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                presetBtns.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.transform = '';
+                    p.style.boxShadow = '0 0 0 1px rgba(74,62,61,0.2)';
+                });
+                btn.classList.add('active');
+                btn.style.transform = 'scale(1.2)';
+                btn.style.boxShadow = '0 0 0 2px var(--primary)';
+                strokeColor = btn.dataset.color;
+                if (colorPicker) colorPicker.value = strokeColor;
+                setTool('pen');
+            });
         });
-        if (opacitySlider) opacitySlider.addEventListener('input', (e) => {
-            canvas.style.opacity = e.target.value;
-        });
+
+        if (thicknessSlider) {
+            thicknessSlider.addEventListener('input', (e) => {
+                strokeWidth = parseInt(e.target.value);
+            });
+        }
+
+        if (opacitySlider) {
+            opacitySlider.addEventListener('input', (e) => {
+                canvas.style.opacity = e.target.value;
+            });
+        }
 
         // Initialize tool to interact
         setTool('interact');
@@ -116,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (currentTool === 'pen') {
                 ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 4;
+                ctx.lineWidth = strokeWidth;
                 ctx.globalCompositeOperation = 'source-over';
             } else if (currentTool === 'eraser') {
                 ctx.lineWidth = 24;
