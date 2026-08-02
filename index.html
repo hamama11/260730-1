@@ -272,6 +272,39 @@
         </div>
     </div>
 
+    <!-- Floating Help Button -->
+    <button type="button" id="btn-open-help" style="position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 16px rgba(224, 122, 95, 0.3); z-index: 2500; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background-color 0.2s;" title="서비스 사용법 보기">
+        ❓
+    </button>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        <div class="card" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 2.5rem; background: var(--bg-card); position: relative; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
+            <button type="button" id="btn-close-help" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+            <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">📖 서비스 사용법 가이드</h2>
+            
+            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); text-align: left;">
+                <h3 style="font-size: 1.05rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--accent); display: flex; align-items: center; gap: 0.3rem;">🏫 교사용 (수업 생성 및 모니터링)</h3>
+                <ol style="padding-left: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <li><strong>Google 로그인</strong>을 완료하면 영구 주소 설정과 데이터 누적 보관이 가능합니다.</li>
+                    <li>웹 시뮬레이션 주소(GeoGebra, PhET 등)와 탐구 질문들을 구성하여 <strong>[방 만들기]</strong>를 클릭합니다.</li>
+                    <li>생성된 <strong>학생용 링크/QR</strong>로 학생들을 진입시키고, <strong>교사용 모니터링 링크</strong>에서 제출 현황을 실시간 조회합니다.</li>
+                    <li>학생이 다른 창에서 복사해온 텍스트를 답안에 붙여넣으면 뱃지 경고 및 붉은 강조선으로 실시간 감지됩니다.</li>
+                </ol>
+
+                <h3 style="font-size: 1.05rem; font-weight: 700; margin-top: 1.2rem; margin-bottom: 0.5rem; color: var(--accent); display: flex; align-items: center; gap: 0.3rem;">🙋‍♂️ 학생용 (탐구 수행 및 제출)</h3>
+                <ol style="padding-left: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <li>시뮬레이션 조작은 <strong>[🖱️ 조작]</strong> 모드로 수행합니다.</li>
+                    <li>화면 위에 그리기나 필기가 필요할 때 <strong>[✏️ 펜]</strong>을 활성화하고 5색 단축키 또는 🎨 아이콘으로 원하는 브러시를 선택합니다.</li>
+                    <li>답변 작성이 완료되면 [답안 제출하기]를 누릅니다. **화면에 필기한 그림 캡처가 자동으로 교사 대시보드에 같이 저장**됩니다.</li>
+                    <li>제출 후 Gemini AI가 즉석에서 1~2문장의 발문형 힌트 피드백을 제공합니다.</li>
+                </ol>
+            </div>
+            
+            <button type="button" id="btn-close-help-confirm" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; padding: 0.8rem;">확인 및 닫기</button>
+        </div>
+    </div>
+
     <script type="module" src="src/index.js"></script>
 </body>
 

@@ -25,6 +25,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
     let unsubscribeMyRooms = null;
 
+    // ── Help Modal Trigger Logic ──
+    const btnOpenHelp = document.getElementById('btn-open-help');
+    const helpModal = document.getElementById('help-modal');
+    const btnCloseHelp = document.getElementById('btn-close-help');
+    const btnCloseHelpConfirm = document.getElementById('btn-close-help-confirm');
+
+    if (btnOpenHelp && helpModal) {
+        btnOpenHelp.addEventListener('click', () => {
+            helpModal.classList.remove('hidden');
+        });
+    }
+
+    const hideHelpModal = () => {
+        if (helpModal) helpModal.classList.add('hidden');
+    };
+
+    if (btnCloseHelp) btnCloseHelp.addEventListener('click', hideHelpModal);
+    if (btnCloseHelpConfirm) btnCloseHelpConfirm.addEventListener('click', hideHelpModal);
+
     // Dynamic CSV Downloader separating answers by question cells
     const downloadRoomCsv = async (roomId, roomData) => {
         try {
