@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,6 +15,7 @@ const firebaseConfig = {
 let db = null;
 let auth = null;
 let googleProvider = null;
+let storage = null;
 let isFirebaseInitialized = false;
 
 try {
@@ -24,6 +26,7 @@ try {
         db = getFirestore(app);
         auth = getAuth(app);
         googleProvider = new GoogleAuthProvider();
+        storage = getStorage(app);
         isFirebaseInitialized = true;
         console.log("Firebase initialized successfully via environment variables.");
     } else {
@@ -35,6 +38,8 @@ try {
     db = null;
     auth = null;
     googleProvider = null;
+    storage = null;
 }
 
-export { db, auth, googleProvider, isFirebaseInitialized };
+export { db, auth, googleProvider, storage, isFirebaseInitialized };
+

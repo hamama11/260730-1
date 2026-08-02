@@ -221,7 +221,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 let drawingHtml = '';
-                if (sub.drawingImg) {
+                if (sub.drawings && Object.keys(sub.drawings).length > 0) {
+                    let drawingsTabs = '';
+                    let drawingsBodies = '';
+                    
+                    Object.keys(sub.drawings).forEach((fileId, dIdx) => {
+                        const fileObj = (currentRoomData && currentRoomData.files && currentRoomData.files.find(f => f.id === fileId)) || { label: `자료 ${dIdx + 1}` };
+                        drawingsTabs += `<button type="button" class="btn btn-secondary btn-sm ${dIdx === 0 ? 'active' : ''}" style="padding:0.3rem 0.6rem; font-size:0.75rem; border-color: rgba(255,255,255,0.1);" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active')); this.classList.add('active'); const wrapper = this.parentNode.nextElementSibling; wrapper.querySelectorAll('.drawing-tab-body').forEach(b=>b.style.display='none'); wrapper.querySelector('.drawing-body-${fileId}').style.display='block';">${fileObj.label}</button>`;
+                        drawingsBodies += `<div class="drawing-tab-body drawing-body-${fileId}" style="display: ${dIdx === 0 ? 'block' : 'none'}; margin-top: 0.5rem; background: #ffffff; padding: 6px; border-radius: 8px; border: 1px solid var(--border-color); display: inline-block;">
+                            <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; height: auto; border: 1px solid var(--border-color); cursor: zoom-in;" alt="${fileObj.label} Drawing">
+                        </div>`;
+                    });
+
+                    drawingHtml = `
+                        <div class="response-block" style="border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 0.8rem;">
+                            <strong>🎨 시뮬레이션 필기 / 그리기 캡처</strong>
+                            <div style="display: flex; gap: 0.35rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                ${drawingsTabs}
+                            </div>
+                            <div style="display: block;">
+                                ${drawingsBodies}
+                            </div>
+                        </div>
+                    `;
+                } else if (sub.drawingImg) {
                     drawingHtml = `
                         <div class="response-block" style="border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 0.8rem;">
                             <strong>🎨 시뮬레이션 필기 / 그리기 캡처</strong>

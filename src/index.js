@@ -1,6 +1,7 @@
-import { db, auth, googleProvider, isFirebaseInitialized } from "./firebaseConfig.js";
-import { collection, doc, setDoc, query, where, onSnapshot, deleteDoc, getDocs } from "firebase/firestore";
+import { db, auth, googleProvider, storage, isFirebaseInitialized } from "./firebaseConfig.js";
+import { collection, doc, setDoc, query, where, onSnapshot, deleteDoc, getDocs, getDoc } from "firebase/firestore";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import QRCode from 'qrcode';
 
 // Helper to generate a random secret key
@@ -523,96 +524,265 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Tab switcher
-    tabBtns.forEach(btn => {
+    // ── Mealkit Files & Layout State ──
+    let mealkitFiles = []; // Array of { id, name, size, type, fileObject, label, url, storagePath }
+    let selectedLayout = 'tab'; // 'tab' | 'split' | 'scroll'
+    let replaceTargetId = null;
+
+    const mealkitDropzone = document.getElementById('mealkit-dropzone');
+    const mealkitFileInput = document.getElementById('mealkit-file-input');
+    const mealkitDropzoneText = document.getElementById('mealkit-dropzone-text');
+    const mealkitFilesContainer = document.getElementById('mealkit-files-container');
+    const mealkitFilesList = document.getElementById('mealkit-files-list');
+    const mealkitFilesCount = document.getElementById('mealkit-files-count');
+    const layoutModeWarning = document.getElementById('layout-mode-warning');
+
+    // Layout buttons
+    const layoutSelector = document.getElementById('layout-mode-selector');
+    const layoutBtns = layoutSelector ? layoutSelector.querySelectorAll('.tab-btn') : [];
+    const btnLayoutSplit = document.getElementById('btn-layout-split');
+
+    // Handle Layout Selection clicks
+    layoutBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.add('hidden'));
-
-            btn.classList.add('active');
-            currentTab = btn.dataset.tab;
-            document.getElementById(currentTab).classList.remove('hidden');
-
-            if (currentTab === 'tab-url') {
-                document.getElementById('simulation-url').required = true;
-                document.getElementById('simulation-html').required = false;
-            } else {
-                document.getElementById('simulation-url').required = false;
-                document.getElementById('simulation-html').required = true;
+            const mode = btn.dataset.layout;
+            if (mode === 'split' && mealkitFiles.length >= 4) {
+                alert("파일이 4개 이상일 때는 다단 분할 모드를 선택할 수 없습니다.");
+                return;
             }
+            layoutBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedLayout = mode;
         });
     });
 
-    // ── Dropzone Drag & Drop Logic ──
-    const htmlDropzone = document.getElementById('html-dropzone');
-    const htmlFileInput = document.getElementById('html-file-input');
-    const dropzoneText = document.getElementById('dropzone-text');
-    const uploadedFileInfo = document.getElementById('uploaded-file-info');
-    const simulationHtmlTextarea = document.getElementById('simulation-html');
+    // Auto-validate and update Layout options based on file count
+    function updateLayoutAvailability() {
+        if (mealkitFiles.length >= 4) {
+            if (btnLayoutSplit) {
+                btnLayoutSplit.style.opacity = '0.4';
+                btnLayoutSplit.style.cursor = 'not-allowed';
+            }
+            if (layoutModeWarning) layoutModeWarning.style.display = 'block';
 
-    if (htmlDropzone && htmlFileInput) {
-        // Drag events
-        htmlDropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            htmlDropzone.style.backgroundColor = 'rgba(224, 122, 95, 0.08)';
-            htmlDropzone.style.borderColor = 'var(--primary)';
+            if (selectedLayout === 'split') {
+                selectedLayout = 'tab';
+                layoutBtns.forEach(b => {
+                    b.classList.remove('active');
+                    if (b.dataset.layout === 'tab') b.classList.add('active');
+                });
+            }
+        } else {
+            if (btnLayoutSplit) {
+                btnLayoutSplit.style.opacity = '1';
+                btnLayoutSplit.style.cursor = 'pointer';
+            }
+            if (layoutModeWarning) layoutModeWarning.style.display = 'none';
+        }
+    }
+
+    // Render Uploaded Files
+    function renderMealkitFilesList() {
+        if (!mealkitFilesList) return;
+        mealkitFilesList.innerHTML = '';
+
+        if (mealkitFiles.length === 0) {
+            if (mealkitFilesContainer) mealkitFilesContainer.classList.add('hidden');
+            if (mealkitFilesCount) mealkitFilesCount.textContent = '0';
+            updateLayoutAvailability();
+            return;
+        }
+
+        if (mealkitFilesContainer) mealkitFilesContainer.classList.remove('hidden');
+        if (mealkitFilesCount) mealkitFilesCount.textContent = mealkitFiles.length;
+
+        mealkitFiles.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.6rem 0.9rem; flex-wrap: wrap;';
+
+            // Extension icon
+            let icon = '📄';
+            if (file.name.toLowerCase().endsWith('.pdf')) icon = '📕';
+            else if (file.name.toLowerCase().endsWith('.html')) icon = '🌐';
+            else if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) icon = '🖼️';
+
+            const infoArea = document.createElement('div');
+            infoArea.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px;';
+            infoArea.innerHTML = `
+                <span style="font-size: 1.2rem;">${icon}</span>
+                <div style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${file.name}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">${(file.size / 1024).toFixed(1)} KB</span>
+                </div>
+            `;
+
+            // Tab label editor input
+            const labelGroup = document.createElement('div');
+            labelGroup.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; min-width: 180px; flex: 1;';
+            labelGroup.innerHTML = `
+                <span style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">탭 이름:</span>
+                <input type="text" value="${file.label}" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;" placeholder="기본 파일명">
+            `;
+            const labelInput = labelGroup.querySelector('input');
+            labelInput.addEventListener('input', (e) => {
+                file.label = e.target.value.trim() || file.name.substring(0, file.name.lastIndexOf('.'));
+            });
+
+            // Action buttons
+            const actions = document.createElement('div');
+            actions.style.cssText = 'display: flex; gap: 0.4rem;';
+            actions.innerHTML = `
+                <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🔄 교체</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
+            `;
+
+            // Replace handler
+            actions.querySelectorAll('button')[0].addEventListener('click', () => {
+                replaceTargetId = file.id;
+                if (mealkitFileInput) mealkitFileInput.click();
+            });
+
+            // Delete handler
+            actions.querySelectorAll('button')[1].addEventListener('click', async () => {
+                if (confirm(`'${file.name}' 파일을 수업 목록에서 제외하시겠습니까?`)) {
+                    // If file already exists in Storage, delete it
+                    if (file.storagePath && isFirebaseInitialized && storage) {
+                        try {
+                            const fileRef = ref(storage, file.storagePath);
+                            await deleteObject(fileRef);
+                            console.log("Firebase Storage asset deleted:", file.storagePath);
+                        } catch (err) {
+                            console.warn("Storage deletion error (non-fatal):", err);
+                        }
+                    }
+                    mealkitFiles.splice(index, 1);
+                    renderMealkitFilesList();
+                }
+            });
+
+            item.appendChild(infoArea);
+            item.appendChild(labelGroup);
+            item.appendChild(actions);
+            mealkitFilesList.appendChild(item);
         });
 
-        htmlDropzone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            htmlDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-            htmlDropzone.style.borderColor = 'var(--border-color)';
-        });
+        updateLayoutAvailability();
+    }
 
-        const handleHtmlFile = (file) => {
-            if (!file) return;
-            
-            // Check extension
-            if (!file.name.toLowerCase().endsWith('.html')) {
-                alert('HTML 파일만 업로드할 수 있습니다. (.html 확장자를 확인하세요)');
-                return;
+    // File selection validation & adding logic
+    function processSelectedFiles(filesList) {
+        if (!filesList || filesList.length === 0) return;
+
+        const allowedExtensions = ['.html', '.pdf', '.png', '.jpg', '.jpeg', '.webp'];
+
+        for (let i = 0; i < filesList.length; i++) {
+            const file = filesList[i];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+            if (!allowedExtensions.includes(ext)) {
+                alert(`지원되지 않는 확장자입니다: ${file.name}\n(.html, .pdf, .png, .jpg, .jpeg, .webp 파일만 지원합니다)`);
+                continue;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const code = e.target.result;
-                if (simulationHtmlTextarea) {
-                    simulationHtmlTextarea.value = code;
-                }
-                
-                // Show file info
-                if (uploadedFileInfo) {
-                    const sizeKb = (file.size / 1024).toFixed(1);
-                    uploadedFileInfo.textContent = `📄 ${file.name} (${sizeKb} KB) - 업로드 완료`;
-                    uploadedFileInfo.classList.remove('hidden');
-                }
-                if (dropzoneText) {
-                    dropzoneText.textContent = '파일 선택 완료! 아래 소스코드가 자동 갱신되었습니다.';
-                }
-                
-                // Success log for storage handler link
-                console.log("HTML file loaded successfully locally:", file.name);
-            };
-            reader.readAsText(file);
-        };
+            // Individual size check
+            if (ext === '.pdf' && file.size > 10 * 1024 * 1024) {
+                alert(`PDF 파일의 최대 허용 크기는 10MB입니다: ${file.name}`);
+                continue;
+            } else if (ext !== '.pdf' && file.size > 5 * 1024 * 1024) {
+                alert(`HTML/이미지 파일의 최대 허용 크기는 5MB입니다: ${file.name}`);
+                continue;
+            }
 
-        htmlDropzone.addEventListener('drop', (e) => {
+            // Total size check
+            const currentTotalSize = mealkitFiles.reduce((sum, f) => sum + f.size, 0);
+            if (currentTotalSize + file.size > 30 * 1024 * 1024) {
+                alert(`전체 파일의 합계 용량이 30MB를 초과하여 추가할 수 없습니다: ${file.name}`);
+                break;
+            }
+
+            // Default label: filename without extension
+            const defaultLabel = file.name.substring(0, file.name.lastIndexOf('.'));
+
+            if (replaceTargetId) {
+                // Perform file replacement (Keep the label and id, update the file data)
+                const targetIdx = mealkitFiles.findIndex(f => f.id === replaceTargetId);
+                if (targetIdx !== -1) {
+                    const prevFile = mealkitFiles[targetIdx];
+                    // Delete old Storage path if present
+                    if (prevFile.storagePath && isFirebaseInitialized && storage) {
+                        try {
+                            const fileRef = ref(storage, prevFile.storagePath);
+                            deleteObject(fileRef);
+                        } catch (err) {
+                            console.warn("Storage deletion error during replace:", err);
+                        }
+                    }
+                    mealkitFiles[targetIdx] = {
+                        id: prevFile.id,
+                        name: file.name,
+                        size: file.size,
+                        type: ext,
+                        fileObject: file,
+                        label: prevFile.label, // maintain tab label
+                        url: '', // resets url
+                        storagePath: ''
+                    };
+                }
+                replaceTargetId = null;
+                break; // Replace works for single file selection
+            } else {
+                // Add new file if list not full
+                if (mealkitFiles.length >= 10) {
+                    alert("수업 자료는 최대 10개까지만 등록할 수 있습니다.");
+                    break;
+                }
+                mealkitFiles.push({
+                    id: generateId(),
+                    name: file.name,
+                    size: file.size,
+                    type: ext,
+                    fileObject: file,
+                    label: defaultLabel,
+                    url: '',
+                    storagePath: ''
+                });
+            }
+        }
+
+        renderMealkitFilesList();
+        if (mealkitFileInput) mealkitFileInput.value = ''; // reset input
+    }
+
+    // Bind mealkit Dropzone
+    if (mealkitDropzone && mealkitFileInput) {
+        mealkitDropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            htmlDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-            htmlDropzone.style.borderColor = 'var(--border-color)';
-            
+            mealkitDropzone.style.backgroundColor = 'rgba(224, 122, 95, 0.08)';
+            mealkitDropzone.style.borderColor = 'var(--primary)';
+        });
+
+        mealkitDropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            mealkitDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+            mealkitDropzone.style.borderColor = 'var(--border-color)';
+        });
+
+        mealkitDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            mealkitDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+            mealkitDropzone.style.borderColor = 'var(--border-color)';
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                handleHtmlFile(e.dataTransfer.files[0]);
+                processSelectedFiles(e.dataTransfer.files);
             }
         });
 
-        htmlDropzone.addEventListener('click', () => {
-            htmlFileInput.click();
+        mealkitDropzone.addEventListener('click', () => {
+            mealkitFileInput.click();
         });
 
-        htmlFileInput.addEventListener('change', (e) => {
+        mealkitFileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files.length > 0) {
-                handleHtmlFile(e.target.files[0]);
+                processSelectedFiles(e.target.files);
             }
         });
     }
@@ -621,10 +791,16 @@ document.addEventListener('DOMContentLoaded', () => {
     createRoomForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        if (!isFirebaseInitialized || !db) {
-            console.error("수업방 생성 실패: Firebase가 초기화되지 않았거나 db 인스턴스가 존재하지 않습니다.", {
+        if (mealkitFiles.length === 0) {
+            alert("최소 한 개 이상의 수업 자료를 드래그하거나 선택하여 업로드해 주세요.");
+            return;
+        }
+
+        if (!isFirebaseInitialized || !db || !storage) {
+            console.error("수업방 생성 실패: Firebase가 초기화되지 않았거나 db/storage 인스턴스가 존재하지 않습니다.", {
                 isFirebaseInitialized,
-                db
+                db,
+                storage
             });
             alert("Firebase 연동에 실패하여 수업방을 만들 수 없습니다. 에뮬레이터 또는 호스팅 서버에서 실행해 주세요. 대신 '학생 화면 미리보기'는 이용하실 수 있습니다.");
             return;
@@ -646,18 +822,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const teacherUid = auth.currentUser ? auth.currentUser.uid : "offline";
         const newRoomRef = doc(db, "users", teacherUid, "rooms", roomId);
 
-        // Check if roomId is already taken by this teacher
+        // Check duplicate room ID
         try {
             const checkDoc = await getDoc(newRoomRef);
             if (checkDoc.exists()) {
-                const overwrite = confirm("이미 본인 계정에 생성된 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까?");
+                const overwrite = confirm("이미 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까? (기존 데이터가 변경됩니다)");
                 if (!overwrite) return;
             }
         } catch (err) {
             console.warn("중복 방 ID 조회 실패:", err);
         }
 
-        // Validate questions titles
+        // Validate questions
         for (let i = 0; i < questions.length; i++) {
             if (!questions[i].question.trim()) {
                 alert(`질문 #${i + 1}의 질문 타이틀을 입력하세요.`);
@@ -669,34 +845,72 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const simUrl = document.getElementById('simulation-url').value;
-        const simHtml = document.getElementById('simulation-html').value;
-
         const btnCreateRoom = document.getElementById('btn-create-room');
         const btnText = btnCreateRoom.querySelector('.btn-text');
         const spinner = btnCreateRoom.querySelector('.spinner');
 
-        // Show cute loader modal and animate progress bar
+        // Show cute loader modal
         const cuteLoader = document.getElementById('cute-loader-modal');
         const progressFill = cuteLoader ? cuteLoader.querySelector('.cute-progress-fill') : null;
         if (cuteLoader) {
             cuteLoader.classList.remove('hidden');
             if (progressFill) {
                 progressFill.style.animation = 'none';
-                progressFill.offsetHeight; // trigger reflow
-                progressFill.style.animation = 'fillCuteProgress 1.5s forwards linear';
+                progressFill.offsetHeight;
+                progressFill.style.animation = 'fillCuteProgress 6s forwards linear';
             }
         }
 
+        btnText.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        btnCreateRoom.disabled = true;
+
         try {
-            // Wait 1.5 seconds to build anticipation and showcase animation
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Upload files to Firebase Storage
+            const finalFilesList = [];
+            for (let i = 0; i < mealkitFiles.length; i++) {
+                const file = mealkitFiles[i];
+
+                if (file.url) {
+                    // Already uploaded
+                    finalFilesList.push({
+                        id: file.id,
+                        name: file.name,
+                        label: file.label,
+                        type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
+                        url: file.url,
+                        storagePath: file.storagePath
+                    });
+                } else {
+                    const storagePath = `mealkits/${roomId}/${file.id}_${file.name}`;
+                    const fileRef = ref(storage, storagePath);
+                    await uploadBytes(fileRef, file.fileObject);
+                    const downloadUrl = await getDownloadURL(fileRef);
+
+                    file.url = downloadUrl;
+                    file.storagePath = storagePath;
+
+                    finalFilesList.push({
+                        id: file.id,
+                        name: file.name,
+                        label: file.label,
+                        type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
+                        url: downloadUrl,
+                        storagePath: storagePath
+                    });
+                }
+            }
+
+            // Get selected canvas policy option
+            const canvasOptionEl = document.querySelector('input[name="canvas-option"]:checked');
+            const globalCanvas = canvasOptionEl ? (canvasOptionEl.value === 'global') : false;
 
             const secretKey = 'sec_' + generateSecretKey(16);
 
             const roomData = {
-                simType: currentTab === 'tab-url' ? 'url' : 'html',
-                simData: currentTab === 'tab-url' ? simUrl : simHtml,
+                files: finalFilesList,
+                layoutMode: selectedLayout,
+                globalCanvas: globalCanvas,
                 secretKey: secretKey,
                 questions: questions,
                 ownerUid: teacherUid,
@@ -712,22 +926,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('student-link-input').value = studentLink;
             document.getElementById('dashboard-link-input').value = dashboardLink;
 
-            // Bind Direct Entrance Buttons
+            // Bind links
             const btnEnterStudent = document.getElementById('btn-enter-student');
             const btnEnterDashboard = document.getElementById('btn-enter-dashboard');
             if (btnEnterStudent) {
                 const newBtn = btnEnterStudent.cloneNode(true);
                 btnEnterStudent.parentNode.replaceChild(newBtn, btnEnterStudent);
-                newBtn.addEventListener('click', () => {
-                    window.open(studentLink, '_blank');
-                });
+                newBtn.addEventListener('click', () => { window.open(studentLink, '_blank'); });
             }
             if (btnEnterDashboard) {
                 const newBtn = btnEnterDashboard.cloneNode(true);
                 btnEnterDashboard.parentNode.replaceChild(newBtn, btnEnterDashboard);
-                newBtn.addEventListener('click', () => {
-                    window.open(dashboardLink, '_blank');
-                });
+                newBtn.addEventListener('click', () => { window.open(dashboardLink, '_blank'); });
             }
 
             const canvas = document.getElementById('qr-canvas');
@@ -741,13 +951,13 @@ document.addEventListener('DOMContentLoaded', () => {
             shareBox.classList.remove('hidden');
             shareBox.scrollIntoView({ behavior: 'smooth' });
 
-        } catch (err) {
-            console.error("수업방 생성 에러:", err);
-            alert("수업방을 생성하는 도중 오류가 발생했습니다: " + err.message);
-        } finally {
-            // Hide cute loader modal
-            if (cuteLoader) cuteLoader.classList.add('hidden');
+            alert("수업 밀키트가 성공적으로 배포되었습니다!");
 
+        } catch (err) {
+            console.error("밀키트 배포 에러:", err);
+            alert("밀키트를 배포하는 도중 오류가 발생했습니다: " + err.message);
+        } finally {
+            if (cuteLoader) cuteLoader.classList.add('hidden');
             btnText.classList.remove('hidden');
             spinner.classList.add('hidden');
             btnCreateRoom.disabled = false;
@@ -772,7 +982,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Preview click handler
     const btnPreview = document.getElementById('btn-preview');
     if (btnPreview) {
-        btnPreview.addEventListener('click', () => {
+        btnPreview.addEventListener('click', async () => {
+            if (mealkitFiles.length === 0) {
+                alert("미리보기를 하기 전에 파일을 1개 이상 추가해 주세요.");
+                return;
+            }
             for (let i = 0; i < questions.length; i++) {
                 if (!questions[i].question.trim()) {
                     alert(`질문 #${i + 1}의 질문 타이틀을 입력하세요.`);
@@ -780,12 +994,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const simUrl = document.getElementById('simulation-url').value;
-            const simHtml = document.getElementById('simulation-html').value;
+            // Convert local files to data urls for client preview
+            const tempFilesList = [];
+            for (let i = 0; i < mealkitFiles.length; i++) {
+                const file = mealkitFiles[i];
+                let fileDataUrl = '';
+
+                if (file.url) {
+                    fileDataUrl = file.url;
+                } else {
+                    fileDataUrl = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file.fileObject);
+                    });
+                }
+
+                tempFilesList.push({
+                    id: file.id,
+                    name: file.name,
+                    label: file.label,
+                    type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
+                    url: fileDataUrl
+                });
+            }
+
+            const canvasOptionEl = document.querySelector('input[name="canvas-option"]:checked');
+            const globalCanvas = canvasOptionEl ? (canvasOptionEl.value === 'global') : false;
 
             const previewData = {
-                simType: currentTab === 'tab-url' ? 'url' : 'html',
-                simData: currentTab === 'tab-url' ? simUrl : simHtml,
+                files: tempFilesList,
+                layoutMode: selectedLayout,
+                globalCanvas: globalCanvas,
                 questions: questions
             };
 

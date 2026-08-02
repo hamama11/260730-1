@@ -27,7 +27,7 @@
 
 ### 🏫 교사용 (수업 생성 및 모니터링)
 1. **로그인**: `Google 로그인`을 완료하여 수업 관리 권한을 확보합니다.
-2. **방 만들기**: 시뮬레이션 정보(웹 주소 또는 HTML 파일) 및 탐구 질문을 입력하고 고유 ID를 지정하여 **`방(url) 만들기`**를 누릅니다.
+2. **방 만들기**: 수업 자료(HTML, PDF, 이미지 등 다중 파일 최대 10개) 및 탐구 질문을 입력하고 고유 ID를 지정하여 **`방(url) 만들기`**를 누릅니다.
 3. **공유 및 모니터링**: 
    - 생성된 **학생 접속 링크/QR**을 학생들에게 공유합니다.
    - **교사용 모니터링 링크**로 진입하여 학생들의 제출 현황과 그리기 캡처, AI 피드백, 외부 복사 이력을 실시간으로 모니터링합니다.
@@ -36,95 +36,18 @@
 ### 🙋‍♂️ 학생용 (탐구 수행 및 제출)
 1. **접속**: 교사가 공유한 링크나 QR 코드를 통해 입장한 후 학번과 이름을 입력합니다.
 2. **탐구 및 필기**:
-   - **`🖱️ 조작`** 모드: 시뮬레이션을 조작하며 실험을 진행합니다.
-   - **`✏️ 펜`** 모드: 색상, 두께, 투명도를 설정하여 시뮬레이션 화면 위에 직접 선과 메모를 그립니다.
+   - **`🖱️ 조작`** 모드: 시뮬레이션 및 교안을 확인하고 조작합니다.
+   - **`✏️ 펜`** 모드: 색상, 두께, 투명도를 설정하여 화면 위에 직접 선과 메모를 그립니다.
 3. **답안 작성 및 캡처**:
-   - 주관식/객관식 질문에 대한 답안을 작성합니다.
-   - 시뮬레이션의 특정 순간을 남기려면 **`📸 화면 캡처`**를 누르거나 관련 참고 파일을 파일 업로드로 첨부합니다.
-4. **제출**: **`답안 제출`**을 클릭하면 작성한 내용과 드로잉 캡처가 제출되며, 즉시 나타나는 **`🤖 AI 피드백 힌트`**를 참고하여 탐구를 심화합니다.
+   - 질문에 대한 답안을 작성하고 필요시 화면 캡처나 참고용 파일을 개별 업로드합니다.
+4. **제출**: **`답안 제출`**을 클릭하면 작성한 내용과 드로잉 캡처가 제출되며 즉시 AI 힌트 피드백이 제공됩니다.
 
 ---
 
-## 🛠️ 기술 스택 및 프로젝트 구조
-
-### Technology Stack
-- **Frontend**: HTML5, Vanilla CSS, JS (ES Modules)
-- **Build Tool**: Vite
-- **Database / Auth**: Firebase SDK v10 (Firestore, Authentication)
-- **Serverless Backend**: Firebase Cloud Functions (v2)
-- **AI Engine**: Google Gemini API (`gemini-1.5-flash`)
-- **Libraries**: `html2canvas` (화면 캡처), `qrcode` (QR 코드 생성)
-
-### Project Directory Structure
-```bash
-├── .env                       # 프론트엔드 Firebase 환경 변수 설정
-├── index.html                 # 교사 메인화면 (수업방 생성 및 관리)
-├── student.html               # 학생 탐구 화면
-├── teacherMonitor.html        # 교사 실시간 모니터링 대시보드 화면
-├── vite.config.js             # Vite 빌드 설정 파일
-├── src/
-│   ├── firebaseConfig.js      # Firebase 및 Google Auth 초기화 설정
-│   ├── index.js               # 교사 페이지 주요 JS 비즈니스 로직
-│   ├── main.js                # 학생 페이지 주요 JS 비즈니스 로직
-│   ├── admin.js               # 실시간 모니터링 대시보드 JS 로직
-│   └── styles.css             # 모던 UI를 위한 Vanilla CSS 스타일 가이드
-├── functions/
-│   ├── .env                   # Cloud Functions용 GEMINI_API_KEY
-│   ├── index.js               # getAiHint Cloud Function (Gemini 호출 및 제출 자동 기록)
-│   ├── package.json           # Cloud Functions 종속성 설정
-│   └── package-lock.json
-└── package.json               # 루트 프로젝트 메타데이터 및 스크립트
-```
-
----
-
-## 🚀 로컬 개발 및 실행 방법
-
-### 1. 종속성 설치
-```bash
-# 루트 프로젝트 종속성 설치
-npm install
-
-# Cloud Functions 폴더 종속성 설치
-cd functions
-npm install
-cd ..
-```
-
-### 2. 환경 변수 구성
-- 루트 경로의 `.env` 파일에 Firebase 웹 프로젝트 설정을 채웁니다:
-  ```env
-  VITE_FIREBASE_API_KEY=your_api_key
-  VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-  VITE_FIREBASE_PROJECT_ID=your_project_id
-  VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
-  VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-  VITE_FIREBASE_APP_ID=your_app_id
-  ```
-- `functions/.env` 파일에 Google Gemini API Key를 추가합니다:
-  ```env
-  GEMINI_API_KEY=your_gemini_api_key_here
-  ```
-
-### 3. 로컬 서버 실행
-```bash
-# 로컬 개발 서버 구동 (기본 포트: 5173)
-npm run dev
-```
-
----
-
-## 🌐 배포 가이드
-
-### Firebase Hosting & Functions 배포
-1. Firebase CLI 로그인 및 프로젝트 설정:
-   ```bash
-   npx firebase login
-   npx firebase use --add [your-firebase-project-id]
-   ```
-2. 배포 진행:
-   ```bash
-   # 정적 리소스 빌드 및 배포
-   npm run build
-   npx firebase deploy --only hosting,functions
-   ```
+## 🔄 업데이트 내역 (Update History)
+### 📑 다중 파일 업로드 및 자동 라우팅 UI/UX 구현 (2026-08-02)
+- **다중 파일 수업 밀키트**: 최대 10개 파일 (PDF, 이미지, HTML) 동시 업로드 및 Firebase Storage 연동.
+- **탭 이름 사용자 지정**: 업로드한 파일별로 탭 이름을 지정하고, 교체 시 탭 이름 및 순서 유지.
+- **화면 레이아웃 자동 분기**: 파일 개수에 따른 최적의 레이아웃(상단 탭, 드래그 다단 분할 Resizer, 상하 연속 스크롤) 지원.
+- **독립/글로벌 캔버스 필기**: 탭/페이지별 독립 판서 또는 글로벌 판서 모드 선택 가능.
+- **상대 좌표 판서 시스템**: Resizer 조작으로 뷰어 폭이 변경되어도 판서 위치가 해당 파일의 상대 위치에 맞춰 1:1 유지되도록 드로잉 시스템 개선.
