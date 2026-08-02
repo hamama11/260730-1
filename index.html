@@ -305,6 +305,19 @@
         </div>
     </div>
 
+    <!-- Classroom QR Modal -->
+    <div id="classroom-qr-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        <div class="card" style="max-width: 360px; width: 90%; text-align: center; padding: 2.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); background: var(--bg-card); position: relative;">
+            <button type="button" id="btn-close-qr" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">📱 학생 접속용 QR Code</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">수업방 ID: <span id="qr-modal-room-id" style="font-weight: 700; color: var(--text-primary);">-</span></p>
+            <div style="background: white; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+                <canvas id="modal-qr-canvas" style="width: 180px; height: 180px; display: block;"></canvas>
+            </div>
+            <button type="button" id="btn-close-qr-confirm" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">닫기</button>
+        </div>
+    </div>
+
     <script type="module" src="src/index.js"></script>
 </body>
 

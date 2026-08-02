@@ -1,6 +1,7 @@
 import { db, auth, googleProvider, isFirebaseInitialized } from "./firebaseConfig.js";
 import { doc, getDoc, collection, onSnapshot, writeBatch } from "firebase/firestore";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
+import QRCode from 'qrcode';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const submissionsContainer = document.getElementById('submissions-container');
@@ -260,6 +261,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert("모니터링 대시보드를 로딩하는 도중 오류가 발생했습니다: " + err.message);
         return;
     }
+
+    // Direct entrance to student room
+    const btnEnterStudentRoom = document.getElementById('btn-enter-student-room');
+    if (btnEnterStudentRoom) {
+        btnEnterStudentRoom.addEventListener('click', () => {
+            const studentUrl = `${window.location.origin}/student.html?teacherId=${teacherId}&id=${roomId}`;
+            window.open(studentUrl, '_blank');
+        });
+    }
+
+    // Student QR code display handler
+    const btnShowStudentQr = document.getElementById('btn-show-student-qr');
+    const studentQrModal = document.getElementById('student-qr-modal');
+    const btnCloseMonitorQr = document.getElementById('btn-close-monitor-qr');
+    const btnCloseMonitorQrConfirm = document.getElementById('btn-close-monitor-qr-confirm');
+    const monitorQrCanvas = document.getElementById('monitor-qr-canvas');
+    const qrMonitorRoomId = document.getElementById('qr-monitor-room-id');
+
+    if (btnShowStudentQr && studentQrModal) {
+        btnShowStudentQr.addEventListener('click', () => {
+            const studentUrl = `${window.location.origin}/student.html?teacherId=${teacherId}&id=${roomId}`;
+            if (qrMonitorRoomId) qrMonitorRoomId.textContent = roomId;
+            studentQrModal.classList.remove('hidden');
+            if (monitorQrCanvas) {
+                QRCode.toCanvas(monitorQrCanvas, studentUrl, { width: 180, margin: 1 }, function (error) {
+                    if (error) console.error("QR Code generation error:", error);
+                });
+            }
+        });
+    }
+
+    const hideMonitorQr = () => {
+        if (studentQrModal) studentQrModal.classList.add('hidden');
+    };
+
+    if (btnCloseMonitorQr) btnCloseMonitorQr.addEventListener('click', hideMonitorQr);
+    if (btnCloseMonitorQrConfirm) btnCloseMonitorQrConfirm.addEventListener('click', hideMonitorQr);
 
     // Copy Dashboard Link Handler
     document.getElementById('btn-copy-dashboard-link').addEventListener('click', () => {

@@ -44,6 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCloseHelp) btnCloseHelp.addEventListener('click', hideHelpModal);
     if (btnCloseHelpConfirm) btnCloseHelpConfirm.addEventListener('click', hideHelpModal);
 
+    // ── Classroom QR Modal close listeners ──
+    const qrModal = document.getElementById('classroom-qr-modal');
+    const btnCloseQr = document.getElementById('btn-close-qr');
+    const btnCloseQrConfirm = document.getElementById('btn-close-qr-confirm');
+    const hideQrModal = () => {
+        if (qrModal) qrModal.classList.add('hidden');
+    };
+    if (btnCloseQr) btnCloseQr.addEventListener('click', hideQrModal);
+    if (btnCloseQrConfirm) btnCloseQrConfirm.addEventListener('click', hideQrModal);
+
     // Dynamic CSV Downloader separating answers by question cells
     const downloadRoomCsv = async (roomId, roomData) => {
         try {
@@ -175,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="room-actions">
                         <button type="button" class="btn btn-secondary btn-enter-room" data-id="${roomId}">🔗 방 입장</button>
+                        <button type="button" class="btn btn-secondary btn-show-room-qr" data-id="${roomId}">📱 QR 코드</button>
                         <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">📊 모니터링</a>
                         <button type="button" class="btn btn-accent btn-download-room-csv" data-id="${roomId}">📥 CSV 다운로드</button>
                         <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2); max-width: 140px;">🗑️ 삭제</button>
@@ -194,6 +205,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.querySelector('.btn-enter-room').addEventListener('click', () => {
                     const studentUrl = `${window.location.origin}/student.html?teacherId=${uid}&id=${roomId}`;
                     window.open(studentUrl, '_blank');
+                });
+
+                // Bind QR Code modal trigger
+                card.querySelector('.btn-show-room-qr').addEventListener('click', () => {
+                    const studentUrl = `${window.location.origin}/student.html?teacherId=${uid}&id=${roomId}`;
+                    const qModal = document.getElementById('classroom-qr-modal');
+                    const qCanvas = document.getElementById('modal-qr-canvas');
+                    const qRoomId = document.getElementById('qr-modal-room-id');
+                    
+                    if (qModal && qCanvas && qRoomId) {
+                        qRoomId.textContent = roomId;
+                        qModal.classList.remove('hidden');
+                        QRCode.toCanvas(qCanvas, studentUrl, { width: 180, margin: 1 }, function (error) {
+                            if (error) console.error("QR Code generation error:", error);
+                        });
+                    }
                 });
 
                 // Bind CSV download
