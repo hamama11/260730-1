@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentUser = null;
     let unsubscribeMyRooms = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const editRoomId = urlParams.get('edit');
+    const editTeacherId = urlParams.get('teacherId') || 'offline';
 
     // ── Drag & Drop Modal Logic ──
     function makeDraggable(card, handle) {
@@ -222,9 +225,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const roomsList = [];
             snapshot.forEach((roomDoc) => {
-                const roomData = roomDoc.data();
-                const roomId = roomDoc.id;
+                roomsList.push({ id: roomDoc.id, ...roomDoc.data() });
+            });
+
+            // Sort by updatedAt or createdAt desc (newest first)
+            roomsList.sort((a, b) => {
+                const dateA = a.updatedAt || a.createdAt || { toDate: () => new Date(0) };
+                const dateB = b.updatedAt || b.createdAt || { toDate: () => new Date(0) };
+                return dateB.toDate().getTime() - dateA.toDate().getTime();
+            });
+
+            roomsList.forEach((roomData) => {
+                const roomId = roomData.id;
                 const createdDate = roomData.createdAt ? roomData.createdAt.toDate().toLocaleDateString('ko-KR') : "-";
                 
                 const card = document.createElement('div');
@@ -245,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="room-actions">
                         <button type="button" class="btn btn-secondary btn-enter-room" data-id="${roomId}">🔗 방 입장</button>
                         <button type="button" class="btn btn-secondary btn-show-room-qr" data-id="${roomId}">📱 QR 코드</button>
+                        <button type="button" class="btn btn-secondary btn-edit-room" data-id="${roomId}" style="border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🛠️ 설정 수정</button>
                         <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">📊 모니터링</a>
                         <button type="button" class="btn btn-accent btn-download-room-csv" data-id="${roomId}">📥 CSV 다운로드</button>
                         <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2); max-width: 140px;">🗑️ 삭제</button>
@@ -288,6 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (error) console.error("QR Code generation error:", error);
                         });
                     }
+                });
+
+                // Bind room edit
+                card.querySelector('.btn-edit-room').addEventListener('click', () => {
+                    window.location.href = `index.html?edit=${roomId}&teacherId=${uid}`;
                 });
 
                 // Bind CSV download
@@ -351,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (myRoomsSection) myRoomsSection.classList.remove('hidden');
 
                 setupMyRoomsListener(user.uid);
+                checkAndLoadEditMode(user.uid);
             } else {
                 currentUser = null;
                 authStatus.textContent = "로그인해 주세요.";
@@ -394,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const authSection = document.getElementById('auth-section');
         if (authSection) authSection.classList.add('hidden');
         createRoomForm.classList.remove('hidden');
+        checkAndLoadEditMode('offline');
     }
 
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -582,6 +604,79 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnLayoutSplit.style.cursor = 'pointer';
             }
             if (layoutModeWarning) layoutModeWarning.style.display = 'none';
+        }
+    }
+
+    async function checkAndLoadEditMode(uid) {
+        if (!editRoomId) return;
+        if (editTeacherId !== uid) {
+            console.warn("Edit uid mismatch. Logged in uid:", uid, "URL teacherId:", editTeacherId);
+            return;
+        }
+
+        try {
+            if (!isFirebaseInitialized || !db) return;
+            const roomRef = doc(db, "users", editTeacherId, "rooms", editRoomId);
+            const roomSnap = await getDoc(roomRef);
+            if (roomSnap.exists()) {
+                const roomData = roomSnap.data();
+                
+                // 1. Populate mealkitFiles list
+                mealkitFiles = (roomData.files || []).map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    size: f.size || 0,
+                    type: f.type || (f.name.toLowerCase().endsWith('.html') ? 'html' : (f.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image')),
+                    fileObject: null, 
+                    label: f.label || f.name,
+                    url: f.url,
+                    storagePath: f.storagePath || ''
+                }));
+
+                // 2. Populate questions
+                questions = roomData.questions || [];
+
+                // 3. Populate selectedLayout
+                selectedLayout = roomData.layoutMode || 'tab';
+
+                // 4. Update UI: Canvas Option Radio
+                const canvasIndependent = document.querySelector('input[name="canvas-option"][value="independent"]');
+                const canvasGlobal = document.querySelector('input[name="canvas-option"][value="global"]');
+                if (roomData.globalCanvas) {
+                    if (canvasGlobal) canvasGlobal.checked = true;
+                } else {
+                    if (canvasIndependent) canvasIndependent.checked = true;
+                }
+
+                // 5. Update UI: Layout Buttons active state
+                if (layoutBtns) {
+                    layoutBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.layout === selectedLayout);
+                    });
+                }
+
+                // 6. Update UI: Room ID input (Disable it)
+                const customRoomIdInput = document.getElementById('custom-room-id');
+                if (customRoomIdInput) {
+                    customRoomIdInput.value = editRoomId;
+                    customRoomIdInput.disabled = true;
+                }
+
+                // 7. Update UI: Submit Button Text
+                const btnCreateRoom = document.getElementById('btn-create-room');
+                if (btnCreateRoom) {
+                    const btnText = btnCreateRoom.querySelector('.btn-text');
+                    if (btnText) btnText.textContent = '🛠️ 수업 밀키트 수정 완료';
+                }
+
+                // Render lists
+                renderMealkitFilesList();
+                renderQuestionsConfig();
+
+                console.log("Room settings loaded for editing:", editRoomId);
+            }
+        } catch (err) {
+            console.error("수업방 수정 정보 불러오기 실패:", err);
         }
     }
 
@@ -933,8 +1028,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const checkDoc = await getDoc(newRoomRef);
             if (checkDoc.exists()) {
-                const overwrite = confirm("이미 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까?");
-                if (!overwrite) return;
+                if (!editRoomId) {
+                    const overwrite = confirm("이미 동일한 수업방 ID가 존재합니다. 설정을 덮어쓰시겠습니까?");
+                    if (!overwrite) return;
+                }
             }
         } catch (err) {
             console.warn("중복 ID 조회 실패:", err);
@@ -1020,7 +1117,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const canvasOptionEl = document.querySelector('input[name="canvas-option"]:checked');
             const globalCanvas = canvasOptionEl ? (canvasOptionEl.value === 'global') : false;
 
-            const secretKey = 'sec_' + generateSecretKey(16);
+            // Maintain original secretKey and createdAt if editing
+            let existingRoomData = {};
+            if (editRoomId) {
+                try {
+                    const snap = await getDoc(newRoomRef);
+                    if (snap.exists()) {
+                        existingRoomData = snap.data();
+                    }
+                } catch (e) {
+                    console.warn("Error fetching existing room metadata:", e);
+                }
+            }
+
+            const secretKey = existingRoomData.secretKey || ('sec_' + generateSecretKey(16));
 
             const roomData = {
                 files: finalFilesList,
@@ -1029,7 +1139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 secretKey: secretKey,
                 questions: questions,
                 ownerUid: teacherUid,
-                createdAt: new Date()
+                createdAt: existingRoomData.createdAt || new Date(),
+                updatedAt: new Date()
             };
 
             await setDoc(newRoomRef, roomData);

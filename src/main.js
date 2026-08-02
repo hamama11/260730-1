@@ -328,6 +328,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 textarea.dataset.qid = q.id;
                 textarea.dataset.qtitle = q.question;
                 textarea.dataset.qtype = q.type;
+                
+                let pastedSegments = [];
+                textarea.addEventListener('paste', (e) => {
+                    pasteCount++;
+                    const pasteText = (e.clipboardData || window.clipboardData).getData('text');
+                    if (pasteText) {
+                        pastedSegments.push(pasteText);
+                    }
+                });
+                group.pastedSegmentsGetter = () => pastedSegments;
+
                 group.appendChild(textarea);
             } else if (q.type === 'objective') {
                 const select = document.createElement('select');
@@ -881,13 +892,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!inputElement) return;
 
             const attachedFile = group.attachedFileGetter ? group.attachedFileGetter() : null;
+            const pastedSegments = group.pastedSegmentsGetter ? group.pastedSegmentsGetter() : [];
 
             answers.push({
                 id: inputElement.dataset.qid,
                 question: inputElement.dataset.qtitle,
                 type: inputElement.dataset.qtype,
                 answer: inputElement.value,
-                file: attachedFile
+                file: attachedFile,
+                pastedSegments: pastedSegments
             });
         });
 
@@ -918,7 +931,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const aiBox = document.getElementById('student-ai-box');
                 const feedbackText = document.getElementById('student-ai-feedback');
 
-                feedbackText.innerHTML = `🤖 <strong>[미리보기 모드 AI 피드백]</strong><br><br>학생이 제출한 답안에 대한 발문 힌트 예시입니다. 실 배포에서는 Google Gemini API가 실시간 응답합니다.`;
+                feedbackText.innerHTML = `<strong>[미리보기 모드 피드백]</strong><br><br>학생이 제출한 답안에 대한 피드백 예시입니다. 실 배포에서는 Google Gemini API가 실시간 응답합니다.`;
                 aiBox.classList.remove('hidden');
                 aiBox.scrollIntoView({ behavior: 'smooth' });
 
@@ -975,7 +988,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!functionSuccess) {
-            aiHint = `🤖 [가상 AI 피드백] ${studentName} 학생의 다중 뷰어 탐구 활동지를 확인하였습니다. 파일별로 작성해주신 탐구 내용과 그리기 판서를 분석한 결과 훌륭한 접근을 보이고 있습니다! 조금만 더 확장하여 원리를 도출해 보세요.`;
+            aiHint = `[피드백] ${studentName} 학생의 다중 뷰어 탐구 활동지를 확인하였습니다. 파일별로 작성해주신 탐구 내용과 그리기 판서를 분석한 결과 훌륭한 접근을 보이고 있습니다! 조금만 더 확장하여 원리를 도출해 보세요.`;
             
             if (isFirebaseInitialized && db) {
                 try {

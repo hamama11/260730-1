@@ -12,6 +12,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     const teacherId = urlParams.get('teacherId');
     const secretKey = urlParams.get('key');
 
+    // Highlight pasted text inside student answers in red
+    function highlightPastedText(text, pastedSegments) {
+        if (!pastedSegments || pastedSegments.length === 0 || !text) {
+            return text;
+        }
+        let escapedText = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+        pastedSegments.forEach(segment => {
+            if (!segment.trim()) return;
+            const escapedSegment = segment
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+            
+            const regex = new RegExp(escapedSegment.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+            escapedText = escapedText.replace(regex, `<span style="color: #ef4444; font-weight: 600; text-decoration: underline;">${escapedSegment}</span>`);
+        });
+        return escapedText;
+    }
+
     // ── Drag & Drop Modal Logic ──
     function makeDraggable(card, handle) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;

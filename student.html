@@ -1,63 +1,91 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>실시간 탐구 활동지 - 학생용</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="src/styles.css">
 </head>
+
 <body>
     <div id="student-view" class="student-layout">
         <!-- Left Pane: Simulation Frame -->
         <section class="simulation-container">
-            <div class="simulation-header" style="justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; display: flex; align-items: center;">
+            <div class="simulation-header"
+                style="justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; display: flex; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span class="pulse-indicator"></span>
                     <span class="sim-title">실시간 탐구 시뮬레이션 연결됨</span>
                 </div>
                 <!-- Drawing Toolbar -->
-                <div id="drawing-toolbar" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(74, 62, 61, 0.08); padding: 0.4rem 0.8rem; border-radius: 12px; flex-wrap: wrap;">
-                    <button type="button" id="btn-draw-mode" class="btn btn-secondary btn-sm active" style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: var(--primary); color: white;">🖱️ 조작</button>
-                    <button type="button" id="btn-draw-pen" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">✏️ 펜</button>
-                    <button type="button" id="btn-draw-eraser" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">🧽 지우개</button>
-                    <button type="button" id="btn-draw-clear" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2);">전체 지우기</button>
-                    
+                <div id="drawing-toolbar"
+                    style="display: flex; align-items: center; gap: 0.5rem; background: rgba(74, 62, 61, 0.08); padding: 0.4rem 0.8rem; border-radius: 12px; flex-wrap: wrap;">
+                    <button type="button" id="btn-draw-mode" class="btn btn-secondary btn-sm active"
+                        style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: var(--primary); color: white;">🖱️
+                        조작</button>
+                    <button type="button" id="btn-draw-pen" class="btn btn-secondary btn-sm"
+                        style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">✏️ 펜</button>
+                    <button type="button" id="btn-draw-eraser" class="btn btn-secondary btn-sm"
+                        style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">🧽 지우개</button>
+                    <button type="button" id="btn-draw-clear" class="btn btn-secondary btn-sm"
+                        style="padding: 0.35rem 0.7rem; font-size: 0.8rem; background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2);">전체
+                        지우기</button>
+
                     <!-- Color Quick Presets -->
-                    <div class="color-presets" style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid var(--border-color); padding-left: 0.5rem;">
-                        <button type="button" class="preset-btn active" data-color="#DF5E5E" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
-                        <button type="button" class="preset-btn" data-color="#4F8FC4" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
-                        <button type="button" class="preset-btn" data-color="#81B29A" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
-                        <button type="button" class="preset-btn" data-color="#F4A261" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
-                        <button type="button" class="preset-btn" data-color="#4A3E3D" style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4A3E3D; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                    <div class="color-presets"
+                        style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid var(--border-color); padding-left: 0.5rem;">
+                        <button type="button" class="preset-btn active" data-color="#DF5E5E"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#4F8FC4"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#81B29A"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#F4A261"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#4A3E3D"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4A3E3D; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
                     </div>
 
                     <!-- Custom Color Trigger -->
-                    <button type="button" id="btn-custom-color" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; padding: 0;" title="세밀한 색상 조절">🎨</button>
+                    <button type="button" id="btn-custom-color"
+                        style="background: none; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; padding: 0;"
+                        title="세밀한 색상 조절">🎨</button>
                     <input type="color" id="draw-color-picker" value="#DF5E5E" style="display: none;">
-                    
+
                     <!-- Sliders -->
-                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); border-left: 1px solid var(--border-color); padding-left: 0.5rem; flex-wrap: wrap;">
+                    <div
+                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); border-left: 1px solid var(--border-color); padding-left: 0.5rem; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 0.2rem;">
                             <span>두께</span>
-                            <input type="range" id="draw-thickness-slider" min="1" max="20" step="1" value="4" style="width: 50px; cursor: pointer; accent-color: var(--primary);">
+                            <input type="range" id="draw-thickness-slider" min="1" max="20" step="1" value="4"
+                                style="width: 50px; cursor: pointer; accent-color: var(--primary);">
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.2rem;">
                             <span>투명도</span>
-                            <input type="range" id="draw-opacity-slider" min="0.1" max="1.0" step="0.05" value="1.0" style="width: 50px; cursor: pointer; accent-color: var(--primary);">
+                            <input type="range" id="draw-opacity-slider" min="0.1" max="1.0" step="0.05" value="1.0"
+                                style="width: 50px; cursor: pointer; accent-color: var(--primary);">
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Dynamic Mealkit Layout Viewport Container -->
-            <div id="mealkit-layout-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; border-radius: 0 0 16px 16px;">
+            <div id="mealkit-layout-container"
+                style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; border-radius: 0 0 16px 16px;">
                 <!-- Tab headers will appear here dynamically if in Tab mode -->
-                <div id="mealkit-tabs-header" class="hidden" style="display: flex; gap: 0.4rem; background: rgba(74, 62, 61, 0.04); padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; z-index: 10;"></div>
-                
+                <div id="mealkit-tabs-header" class="hidden"
+                    style="display: flex; gap: 0.4rem; background: rgba(74, 62, 61, 0.04); padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; z-index: 10;">
+                </div>
+
                 <!-- Layout viewport body (holds viewports for Tab / Split / Scroll) -->
-                <div id="mealkit-viewports-body" style="flex: 1; display: flex; overflow: auto; position: relative; background: var(--bg-primary); width: 100%; height: 100%;"></div>
+                <div id="mealkit-viewports-body"
+                    style="flex: 1; display: flex; overflow: auto; position: relative; background: var(--bg-primary); width: 100%; height: 100%;">
+                </div>
             </div>
         </section>
 
@@ -99,7 +127,7 @@
                     <h3>제출 되었습니다.</h3>
                 </div>
                 <div class="ai-body">
-                    <p id="student-ai-feedback">답변을 바탕으로 생성된 AI 힌트가 여기에 출력됩니다.</p>
+                    <p id="student-ai-feedback">답변을 바탕으로 생성된 AI 피드백이 출력됩니다.</p>
                 </div>
             </div>
         </aside>
@@ -107,4 +135,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script type="module" src="src/main.js"></script>
 </body>
+
 </html>
