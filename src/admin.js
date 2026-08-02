@@ -12,6 +12,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     const teacherId = urlParams.get('teacherId');
     const secretKey = urlParams.get('key');
 
+    // ── Drag & Drop Modal Logic ──
+    function makeDraggable(card, handle) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        handle.onmousedown = dragMouseDown;
+        handle.ontouchstart = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            if (e.type === 'touchstart') {
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+            } else {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+            }
+            document.onmouseup = closeDragElement;
+            document.ontouchend = closeDragElement;
+            document.onmousemove = elementDrag;
+            document.ontouchmove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            
+            pos1 = pos3 - clientX;
+            pos2 = pos4 - clientY;
+            pos3 = clientX;
+            pos4 = clientY;
+            
+            card.style.position = 'absolute';
+            card.style.margin = '0';
+            card.style.top = (card.offsetTop - pos2) + "px";
+            card.style.left = (card.offsetLeft - pos1) + "px";
+        }
+
+        document.addEventListener('mouseup', closeDragElement);
+        document.addEventListener('touchend', closeDragElement);
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.ontouchend = null;
+            document.onmousemove = null;
+            document.ontouchmove = null;
+        }
+    }
+
+    const studentQrModal = document.getElementById('student-qr-modal');
+    if (studentQrModal) {
+        const card = studentQrModal.querySelector('.draggable-card');
+        const handle = studentQrModal.querySelector('.drag-handle');
+        if (card && handle) {
+            makeDraggable(card, handle);
+        }
+    }
+
     if (!roomId || !secretKey || !teacherId) {
         alert("잘못된 접근입니다. 수업 ID, 교사 식별 정보 및 보안 키가 필요합니다.");
         window.location.href = 'index.html';
@@ -282,10 +340,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnShowStudentQr && studentQrModal) {
         btnShowStudentQr.addEventListener('click', () => {
             const studentUrl = `${window.location.origin}/student.html?teacherId=${teacherId}&id=${roomId}`;
+            const draggableCard = studentQrModal.querySelector('.draggable-card');
+            if (draggableCard) {
+                draggableCard.style.top = '';
+                draggableCard.style.left = '';
+                draggableCard.style.position = '';
+                draggableCard.style.margin = '';
+            }
+            
             if (qrMonitorRoomId) qrMonitorRoomId.textContent = roomId;
             studentQrModal.classList.remove('hidden');
             if (monitorQrCanvas) {
-                QRCode.toCanvas(monitorQrCanvas, studentUrl, { width: 180, margin: 1 }, function (error) {
+                QRCode.toCanvas(monitorQrCanvas, studentUrl, { width: 280, margin: 1 }, function (error) {
                     if (error) console.error("QR Code generation error:", error);
                 });
             }

@@ -306,14 +306,14 @@ textarea:focus {
     gap: 0.5rem;
     margin-top: 0.4rem;
 }
-
 .input-copy-group input {
     flex: 1;
-    background: rgba(15, 23, 42, 0.8);
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
     font-family: monospace;
     font-size: 0.85rem;
 }
-
 .qr-container {
     text-align: center;
     margin-top: 2rem;

@@ -141,8 +141,29 @@
 
                 <!-- Tab B: HTML Input -->
                 <div id="tab-html" class="tab-content hidden">
+                    <!-- 개인정보 보호 주의사항 안내 박스 -->
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1.2rem; color: #991b1b; font-size: 0.85rem; line-height: 1.5; text-align: left;">
+                        🔒 <strong>개인정보 보호 주의사항:</strong><br>
+                        업로드하는 HTML 파일 내 학생의 실명, 학번, 전화번호 등 개인식별정보가 포함되지 않도록 주의해 주세요.
+                    </div>
+
+                    <!-- 업로드 안내 섹션 -->
+                    <div style="background: rgba(74, 62, 61, 0.03); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1.2rem; font-size: 0.85rem; color: var(--text-primary); line-height: 1.5; text-align: left;">
+                        💡 <strong>HTML 파일 업로드 안내:</strong><br>
+                        <li>업로드 가능한 확장자는 <strong>.html</strong> 파일입니다.</li>
+                        <li>외부 이미지/스타일 폴더 연결 없이, CSS와 JS가 <strong>하나로 통합된 단일 HTML 파일 형태</strong>로 업로드해야 정상적으로 표시됩니다.</li>
+                    </div>
+
+                    <!-- 드래그 앤 드롭 드롭존 (Dropzone) -->
+                    <div id="html-dropzone" style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 2rem; text-align: center; background: rgba(255,255,255,0.02); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; margin-bottom: 1.2rem;">
+                        <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📁</span>
+                        <span id="dropzone-text" style="font-size: 0.9rem; color: var(--text-secondary); display: block;">HTML 파일을 여기에 드래그 앤 드롭하거나 클릭하여 선택하세요.</span>
+                        <span id="uploaded-file-info" style="font-size: 0.85rem; color: var(--accent); font-weight: 700; display: block; margin-top: 0.5rem;" class="hidden"></span>
+                        <input type="file" id="html-file-input" accept=".html" style="display: none;">
+                    </div>
+
                     <div class="form-group">
-                        <label for="simulation-html">HTML 소스 코드 직접 입력</label>
+                        <label for="simulation-html">HTML 소스 코드 직접 입력 / 미리보기</label>
                         <textarea id="simulation-html" rows="8"
                             placeholder="<!DOCTYPE html>&#10;<html>&#10;<body>&#10;  <h1>나의 커스텀 시뮬레이션</h1>&#10;</body>&#10;</html>"></textarea>
                     </div>
@@ -307,12 +328,13 @@
 
     <!-- Classroom QR Modal -->
     <div id="classroom-qr-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
-        <div class="card" style="max-width: 360px; width: 90%; text-align: center; padding: 2.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); background: var(--bg-card); position: relative;">
-            <button type="button" id="btn-close-qr" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
-            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">📱 학생 접속용 QR Code</h3>
+        <div class="card draggable-card" style="max-width: 420px; width: 90%; text-align: center; padding: 2.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); background: var(--bg-card); position: relative;">
+            <div class="drag-handle" style="cursor: move; padding: 0.5rem; background: rgba(74,62,61,0.04); margin: -2.5rem -2rem 1.5rem -2rem; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); user-select: none;">↕️ 이곳을 잡고 드래그하여 이동</div>
+            <button type="button" id="btn-close-qr" style="position: absolute; top: 3.2rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary); line-height: 1;">&times;</button>
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; margin-top: 1rem;">📱 학생 접속용 QR Code</h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">수업방 ID: <span id="qr-modal-room-id" style="font-weight: 700; color: var(--text-primary);">-</span></p>
-            <div style="background: white; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
-                <canvas id="modal-qr-canvas" style="width: 180px; height: 180px; display: block;"></canvas>
+            <div style="background: white; padding: 16px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+                <canvas id="modal-qr-canvas" style="width: 280px; height: 280px; display: block;"></canvas>
             </div>
             <button type="button" id="btn-close-qr-confirm" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">닫기</button>
         </div>

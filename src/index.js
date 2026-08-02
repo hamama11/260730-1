@@ -25,6 +25,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
     let unsubscribeMyRooms = null;
 
+    // ── Drag & Drop Modal Logic ──
+    function makeDraggable(card, handle) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        handle.onmousedown = dragMouseDown;
+        handle.ontouchstart = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            if (e.type === 'touchstart') {
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+            } else {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+            }
+            document.onmouseup = closeDragElement;
+            document.ontouchend = closeDragElement;
+            document.onmousemove = elementDrag;
+            document.ontouchmove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            
+            pos1 = pos3 - clientX;
+            pos2 = pos4 - clientY;
+            pos3 = clientX;
+            pos4 = clientY;
+            
+            card.style.position = 'absolute';
+            card.style.margin = '0';
+            card.style.top = (card.offsetTop - pos2) + "px";
+            card.style.left = (card.offsetLeft - pos1) + "px";
+        }
+
+        document.addEventListener('mouseup', closeDragElement);
+        document.addEventListener('touchend', closeDragElement);
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.ontouchend = null;
+            document.onmousemove = null;
+            document.ontouchmove = null;
+        }
+    }
+
+    const classQrModal = document.getElementById('classroom-qr-modal');
+    if (classQrModal) {
+        const card = classQrModal.querySelector('.draggable-card');
+        const handle = classQrModal.querySelector('.drag-handle');
+        if (card && handle) {
+            makeDraggable(card, handle);
+        }
+    }
+
     // ── Help Modal Trigger Logic ──
     const btnOpenHelp = document.getElementById('btn-open-help');
     const helpModal = document.getElementById('help-modal');
@@ -215,9 +273,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const qRoomId = document.getElementById('qr-modal-room-id');
                     
                     if (qModal && qCanvas && qRoomId) {
+                        const draggableCard = qModal.querySelector('.draggable-card');
+                        if (draggableCard) {
+                            draggableCard.style.top = '';
+                            draggableCard.style.left = '';
+                            draggableCard.style.position = '';
+                            draggableCard.style.margin = '';
+                        }
+                        
                         qRoomId.textContent = roomId;
                         qModal.classList.remove('hidden');
-                        QRCode.toCanvas(qCanvas, studentUrl, { width: 180, margin: 1 }, function (error) {
+                        QRCode.toCanvas(qCanvas, studentUrl, { width: 280, margin: 1 }, function (error) {
                             if (error) console.error("QR Code generation error:", error);
                         });
                     }
@@ -477,6 +543,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ── Dropzone Drag & Drop Logic ──
+    const htmlDropzone = document.getElementById('html-dropzone');
+    const htmlFileInput = document.getElementById('html-file-input');
+    const dropzoneText = document.getElementById('dropzone-text');
+    const uploadedFileInfo = document.getElementById('uploaded-file-info');
+    const simulationHtmlTextarea = document.getElementById('simulation-html');
+
+    if (htmlDropzone && htmlFileInput) {
+        // Drag events
+        htmlDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            htmlDropzone.style.backgroundColor = 'rgba(224, 122, 95, 0.08)';
+            htmlDropzone.style.borderColor = 'var(--primary)';
+        });
+
+        htmlDropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            htmlDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+            htmlDropzone.style.borderColor = 'var(--border-color)';
+        });
+
+        const handleHtmlFile = (file) => {
+            if (!file) return;
+            
+            // Check extension
+            if (!file.name.toLowerCase().endsWith('.html')) {
+                alert('HTML 파일만 업로드할 수 있습니다. (.html 확장자를 확인하세요)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const code = e.target.result;
+                if (simulationHtmlTextarea) {
+                    simulationHtmlTextarea.value = code;
+                }
+                
+                // Show file info
+                if (uploadedFileInfo) {
+                    const sizeKb = (file.size / 1024).toFixed(1);
+                    uploadedFileInfo.textContent = `📄 ${file.name} (${sizeKb} KB) - 업로드 완료`;
+                    uploadedFileInfo.classList.remove('hidden');
+                }
+                if (dropzoneText) {
+                    dropzoneText.textContent = '파일 선택 완료! 아래 소스코드가 자동 갱신되었습니다.';
+                }
+                
+                // Success log for storage handler link
+                console.log("HTML file loaded successfully locally:", file.name);
+            };
+            reader.readAsText(file);
+        };
+
+        htmlDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            htmlDropzone.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+            htmlDropzone.style.borderColor = 'var(--border-color)';
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleHtmlFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        htmlDropzone.addEventListener('click', () => {
+            htmlFileInput.click();
+        });
+
+        htmlFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleHtmlFile(e.target.files[0]);
+            }
+        });
+    }
+
     // Create Room Submit
     createRoomForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -592,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const canvas = document.getElementById('qr-canvas');
             if (canvas) {
-                QRCode.toCanvas(canvas, studentLink, { width: 180, margin: 1 }, function (error) {
+                QRCode.toCanvas(canvas, studentLink, { width: 280, margin: 1 }, function (error) {
                     if (error) console.error("QR Code generation error:", error);
                 });
             }
