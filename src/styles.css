@@ -359,6 +359,7 @@ textarea:focus {
 
 /* Student 2-Column Split Screen */
 .student-layout {
+    position: relative; /* relative parent for absolute toggle btn */
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 380px;
@@ -447,7 +448,6 @@ textarea:focus {
 
 /* Student Input Panel */
 .student-panel {
-    position: relative; /* to position the toggle button */
     background: var(--bg-card);
     display: flex;
     flex-direction: column;
@@ -467,7 +467,7 @@ textarea:focus {
 
 .panel-toggle-btn {
     position: absolute;
-    left: -24px;
+    right: 380px; /* bound to right panel edge */
     top: 50%;
     transform: translateY(-50%);
     width: 24px;
@@ -484,7 +484,7 @@ textarea:focus {
     box-shadow: -4px 0 10px rgba(74, 62, 61, 0.06);
     color: var(--text-primary);
     font-size: 0.8rem;
-    transition: var(--transition);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s;
 }
 
 .panel-toggle-btn:hover {
@@ -493,9 +493,9 @@ textarea:focus {
 }
 
 .student-layout.collapsed .panel-toggle-btn {
+    right: 0px;
     border-right: 1px solid var(--border-color);
     border-radius: 8px;
-    left: -25px;
 }
 
 .panel-toggle-btn .toggle-icon {
@@ -746,6 +746,9 @@ textarea:focus {
     .simulation-container {
         border-right: none;
         border-bottom: 1px solid var(--border-color);
+    }
+    .panel-toggle-btn {
+        display: none !important;
     }
     .dashboard-navbar {
         flex-direction: column;
