@@ -365,7 +365,7 @@ textarea:focus {
     grid-template-columns: 1fr 380px;
     height: 100vh;
     overflow: hidden;
-    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1), grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .student-layout.collapsed {
@@ -741,21 +741,99 @@ textarea:focus {
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
+    /* 모바일 세로모드(portrait) 및 좁은 화면 기준: 위아래 배치 */
     .student-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: 50vh 50vh;
+        grid-template-rows: 1fr 320px;
+        transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
+    .student-layout.collapsed {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 0px;
+    }
+
     .simulation-container {
         border-right: none;
         border-bottom: 1px solid var(--border-color);
     }
-    .panel-toggle-btn {
-        display: none !important;
+
+    .student-panel {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        padding: 1.5rem 1rem;
+        box-shadow: 0 -4px 24px rgba(74, 62, 61, 0.05);
+        transition: padding 0.3s ease, opacity 0.3s ease;
     }
+
+    .student-layout.collapsed .student-panel {
+        padding: 0 1rem;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .panel-toggle-btn {
+        right: 1.8rem;
+        top: auto;
+        bottom: 320px;
+        transform: translateY(50%);
+        transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s, background 0.2s;
+    }
+
+    .student-layout.collapsed .panel-toggle-btn {
+        right: 1.8rem;
+        bottom: 0px;
+        box-shadow: 0 -4px 12px rgba(74, 62, 61, 0.08);
+    }
+
+    /* 회전 아이콘 적용 */
+    .panel-toggle-btn .toggle-icon {
+        transform: rotate(90deg);
+    }
+    .student-layout.collapsed .panel-toggle-btn .toggle-icon {
+        transform: rotate(-90deg);
+    }
+
     .dashboard-navbar {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
+    }
+}
+
+/* 가로모드 모바일(landscape & height가 작을 때) 대응 */
+@media (max-width: 900px) and (orientation: landscape) {
+    .student-layout {
+        grid-template-columns: 1.2fr 1fr;
+        grid-template-rows: 100vh;
+    }
+    .student-layout.collapsed {
+        grid-template-columns: 1fr 0px;
+        grid-template-rows: 100vh;
+    }
+    .student-panel {
+        border-top: none;
+        border-left: 1px solid var(--border-color);
+        padding: 1.5rem 1rem;
+    }
+    .panel-toggle-btn {
+        bottom: auto;
+        top: 2.2rem;
+        right: 45%; /* screen ratio dependent or fixed */
+        right: calc(100% * 1 / 2.2); /* 1.2fr 1fr grid position */
+        transform: translateX(50%);
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s;
+    }
+    .student-layout.collapsed .panel-toggle-btn {
+        right: 0px;
+        bottom: auto;
+    }
+    .panel-toggle-btn .toggle-icon {
+        transform: none;
+    }
+    .student-layout.collapsed .panel-toggle-btn .toggle-icon {
+        transform: scaleX(-1);
     }
 }
 

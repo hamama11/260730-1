@@ -857,6 +857,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             buildMealkitLayout();
             renderStudentQuestions(decodedData.questions);
+            
+            // Start student-side timer if enabled
+            if (enableTimeTracking) {
+                const timerContainer = document.getElementById('student-timer-container');
+                const timerVal = document.getElementById('student-elapsed-timer');
+                if (timerContainer && timerVal) {
+                    timerContainer.classList.remove('hidden');
+                    setInterval(() => {
+                        const elapsed = Math.round((Date.now() - startTime) / 1000);
+                        const min = Math.floor(elapsed / 60);
+                        const sec = elapsed % 60;
+                        timerVal.textContent = `${min}분 ${sec}초`;
+                    }, 1000);
+                }
+            }
         } catch (err) {
             console.error("미리보기 파싱 에러:", err);
             alert("미리보기 데이터를 불러오는데 실패했습니다.");
@@ -892,11 +907,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 filesList = roomData.files || [];
                 currentLayoutMode = roomData.layoutMode || 'tab';
                 isGlobalCanvas = roomData.globalCanvas || false;
-                enableTimeTracking = roomData.enableTimeTracking || false;
+                enableTimeTracking = roomData.enableTimeTracking !== false;
             }
 
             buildMealkitLayout();
             renderStudentQuestions(roomData.questions);
+
+            // Start student-side timer if enabled
+            if (enableTimeTracking) {
+                const timerContainer = document.getElementById('student-timer-container');
+                const timerVal = document.getElementById('student-elapsed-timer');
+                if (timerContainer && timerVal) {
+                    timerContainer.classList.remove('hidden');
+                    setInterval(() => {
+                        const elapsed = Math.round((Date.now() - startTime) / 1000);
+                        const min = Math.floor(elapsed / 60);
+                        const sec = elapsed % 60;
+                        timerVal.textContent = `${min}분 ${sec}초`;
+                    }, 1000);
+                }
+            }
 
         } catch (err) {
             console.error("수업방 조회 에러:", err);
