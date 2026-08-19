@@ -364,6 +364,11 @@ textarea:focus {
     grid-template-columns: 1fr 380px;
     height: 100vh;
     overflow: hidden;
+    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.student-layout.collapsed {
+    grid-template-columns: 1fr 0px;
 }
 
 .simulation-container {
@@ -442,6 +447,7 @@ textarea:focus {
 
 /* Student Input Panel */
 .student-panel {
+    position: relative; /* to position the toggle button */
     background: var(--bg-card);
     display: flex;
     flex-direction: column;
@@ -449,6 +455,52 @@ textarea:focus {
     overflow-y: auto;
     box-shadow: -4px 0 24px rgba(74, 62, 61, 0.05);
     border-left: 1px solid var(--border-color);
+    transition: padding 0.3s ease, opacity 0.3s ease;
+}
+
+.student-layout.collapsed .student-panel {
+    padding: 2rem 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.panel-toggle-btn {
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 60px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: -4px 0 10px rgba(74, 62, 61, 0.06);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.panel-toggle-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--primary);
+}
+
+.student-layout.collapsed .panel-toggle-btn {
+    border-right: 1px solid var(--border-color);
+    border-radius: 8px;
+    left: -25px;
+}
+
+.panel-toggle-btn .toggle-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
 }
 
 .panel-header {

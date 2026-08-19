@@ -40,7 +40,9 @@
                     <!-- Color Quick Presets -->
                     <div class="color-presets"
                         style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid var(--border-color); padding-left: 0.5rem;">
-                        <button type="button" class="preset-btn active" data-color="#DF5E5E"
+                        <button type="button" class="preset-btn active" data-color="#000000"
+                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #000000; cursor: pointer; box-shadow: 0 0 0 2px var(--primary); transform: scale(1.2); transition: transform 0.1s;"></button>
+                        <button type="button" class="preset-btn" data-color="#DF5E5E"
                             style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
                         <button type="button" class="preset-btn" data-color="#4F8FC4"
                             style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
@@ -48,15 +50,13 @@
                             style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
                         <button type="button" class="preset-btn" data-color="#F4A261"
                             style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
-                        <button type="button" class="preset-btn" data-color="#4A3E3D"
-                            style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; background-color: #4A3E3D; cursor: pointer; box-shadow: 0 0 0 1px rgba(74,62,61,0.2); transition: transform 0.1s;"></button>
                     </div>
 
                     <!-- Custom Color Trigger -->
                     <button type="button" id="btn-custom-color"
                         style="background: none; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; padding: 0;"
                         title="세밀한 색상 조절">🎨</button>
-                    <input type="color" id="draw-color-picker" value="#DF5E5E" style="display: none;">
+                    <input type="color" id="draw-color-picker" value="#000000" style="display: none;">
 
                     <!-- Sliders -->
                     <div
@@ -91,6 +91,9 @@
 
         <!-- Right Pane: Inquiry Activity Form -->
         <aside class="student-panel">
+            <button type="button" id="btn-toggle-panel" class="panel-toggle-btn" aria-label="활동지 접기/펴기">
+                <span class="toggle-icon">▶</span>
+            </button>
             <header class="panel-header">
                 <span class="badge badge-accent">Inquiry Worksheet</span>
                 <h2>🔬 실시간 탐구 활동지</h2>

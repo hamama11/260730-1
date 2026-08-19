@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ── Drawing Tool State ──
     let currentTool = 'interact'; // 'interact', 'pen', 'eraser'
-    let strokeColor = '#DF5E5E';
+    let strokeColor = '#000000';
     let strokeWidth = 4;
     let opacity = 1.0;
 
@@ -149,6 +149,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize tools
     setTool('interact');
+
+    // Toggle student panel
+    const btnTogglePanel = document.getElementById('btn-toggle-panel');
+    const studentLayout = document.querySelector('.student-layout');
+    if (btnTogglePanel && studentLayout) {
+        btnTogglePanel.addEventListener('click', () => {
+            studentLayout.classList.toggle('collapsed');
+            const icon = btnTogglePanel.querySelector('.toggle-icon');
+            if (studentLayout.classList.contains('collapsed')) {
+                icon.textContent = '◀';
+            } else {
+                icon.textContent = '▶';
+            }
+            // Trigger canvas resize update when layout changes
+            setTimeout(() => {
+                activeCanvases.forEach(canvas => {
+                    if (canvas.resizeHandler) canvas.resizeHandler();
+                });
+            }, 300);
+        });
+    }
 
     // ── Relative Drawing Vector Core ──
     function redrawCanvas(canvas, fileId) {
