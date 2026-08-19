@@ -282,11 +282,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                 }
 
+                const timeBadge = sub.elapsedSeconds !== undefined && sub.elapsedSeconds !== null
+                    ? `<span class="paste-tracker-badge" style="background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: var(--primary);" title="풀이 소요 시간">⏱️ 소요시간: ${Math.floor(sub.elapsedSeconds / 60)}분 ${sub.elapsedSeconds % 60}초</span>`
+                    : '';
+
                 card.innerHTML = `
                     <div class="card-header" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <span class="student-meta">${sub.studentId || "학번없음"} ${sub.studentName}</span>
                         <span class="time-meta">${dateStr}</span>
                         ${copyPasteBadge}
+                        ${timeBadge}
                     </div>
                     <div class="card-body">
                         ${answersHtml}
@@ -472,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 questions.forEach((q, idx) => {
                     headers.push(`질문 ${idx + 1}: ${q.question}`);
                 });
-                headers.push("AI 피드백 힌트", "제출시간");
+                headers.push("AI 피드백 힌트", "소요시간(초)", "제출시간");
 
                 const csvRows = [headers.join(",")];
 
@@ -496,7 +501,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         row.push(answerText);
                     });
 
-                    row.push(doc.aiHint || "", timeStr);
+                    const elapsedSecStr = doc.elapsedSeconds !== undefined && doc.elapsedSeconds !== null ? `${doc.elapsedSeconds}초` : "";
+                    row.push(doc.aiHint || "", elapsedSecStr, timeStr);
                     csvRows.push(row.map(escapeCsv).join(","));
                 });
 

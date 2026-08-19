@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             questions.forEach((q, idx) => {
                 headers.push(`질문 ${idx + 1}: ${q.question}`);
             });
-            headers.push("AI 피드백 힌트", "제출시간");
+            headers.push("AI 피드백 힌트", "소요시간(초)", "제출시간");
 
             const csvRows = [headers.join(",")];
 
@@ -183,7 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.push(answerText);
                 });
 
-                row.push(sub.aiHint || "", timeStr);
+                const elapsedSecStr = sub.elapsedSeconds !== undefined && sub.elapsedSeconds !== null ? `${sub.elapsedSeconds}초` : "";
+                row.push(sub.aiHint || "", elapsedSecStr, timeStr);
                 csvRows.push(row.map(escapeCsv).join(","));
             });
 
@@ -646,6 +647,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (canvasGlobal) canvasGlobal.checked = true;
                 } else {
                     if (canvasIndependent) canvasIndependent.checked = true;
+                }
+
+                // 4-2. Update UI: Time Tracking Checkbox
+                const checkTimeTracking = document.getElementById('check-time-tracking');
+                if (checkTimeTracking) {
+                    checkTimeTracking.checked = roomData.enableTimeTracking !== false;
                 }
 
                 // 5. Update UI: Layout Buttons active state
@@ -1132,10 +1139,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const secretKey = existingRoomData.secretKey || ('sec_' + generateSecretKey(16));
 
+            const checkTimeTrackingEl = document.getElementById('check-time-tracking');
+            const enableTimeTracking = checkTimeTrackingEl ? checkTimeTrackingEl.checked : true;
+
             const roomData = {
                 files: finalFilesList,
                 layoutMode: selectedLayout,
                 globalCanvas: globalCanvas,
+                enableTimeTracking: enableTimeTracking,
                 secretKey: secretKey,
                 questions: questions,
                 ownerUid: teacherUid,

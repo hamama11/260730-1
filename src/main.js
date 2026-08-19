@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let strokeColor = '#000000';
     let strokeWidth = 4;
     let opacity = 1.0;
+    
+    // Time tracking variables
+    const startTime = Date.now();
+    let enableTimeTracking = false;
 
     // ── Drawing History & Canvas Collections ──
     let activeCanvases = [];
@@ -158,9 +162,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             studentLayout.classList.toggle('collapsed');
             const icon = btnTogglePanel.querySelector('.toggle-icon');
             if (studentLayout.classList.contains('collapsed')) {
-                icon.textContent = '◀';
+                icon.textContent = '‹';
             } else {
-                icon.textContent = '▶';
+                icon.textContent = '›';
             }
             // Trigger canvas resize update when layout changes
             setTimeout(() => {
@@ -849,6 +853,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             filesList = decodedData.files || [];
             currentLayoutMode = decodedData.layoutMode || 'tab';
             isGlobalCanvas = decodedData.globalCanvas || false;
+            enableTimeTracking = decodedData.enableTimeTracking || false;
 
             buildMealkitLayout();
             renderStudentQuestions(decodedData.questions);
@@ -882,10 +887,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }];
                 currentLayoutMode = 'tab';
                 isGlobalCanvas = false;
+                enableTimeTracking = false;
             } else {
                 filesList = roomData.files || [];
                 currentLayoutMode = roomData.layoutMode || 'tab';
                 isGlobalCanvas = roomData.globalCanvas || false;
+                enableTimeTracking = roomData.enableTimeTracking || false;
             }
 
             buildMealkitLayout();
@@ -982,6 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? `https://us-central1-${projectId}.cloudfunctions.net/getAiHint` 
                 : '/api/getAiHint';
 
+            const elapsedSeconds = enableTimeTracking ? Math.round((Date.now() - startTime) / 1000) : null;
             const response = await fetch(functionUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -993,7 +1001,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     answers,
                     copyCount,
                     pasteCount,
-                    drawings
+                    drawings,
+                    elapsedSeconds
                 })
             });
 
@@ -1014,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isFirebaseInitialized && db) {
                 try {
                     const subDocRef = doc(db, "users", teacherId, "rooms", roomId, "submissions", studentId);
+                    const elapsedSeconds = enableTimeTracking ? Math.round((Date.now() - startTime) / 1000) : null;
                     const submissionData = {
                         studentId,
                         studentName,
@@ -1022,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         copyCount,
                         pasteCount,
                         drawings,
+                        elapsedSeconds,
                         timestamp: serverTimestamp()
                     };
                     await setDoc(subDocRef, submissionData);

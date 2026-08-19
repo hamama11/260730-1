@@ -468,34 +468,36 @@ textarea:focus {
 .panel-toggle-btn {
     position: absolute;
     right: 380px; /* bound to right panel edge */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 60px;
+    top: 2.2rem;  /* Aligned with worksheet header top */
+    transform: translateX(50%); /* Centered on the dividing border */
+    width: 32px;
+    height: 32px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-right: none;
-    border-radius: 8px 0 0 8px;
+    border-radius: 50%; /* sleek circle shape */
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100;
-    box-shadow: -4px 0 10px rgba(74, 62, 61, 0.06);
+    box-shadow: 0 4px 12px rgba(74, 62, 61, 0.08);
     color: var(--text-primary);
-    font-size: 0.8rem;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .panel-toggle-btn:hover {
-    background: var(--bg-secondary);
+    background: #ffffff;
+    border-color: var(--primary);
     color: var(--primary);
+    transform: translateX(50%) scale(1.08);
+    box-shadow: 0 4px 16px rgba(224, 122, 95, 0.25);
 }
 
 .student-layout.collapsed .panel-toggle-btn {
     right: 0px;
-    border-right: 1px solid var(--border-color);
-    border-radius: 8px;
+    box-shadow: -4px 4px 12px rgba(74, 62, 61, 0.08);
 }
 
 .panel-toggle-btn .toggle-icon {

@@ -95,6 +95,7 @@ exports.getAiHint = onRequest({ cors: true }, async (req, res) => {
                 copyCount: copyCount || 0,
                 pasteCount: pasteCount || 0,
                 drawingImg: drawingImg || null,
+                elapsedSeconds: req.body.elapsedSeconds !== undefined ? req.body.elapsedSeconds : null,
                 timestamp: admin.firestore.FieldValue.serverTimestamp()
             };
 
