@@ -310,26 +310,55 @@
 
     <!-- Help Modal -->
     <div id="help-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
-        <div class="card" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 2.5rem; background: var(--bg-card); position: relative; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
+        <div class="card" style="max-width: 620px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 2.5rem 2rem; background: var(--bg-card); position: relative; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
             <button type="button" id="btn-close-help" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
-            <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">📖 서비스 사용법 가이드</h2>
+            <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">📖 서비스 작동 순서 & 핵심기능</h2>
             
-            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); text-align: left;">
-                <h3 style="font-size: 1.05rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--accent); display: flex; align-items: center; gap: 0.3rem;">🏫 교사용 (수업 생성 및 모니터링)</h3>
-                <ol style="padding-left: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <li><strong>Google 로그인</strong>을 완료하면 영구 주소 설정과 데이터 누적 보관이 가능합니다.</li>
-                    <li>웹 시뮬레이션 주소(GeoGebra, PhET 등)와 탐구 질문들을 구성하여 <strong>[방 만들기]</strong>를 클릭합니다.</li>
-                    <li>생성된 <strong>학생용 링크/QR</strong>로 학생들을 진입시키고, <strong>교사용 모니터링 링크</strong>에서 제출 현황을 실시간 조회합니다.</li>
-                    <li>학생이 다른 창에서 복사해온 텍스트를 답안에 붙여넣으면 뱃지 경고 및 붉은 강조선으로 실시간 감지됩니다.</li>
-                </ol>
+            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); text-align: left; display: flex; flex-direction: column; gap: 1.2rem;">
+                
+                <!-- 1단계 -->
+                <div style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">1단계: 수업 자료 및 질문 구성 (교사)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">교사가 수업에 활용할 교안자료와 질문들을 맞춤형으로 설정합니다.</p>
+                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <li><strong>자료 다양화 (최대 10개)</strong>: HTML 시뮬레이션, PDF 교안, 이미지, 외부 URL 링크를 탭 또는 분할 레이아웃으로 결합.</li>
+                        <li><strong>자유로운 문항 설계</strong>: 주관식 서술형 및 선택지 기반의 객관식 문항 맞춤 생성.</li>
+                        <li><strong>학습 추적 옵션</strong>: 개별 자료 전용 독립 필기판 판서 모드, 소요시간 타이머 설정 지원.</li>
+                    </ul>
+                </div>
 
-                <h3 style="font-size: 1.05rem; font-weight: 700; margin-top: 1.2rem; margin-bottom: 0.5rem; color: var(--accent); display: flex; align-items: center; gap: 0.3rem;">🙋‍♂️ 학생용 (탐구 수행 및 제출)</h3>
-                <ol style="padding-left: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <li>시뮬레이션 조작은 <strong>[🖱️ 조작]</strong> 모드로 수행합니다.</li>
-                    <li>화면 위에 그리기나 필기가 필요할 때 <strong>[✏️ 펜]</strong>을 활성화하고 5색 단축키 또는 🎨 아이콘으로 원하는 브러시를 선택합니다.</li>
-                    <li>답변 작성이 완료되면 [답안 제출하기]를 누릅니다. **화면에 필기한 그림 캡처가 자동으로 교사 대시보드에 같이 저장**됩니다.</li>
-                    <li>제출 후 Gemini AI가 즉석에서 1~2문장의 발문형 힌트 피드백을 제공합니다.</li>
-                </ol>
+                <!-- 2단계 -->
+                <div style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">2단계: 수업방 배포 및 링크 공유 (교사)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">생성한 방을 클라우드에 배포하고 접속 주소를 전달합니다.</p>
+                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <li><strong>QR 코드 자동 변환</strong>: 모바일/태블릿 등 장비에서 QR 카메라 조작만으로 초간편 즉각 입장.</li>
+                        <li><strong>보안 링크 이중 관리</strong>: 학생용 탐구 활동지 링크와 교사 전용 실시간 결과 모니터링 주소 복사 제공.</li>
+                    </ul>
+                </div>
+
+                <!-- 3단계 -->
+                <div style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">3단계: 학생 실시간 탐구 및 제출 (학생)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">공유받은 링크에 들어가 탐구 보고서를 완성합니다.</p>
+                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <li><strong>모바일 최적화 접기/펴기</strong>: 기기 회전(가로/세로) 방향에 맞추어 레이아웃이 유연하게 반응하며 펴고 접힘.</li>
+                        <li><strong>실시간 타이머</strong>: 본인의 풀이 경과 시간을 스스로 보며 속도 조절 가능.</li>
+                        <li><strong>화면 드로잉 캡처</strong>: 시뮬레이션 필기판 위 그리기 이력이 답안 제출 시 스크린샷으로 함께 자동 자동 제출.</li>
+                    </ul>
+                </div>
+
+                <!-- 4단계 -->
+                <div style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">4단계: 실시간 모니터링 및 AI 피드백</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">제출 결과를 즉각 수집하고 개별 코칭을 진행합니다.</p>
+                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <li><strong>실시간 대시보드 피드</strong>: 새로고침 없이 학생 학번/이름/답안/캡처/소요시간 정보가 즉각 적재됨.</li>
+                        <li><strong>Gemini AI 자동 힌트</strong>: 학생이 제출하면 기재된 텍스트 흐름을 보고 AI 튜터가 발문형 피드백을 노출.</li>
+                        <li><strong>엑셀용 CSV 다운로드</strong>: 수업 결과를 정량적으로 평가할 수 있도록 엑셀 보고서 다운로드 및 초기화 지원.</li>
+                    </ul>
+                </div>
+
             </div>
             
             <button type="button" id="btn-close-help-confirm" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; padding: 0.8rem;">확인 및 닫기</button>
