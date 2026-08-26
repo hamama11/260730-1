@@ -327,6 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Dynamic questions renderer
+    // Dynamic questions renderer
     function renderStudentQuestions(questionsList) {
         const container = document.getElementById('dynamic-questions-container');
         container.innerHTML = '';
@@ -341,18 +342,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             group.className = 'form-group';
             group.style.marginBottom = '1.4rem';
 
+            const isRequired = q.required !== false; // default true
+
             const label = document.createElement('label');
-            label.textContent = `${idx + 1}. ${q.question}`;
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.gap = '0.35rem';
+            label.innerHTML = `
+                <span>${idx + 1}. ${q.question}</span>
+                ${isRequired ? '<span style="color: #ef4444; font-weight: bold;" title="필수 질문">*</span>' : '<span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal;">(선택)</span>'}
+            `;
             group.appendChild(label);
 
             if (q.type === 'subjective') {
                 const textarea = document.createElement('textarea');
                 textarea.rows = 4;
-                textarea.placeholder = "답변을 정성껏 작성해 주세요.";
-                textarea.required = true;
+                textarea.placeholder = isRequired ? "답변을 작성해 주세요. (필수)" : "답변을 작성해 주세요. (선택사항)";
+                textarea.required = isRequired;
                 textarea.dataset.qid = q.id;
                 textarea.dataset.qtitle = q.question;
                 textarea.dataset.qtype = q.type;
+                textarea.dataset.qrequired = isRequired ? 'true' : 'false';
                 
                 let pastedSegments = [];
                 textarea.addEventListener('paste', (e) => {
@@ -368,14 +378,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (q.type === 'objective') {
                 const select = document.createElement('select');
                 select.style.cssText = 'width: 100%; padding: 0.9rem 1.1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 0.95rem;';
-                select.required = true;
+                select.required = isRequired;
                 select.dataset.qid = q.id;
                 select.dataset.qtitle = q.question;
                 select.dataset.qtype = q.type;
+                select.dataset.qrequired = isRequired ? 'true' : 'false';
 
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = '-- 선택해 주세요 --';
+                defaultOption.textContent = isRequired ? '-- 선택해 주세요 (필수) --' : '-- 선택해 주세요 (선택) --';
                 select.appendChild(defaultOption);
 
                 (q.options || []).forEach(opt => {

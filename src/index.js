@@ -428,12 +428,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { 
             id: 'q_default_a', 
             type: 'subjective', 
-            question: '질문 A. 시뮬레이션에서 관찰한 특징이나 특이점은 무엇인가요?'
+            question: '질문 A. 시뮬레이션에서 관찰한 특징이나 특이점은 무엇인가요?',
+            required: true
         },
         { 
             id: 'q_default_b', 
             type: 'subjective', 
-            question: '질문 B. 관찰을 통해 추론할 수 있는 수학/과학적 원리는 무엇인가요?'
+            question: '질문 B. 관찰을 통해 추론할 수 있는 수학/과학적 원리는 무엇인가요?',
+            required: true
         }
     ];
 
@@ -458,6 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
             qDiv.style.padding = '1.2rem';
             qDiv.style.marginBottom = '1rem';
 
+            const isRequired = q.required !== false; // default true
+
             let optionsHtml = '';
             if (q.type === 'objective') {
                 const optItems = (q.options || []).map((opt, optIdx) => `
@@ -479,9 +483,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             qDiv.innerHTML = `
-                <div class="question-item-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                    <span class="badge ${q.type === 'objective' ? 'badge-accent' : ''}">${q.type === 'objective' ? '객관식' : '주관식'} 질문 #${qIndex + 1}</span>
-                    <button type="button" class="btn btn-secondary btn-sm btn-delete-question" data-index="${qIndex}" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); padding: 0.35rem 0.7rem; font-size: 0.8rem;">질문 삭제</button>
+                <div class="question-item-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="badge ${q.type === 'objective' ? 'badge-accent' : ''}">${q.type === 'objective' ? '객관식' : '주관식'} 질문 #${qIndex + 1}</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <!-- Google Forms Style Required Toggle Switch -->
+                        <label style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--text-primary); cursor: pointer; user-select: none; margin: 0;">
+                            <input type="checkbox" class="question-required-toggle" data-index="${qIndex}" ${isRequired ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+                            <span style="font-weight: 600; color: ${isRequired ? 'var(--primary)' : 'var(--text-secondary)'};">필수 ${isRequired ? 'ON' : 'OFF'}</span>
+                        </label>
+                        <button type="button" class="btn btn-secondary btn-sm btn-delete-question" data-index="${qIndex}" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); padding: 0.35rem 0.7rem; font-size: 0.8rem;">질문 삭제</button>
+                    </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label style="font-size: 0.85rem; color: var(--text-secondary);">질문 타이틀</label>
@@ -500,7 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
         questions.push({
             id: generateId(),
             type: 'subjective',
-            question: ''
+            question: '',
+            required: true
         });
         renderQuestionsConfig();
     });
@@ -510,7 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
             id: generateId(),
             type: 'objective',
             question: '',
-            options: ['옵션 1', '옵션 2']
+            options: ['옵션 1', '옵션 2'],
+            required: true
         });
         renderQuestionsConfig();
     });
@@ -525,6 +541,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const qIdx = parseInt(e.target.dataset.qidx);
             const optIdx = parseInt(e.target.dataset.optidx);
             questions[qIdx].options[optIdx] = e.target.value;
+        }
+    });
+
+    questionsList.addEventListener('change', (e) => {
+        if (e.target.classList.contains('question-required-toggle')) {
+            const qIdx = parseInt(e.target.dataset.index);
+            questions[qIdx].required = e.target.checked;
+            renderQuestionsConfig();
         }
     });
 
