@@ -18,28 +18,38 @@
         <!-- Main Configuration Card -->
         <main class="card container">
             <!-- Compact Header & Auth Bar -->
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border-color);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border-color);">
                 <div>
                     <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.2rem;">
                         <span class="badge" style="margin-bottom: 0;">Teacher Mode</span>
-                        <h1 style="font-size: 1.6rem; margin: 0; display: inline-block;">i wanna Dash⛷️ we wanna ddash🧾</h1>
+                        <h1 style="font-size: 1.6rem; margin: 0; display: inline-block;">i wanna Dash⛷️ we wanna ddash🧾
+                        </h1>
                     </div>
-                    <p class="subtitle font-main-desc" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                    <p class="subtitle font-main-desc"
+                        style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
                         활동지 생성 밀키트: 상단 탭별 자료 등록 & 탐구 질문 구성으로 실시간 수업방을 개설하세요.
                     </p>
                 </div>
 
                 <!-- Google Auth Section (Compact Top-Right) -->
-                <div id="auth-section" style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; gap: 0.9rem;">
+                <div id="auth-section"
+                    style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; gap: 0.9rem;">
                     <div id="auth-user-info" style="display: flex; align-items: center; gap: 0.6rem;">
-                        <img id="auth-photo" src="" alt="Profile" class="hidden" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
-                        <span id="auth-avatar" style="font-size: 1.2rem; background: rgba(255,255,255,0.08); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</span>
+                        <img id="auth-photo" src="" alt="Profile" class="hidden"
+                            style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
+                        <span id="auth-avatar"
+                            style="font-size: 1.2rem; background: rgba(255,255,255,0.08); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</span>
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px;">
-                            <div id="auth-status" style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">로그인 필요</div>
-                            <div id="auth-email" style="font-size: 0.75rem; color: var(--text-secondary);" class="hidden"></div>
+                            <div id="auth-status" style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">로그인 필요
+                            </div>
+                            <div id="auth-email" style="font-size: 0.75rem; color: var(--text-secondary);"
+                                class="hidden"></div>
                         </div>
                     </div>
-                    <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm" style="padding: 0.45rem 0.9rem; font-size: 0.8rem; border-color: rgba(99,102,241,0.3);">Google 로그인</button>
+                    <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
+                        style="padding: 0.45rem 0.9rem; font-size: 0.8rem; border-color: rgba(99,102,241,0.3);">Google
+                        로그인</button>
                     <p id="auth-desc" class="hidden"></p>
                 </div>
             </div>
@@ -50,51 +60,69 @@
                     <!-- Left Column: Tabs & Materials Hierarchy Manager + Options -->
                     <div class="creator-col-left">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
                                 <div>
-                                    <label style="font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">📑 수업 탭 & 자료 구성</label>
+                                    <label
+                                        style="font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">📑
+                                        수업 탭 & 자료 구성</label>
                                     <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 0;">
                                         탭을 생성하고 각 탭에 자료(웹 링크, PDF, 이미지, 화이트보드 등)를 추가하세요.
                                     </p>
                                 </div>
-                                <button type="button" id="btn-add-new-tab" class="btn btn-primary btn-sm" style="padding: 0.55rem 1rem; font-size: 0.85rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(224, 122, 95, 0.2);">
+                                <button type="button" id="btn-add-new-tab" class="btn btn-primary btn-sm"
+                                    style="padding: 0.55rem 1rem; font-size: 0.85rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(224, 122, 95, 0.2);">
                                     ➕ 새 탭 추가
                                 </button>
                             </div>
 
                             <!-- 보안 안내 경고 -->
-                            <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; padding: 0.75rem 1rem; border-radius: 4px 8px 8px 4px; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <div
+                                style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; padding: 0.75rem 1rem; border-radius: 4px 8px 8px 4px; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <span>🔒</span>
                                 <strong>보안 안내: 수업 자료 내에 학생 실명, 학번 등 개인식별정보가 포함되지 않도록 주의해 주세요.</strong>
                             </div>
 
                             <!-- Tabs Container List -->
-                            <div id="tabs-structure-container" style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 1.2rem;">
+                            <div id="tabs-structure-container"
+                                style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 1.2rem;">
                                 <!-- Dynamically filled with javascript: tab cards with nested items -->
                             </div>
 
                             <!-- 필기 옵션 & 소요시간 체크 (수업탭 & 자료구성 바로 아래 배치) -->
-                            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <div
+                                style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;">
                                 <!-- Drawing Canvas Options -->
                                 <div class="form-group" style="margin: 0;">
-                                    <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.6rem;">🖍️ 필기(판서) 저장 옵션</label>
+                                    <label
+                                        style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.6rem;">🖍️
+                                        필기(판서) 저장 옵션</label>
                                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                            <input type="radio" name="canvas-option" value="independent" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                        <label
+                                            style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                            <input type="radio" name="canvas-option" value="independent" checked
+                                                style="width: 17px; height: 17px; accent-color: var(--primary);">
                                             <span>📑 탭/자료별 독립 필기 (자료마다 각각 기록)</span>
                                         </label>
-                                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                            <input type="radio" name="canvas-option" value="global" style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                        <label
+                                            style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                            <input type="radio" name="canvas-option" value="global"
+                                                style="width: 17px; height: 17px; accent-color: var(--primary);">
                                             <span>🌍 화면 전체 글로벌 필기 (어느 자료든 동일 판서 유지)</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <!-- Time Tracking Option -->
-                                <div class="form-group" style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 0.9rem;">
-                                    <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.4rem;">⏱️ 소요시간 체크</label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                        <input type="checkbox" id="check-time-tracking" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                <div class="form-group"
+                                    style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 0.9rem;">
+                                    <label
+                                        style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.4rem;">⏱️
+                                        소요시간 체크</label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                        <input type="checkbox" id="check-time-tracking" checked
+                                            style="width: 17px; height: 17px; accent-color: var(--primary);">
                                         <span>⏱️ 학생 탐구 활동 소요시간 기록 (답안 제출 시 총 경과 시간 집계)</span>
                                     </label>
                                 </div>
@@ -105,40 +133,54 @@
                     <!-- Right Column: Question Configurations & Deployment -->
                     <div class="creator-col-right">
                         <!-- 질문 설정 구역 -->
-                        <div class="form-group question-config-container" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
-                                <label style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
+                        <div class="form-group question-config-container"
+                            style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
+                                <label
+                                    style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
                                     ✏️ 탐구 질문 설정
                                 </label>
                             </div>
-                            <p class="subtitle" style="margin-bottom: 1rem; font-size: 0.85rem;">학생들이 시뮬레이션을 탐구하며 작성할 질문을 구성하세요.</p>
-                            
+                            <p class="subtitle" style="margin-bottom: 1rem; font-size: 0.85rem;">학생들이 시뮬레이션을 탐구하며 작성할
+                                질문을 구성하세요.</p>
+
                             <div id="questions-list" class="questions-list">
                                 <!-- Dynamic question elements will be inserted here -->
                             </div>
-                            
+
                             <div class="question-add-actions" style="margin-top: 1.2rem; display: flex; gap: 0.6rem;">
-                                <button type="button" id="btn-add-subjective" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
+                                <button type="button" id="btn-add-subjective" class="btn btn-secondary btn-sm"
+                                    style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
                                     + 주관식 질문 추가
                                 </button>
-                                <button type="button" id="btn-add-objective" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
+                                <button type="button" id="btn-add-objective" class="btn btn-secondary btn-sm"
+                                    style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
                                     + 객관식 질문 추가
                                 </button>
                             </div>
                         </div>
 
                         <!-- Deploy Box -->
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1.2rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1.2rem;">
                             <!-- Custom Room ID / Link Name Input Field -->
                             <div class="form-group" style="margin: 0;">
-                                <label for="custom-room-id" style="font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--primary); margin-bottom: 0.5rem;">🔗 수업링크 이름</label>
-                                <input type="text" id="custom-room-id" placeholder="예: math-lab-1 (영문, 숫자, 하이픈)" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #1e293b; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                <label for="custom-room-id"
+                                    style="font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--primary); margin-bottom: 0.5rem;">🔗
+                                    수업링크 이름</label>
+                                <input type="text" id="custom-room-id" placeholder="예: math-lab-1 (영문, 숫자, 하이픈)"
+                                    required
+                                    style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #1e293b; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                             </div>
 
                             <!-- Submit & Preview Buttons -->
                             <div class="actions" style="display: flex; gap: 0.6rem; margin-top: 0.2rem;">
-                                <button type="button" id="btn-preview" class="btn btn-secondary" style="flex: 1; padding: 0.85rem; font-size: 0.95rem; font-weight: 600;">👀 미리보기</button>
-                                <button type="submit" id="btn-create-room" class="btn btn-primary" style="flex: 1.5; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 14px rgba(224, 122, 95, 0.3);">
+                                <button type="button" id="btn-preview" class="btn btn-secondary"
+                                    style="flex: 1; padding: 0.85rem; font-size: 0.95rem; font-weight: 600;">👀
+                                    미리보기</button>
+                                <button type="submit" id="btn-create-room" class="btn btn-primary"
+                                    style="flex: 1.5; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 14px rgba(224, 122, 95, 0.3);">
                                     <span class="btn-text">🚀 수업방 배포</span>
                                     <div class="spinner hidden"></div>
                                 </button>
@@ -228,44 +270,65 @@
     </div>
 
     <!-- Floating Help Button -->
-    <button type="button" id="btn-open-help" style="position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.4rem; border-radius: 30px; background: var(--primary); color: white; border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(224, 122, 95, 0.35); z-index: 2500; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: transform 0.2s, background-color 0.2s;" title="서비스 사용법 보기">
+    <button type="button" id="btn-open-help"
+        style="position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.4rem; border-radius: 30px; background: var(--primary); color: white; border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(224, 122, 95, 0.35); z-index: 2500; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: transform 0.2s, background-color 0.2s;"
+        title="서비스 사용법 보기">
         📖 사용자 가이드
     </button>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
-        <div class="card" style="max-width: 620px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 2.5rem 2rem; background: var(--bg-card); position: relative; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
-            <button type="button" id="btn-close-help" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
-            <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">📖 서비스 작동 순서 & 핵심기능</h2>
-            
-            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); text-align: left; display: flex; flex-direction: column; gap: 1.2rem;">
-                
+    <div id="help-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        <div class="card"
+            style="max-width: 620px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 2.5rem 2rem; background: var(--bg-card); position: relative; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
+            <button type="button" id="btn-close-help"
+                style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+            <h2
+                style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                📖 서비스 작동 순서 & 핵심기능</h2>
+
+            <div
+                style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); text-align: left; display: flex; flex-direction: column; gap: 1.2rem;">
+
                 <!-- 1단계 -->
-                <div style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">1단계: 수업 자료 및 질문 구성 (교사)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">교사가 수업에 활용할 교안자료와 질문들을 맞춤형으로 설정합니다.</p>
-                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
-                        <li><strong>자료 다양화 (최대 10개)</strong>: HTML 시뮬레이션, PDF 교안, 이미지, 외부 URL 링크를 탭 또는 분할 레이아웃으로 결합.</li>
+                <div
+                    style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">1단계:
+                        수업 자료 및 질문 구성 (교사)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">교사가 수업에 활용할
+                        교안자료와 질문들을 맞춤형으로 설정합니다.</p>
+                    <ul
+                        style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <li><strong>자료 다양화 (최대 10개)</strong>: HTML 시뮬레이션, PDF 교안, 이미지, 외부 URL 링크를 탭 또는 분할 레이아웃으로 결합.
+                        </li>
                         <li><strong>자유로운 문항 설계</strong>: 주관식 서술형 및 선택지 기반의 객관식 문항 맞춤 생성.</li>
                         <li><strong>학습 추적 옵션</strong>: 개별 자료 전용 독립 필기판 판서 모드, 소요시간 타이머 설정 지원.</li>
                     </ul>
                 </div>
 
                 <!-- 2단계 -->
-                <div style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">2단계: 수업방 배포 및 링크 공유 (교사)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">생성한 방을 클라우드에 배포하고 접속 주소를 전달합니다.</p>
-                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                <div
+                    style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">2단계:
+                        수업방 배포 및 링크 공유 (교사)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">생성한 방을 클라우드에
+                        배포하고 접속 주소를 전달합니다.</p>
+                    <ul
+                        style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
                         <li><strong>QR 코드 자동 변환</strong>: 모바일/태블릿 등 장비에서 QR 카메라 조작만으로 초간편 즉각 입장.</li>
                         <li><strong>보안 링크 이중 관리</strong>: 학생용 탐구 활동지 링크와 교사 전용 실시간 결과 모니터링 주소 복사 제공.</li>
                     </ul>
                 </div>
 
                 <!-- 3단계 -->
-                <div style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">3단계: 학생 실시간 탐구 및 제출 (학생)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">공유받은 링크에 들어가 탐구 보고서를 완성합니다.</p>
-                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                <div
+                    style="background: rgba(224, 122, 95, 0.04); border-left: 4px solid var(--primary); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem;">3단계:
+                        학생 실시간 탐구 및 제출 (학생)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">공유받은 링크에 들어가 탐구
+                        보고서를 완성합니다.</p>
+                    <ul
+                        style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
                         <li><strong>모바일 최적화 접기/펴기</strong>: 기기 회전(가로/세로) 방향에 맞추어 레이아웃이 유연하게 반응하며 펴고 접힘.</li>
                         <li><strong>실시간 타이머</strong>: 본인의 풀이 경과 시간을 스스로 보며 속도 조절 가능.</li>
                         <li><strong>화면 드로잉 캡처</strong>: 시뮬레이션 필기판 위 그리기 이력이 답안 제출 시 스크린샷으로 함께 자동 자동 제출.</li>
@@ -273,33 +336,47 @@
                 </div>
 
                 <!-- 4단계 -->
-                <div style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">4단계: 실시간 모니터링 및 AI 피드백</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">제출 결과를 즉각 수집하고 개별 코칭을 진행합니다.</p>
-                    <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                <div
+                    style="background: rgba(129, 178, 154, 0.04); border-left: 4px solid var(--accent); padding: 0.8rem 1rem; border-radius: 4px 8px 8px 4px;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem;">4단계:
+                        실시간 모니터링 및 AI 피드백</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">제출 결과를 즉각 수집하고
+                        개별 코칭을 진행합니다.</p>
+                    <ul
+                        style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
                         <li><strong>실시간 대시보드 피드</strong>: 새로고침 없이 학생 학번/이름/답안/캡처/소요시간 정보가 즉각 적재됨.</li>
-                        <li><strong>Gemini AI 자동 힌트</strong>: 학생이 제출하면 기재된 텍스트 흐름을 보고 AI 튜터가 발문형 피드백을 노출.</li>
                         <li><strong>엑셀용 CSV 다운로드</strong>: 수업 결과를 정량적으로 평가할 수 있도록 엑셀 보고서 다운로드 및 초기화 지원.</li>
                     </ul>
                 </div>
 
             </div>
-            
-            <button type="button" id="btn-close-help-confirm" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; padding: 0.8rem;">확인 및 닫기</button>
+
+            <button type="button" id="btn-close-help-confirm" class="btn btn-primary"
+                style="margin-top: 1.5rem; width: 100%; padding: 0.8rem;">확인 및 닫기</button>
         </div>
     </div>
 
     <!-- Classroom QR Modal -->
-    <div id="classroom-qr-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
-        <div class="card draggable-card" style="max-width: 420px; width: 90%; text-align: center; padding: 2.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); background: var(--bg-card); position: relative;">
-            <div class="drag-handle" style="cursor: move; padding: 0.5rem; background: rgba(74,62,61,0.04); margin: -2.5rem -2rem 1.5rem -2rem; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); user-select: none;">↕️ 이곳을 잡고 드래그하여 이동</div>
-            <button type="button" id="btn-close-qr" style="position: absolute; top: 3.2rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary); line-height: 1;">&times;</button>
-            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; margin-top: 1rem;">📱 학생 접속용 QR Code</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">수업방 ID: <span id="qr-modal-room-id" style="font-weight: 700; color: var(--text-primary);">-</span></p>
-            <div style="background: white; padding: 16px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+    <div id="classroom-qr-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px);">
+        <div class="card draggable-card"
+            style="max-width: 420px; width: 90%; text-align: center; padding: 2.5rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); background: var(--bg-card); position: relative;">
+            <div class="drag-handle"
+                style="cursor: move; padding: 0.5rem; background: rgba(74,62,61,0.04); margin: -2.5rem -2rem 1.5rem -2rem; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); user-select: none;">
+                ↕️ 이곳을 잡고 드래그하여 이동</div>
+            <button type="button" id="btn-close-qr"
+                style="position: absolute; top: 3.2rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-secondary); line-height: 1;">&times;</button>
+            <h3
+                style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; margin-top: 1rem;">
+                📱 학생 접속용 QR Code</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">수업방 ID: <span
+                    id="qr-modal-room-id" style="font-weight: 700; color: var(--text-primary);">-</span></p>
+            <div
+                style="background: white; padding: 16px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
                 <canvas id="modal-qr-canvas" style="width: 280px; height: 280px; display: block;"></canvas>
             </div>
-            <button type="button" id="btn-close-qr-confirm" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">닫기</button>
+            <button type="button" id="btn-close-qr-confirm" class="btn btn-primary"
+                style="width: 100%; padding: 0.75rem;">닫기</button>
         </div>
     </div>
 
