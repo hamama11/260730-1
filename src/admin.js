@@ -536,14 +536,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Tab Type Switches
     const btnTabTypeUrl = document.getElementById('btn-tabtype-url');
-    const btnTabTypeBlank = document.getElementById('btn-tabtype-blank');
-    const btnTabTypeCoord = document.getElementById('btn-tabtype-coord');
-    const addTabUrlBox = document.getElementById('add-tab-url-box');
-    const addTabBlankBox = document.getElementById('add-tab-blank-box');
-    const addTabCoordBox = document.getElementById('add-tab-coord-box');
-    const btnSubmitAddTab = document.getElementById('btn-submit-add-tab');
-
-    const btnTabTypeUrl = document.getElementById('btn-tabtype-url');
     const btnTabTypeFile = document.getElementById('btn-tabtype-file');
     const btnTabTypeBlank = document.getElementById('btn-tabtype-blank');
     const btnTabTypeCoord = document.getElementById('btn-tabtype-coord');
@@ -552,6 +544,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addTabFileBox = document.getElementById('add-tab-file-box');
     const addTabBlankBox = document.getElementById('add-tab-blank-box');
     const addTabCoordBox = document.getElementById('add-tab-coord-box');
+    const btnSubmitAddTab = document.getElementById('btn-submit-add-tab');
 
     let currentAddType = 'url'; // 'url' | 'file' | 'blank' | 'coordinate'
 
