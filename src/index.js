@@ -635,31 +635,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Tab Header Controls
             const tabHeader = document.createElement('div');
-            tabHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem;';
+            tabHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.9rem;';
 
             tabHeader.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 250px;">
-                    <span style="font-weight: 700; color: var(--primary); font-size: 1rem; white-space: nowrap;">
-                        📑 탭 #${tabIdx + 1} ${isSelected ? '<span style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.15rem 0.45rem; border-radius: 6px; font-weight: 600; margin-left: 0.25rem;">선택됨 (Ctrl+V 붙여넣기 대상)</span>' : ''}
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 320px;">
+                    <span style="font-weight: 700; color: var(--primary); font-size: 1.05rem; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;">
+                        📑 탭 #${tabIdx + 1} ${isSelected ? '<span style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">선택됨 (Ctrl+V 대상)</span>' : ''}
                     </span>
-                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목 입력" style="flex: 1; max-width: 260px; padding: 0.4rem 0.7rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
+                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목을 입력하세요 (예: 1단원 지오지브라 탐구)" style="flex: 1; min-width: 220px; padding: 0.55rem 0.9rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: rgba(255, 255, 255, 0.08); color: var(--text-primary); outline: none; transition: border-color 0.2s;">
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
                     <!-- Per-tab layout selector -->
-                    <div style="display: flex; align-items: center; gap: 0.35rem;">
-                        <span style="font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
-                        <select class="tab-layout-select" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.6); color: var(--text-primary); cursor: pointer;">
-                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할</option>
-                            <option value="scroll" ${tab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤</option>
+                    <div style="display: flex; align-items: center; gap: 0.45rem; background: rgba(255, 255, 255, 0.05); padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
+                        <select class="tab-layout-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
+                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할 뷰</option>
+                            <option value="scroll" ${tab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤 뷰</option>
                         </select>
                     </div>
 
                     <!-- Reorder and delete tab -->
-                    <div style="display: flex; gap: 0.25rem;">
-                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-up" title="탭 순서 위로" style="padding: 0.35rem 0.55rem; font-size: 0.8rem;" ${tabIdx === 0 ? 'disabled' : ''}>▲</button>
-                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-down" title="탭 순서 아래로" style="padding: 0.35rem 0.55rem; font-size: 0.8rem;" ${tabIdx === tabsList.length - 1 ? 'disabled' : ''}>▼</button>
-                        <button type="button" class="btn btn-secondary btn-sm btn-delete-entire-tab" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; color: #f87171; border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.06);" title="탭 삭제">🗑️ 탭 삭제</button>
+                    <div style="display: flex; gap: 0.35rem;">
+                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-up" title="탭 순서 위로" style="padding: 0.45rem 0.7rem; font-size: 0.85rem;" ${tabIdx === 0 ? 'disabled' : ''}>▲</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-down" title="탭 순서 아래로" style="padding: 0.45rem 0.7rem; font-size: 0.85rem;" ${tabIdx === tabsList.length - 1 ? 'disabled' : ''}>▼</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-delete-entire-tab" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; color: #f87171; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); font-weight: 600;" title="탭 삭제">🗑️ 탭 삭제</button>
                     </div>
                 </div>
             `;
@@ -761,11 +761,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     itemRow.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px; overflow: hidden;">
-                            <span style="font-size: 1.1rem;">${icon}</span>
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 240px; overflow: hidden;">
+                            <span style="font-size: 1.2rem;">${icon}</span>
                             <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 240px; padding: 0.25rem 0.5rem; font-size: 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary);">
-                                <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${desc}</span>
+                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 320px; padding: 0.4rem 0.65rem; font-size: 0.9rem; font-weight: 500; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.08); color: var(--text-primary); outline: none;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 3px;">${desc}</span>
                             </div>
                         </div>
 
