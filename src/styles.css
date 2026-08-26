@@ -22,7 +22,13 @@
 
 body {
     font-family: 'Outfit', 'Noto Sans KR', sans-serif;
-    background: radial-gradient(circle at top right, #FFF2EC, #FAF6F0 75%);
+    background-color: #FAF6F0;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(224, 122, 95, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(129, 178, 154, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(244, 162, 97, 0.08) 0px, transparent 60%);
+    background-attachment: fixed;
+    background-size: 100% 100%;
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;

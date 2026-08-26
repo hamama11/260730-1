@@ -47,7 +47,7 @@
             <form id="create-room-form" class="hidden">
                 <!-- Responsive Grid Wrapper for PC 2-Column Layout -->
                 <div class="creator-grid-layout">
-                    <!-- Left Column: Tabs & Materials Hierarchy Manager -->
+                    <!-- Left Column: Tabs & Materials Hierarchy Manager + Options -->
                     <div class="creator-col-left">
                         <div class="form-group" style="margin-bottom: 0;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -69,16 +69,43 @@
                             </div>
 
                             <!-- Tabs Container List -->
-                            <div id="tabs-structure-container" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                            <div id="tabs-structure-container" style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 1.2rem;">
                                 <!-- Dynamically filled with javascript: tab cards with nested items -->
+                            </div>
+
+                            <!-- 필기 옵션 & 소요시간 체크 (수업탭 & 자료구성 바로 아래 배치) -->
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;">
+                                <!-- Drawing Canvas Options -->
+                                <div class="form-group" style="margin: 0;">
+                                    <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.6rem;">🖍️ 필기(판서) 저장 옵션</label>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                            <input type="radio" name="canvas-option" value="independent" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                            <span>📑 탭/자료별 독립 필기 (자료마다 각각 기록)</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                            <input type="radio" name="canvas-option" value="global" style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                            <span>🌍 화면 전체 글로벌 필기 (어느 자료든 동일 판서 유지)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Time Tracking Option -->
+                                <div class="form-group" style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 0.9rem;">
+                                    <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.4rem;">⏱️ 소요시간 체크</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                        <input type="checkbox" id="check-time-tracking" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
+                                        <span>⏱️ 학생 탐구 활동 소요시간 기록 (답안 제출 시 총 경과 시간 집계)</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Column: Question Configurations & Classroom Options -->
+                    <!-- Right Column: Question Configurations & Deployment -->
                     <div class="creator-col-right">
                         <!-- 질문 설정 구역 -->
-                        <div class="form-group question-config-container" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group question-config-container" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
                                 <label style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
                                     ✏️ 탐구 질문 설정
@@ -100,41 +127,16 @@
                             </div>
                         </div>
 
-                        <!-- Options Box -->
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.4rem;">
-                            <!-- Drawing Canvas Options -->
+                        <!-- Deploy Box -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1.2rem;">
+                            <!-- Custom Room ID / Link Name Input Field -->
                             <div class="form-group" style="margin: 0;">
-                                <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.6rem;">🖍️ 필기(판서) 저장 옵션</label>
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                        <input type="radio" name="canvas-option" value="independent" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
-                                        <span>📑 탭/자료별 독립 필기 (자료마다 각각 기록)</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                        <input type="radio" name="canvas-option" value="global" style="width: 17px; height: 17px; accent-color: var(--primary);">
-                                        <span>🌍 화면 전체 글로벌 필기 (어느 자료든 판서 유지)</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Time Tracking Option -->
-                            <div class="form-group" style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 1rem;">
-                                <label style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.6rem;">⏱️ 소요시간 체크</label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-                                    <input type="checkbox" id="check-time-tracking" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
-                                    <span>⏱️ 학생 탐구 활동 소요시간 기록</span>
-                                </label>
-                            </div>
-
-                            <!-- Custom Room ID Input Field -->
-                            <div class="form-group" style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 1rem;">
-                                <label for="custom-room-id" style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.4rem;">🔑 수업방 고유 ID</label>
-                                <input type="text" id="custom-room-id" placeholder="예: math-lab-1 (영문, 숫자, 하이픈)" required style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem; margin-bottom: 0;">교사가 지정하는 고유 URL 주소 ID입니다.</p>
+                                <label for="custom-room-id" style="font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--primary); margin-bottom: 0.5rem;">🔗 수업링크 이름</label>
+                                <input type="text" id="custom-room-id" placeholder="예: math-lab-1 (영문, 숫자, 하이픈)" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #1e293b; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                             </div>
 
                             <!-- Submit & Preview Buttons -->
-                            <div class="actions" style="display: flex; gap: 0.6rem; margin-top: 0.5rem;">
+                            <div class="actions" style="display: flex; gap: 0.6rem; margin-top: 0.2rem;">
                                 <button type="button" id="btn-preview" class="btn btn-secondary" style="flex: 1; padding: 0.85rem; font-size: 0.95rem; font-weight: 600;">👀 미리보기</button>
                                 <button type="submit" id="btn-create-room" class="btn btn-primary" style="flex: 1.5; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 14px rgba(224, 122, 95, 0.3);">
                                     <span class="btn-text">🚀 수업방 배포</span>
