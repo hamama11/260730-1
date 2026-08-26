@@ -69,9 +69,53 @@ body {
 }
 
 .container {
-    max-width: 750px;
-    width: 90%;
-    margin: 4rem auto;
+    max-width: 1280px;
+    width: 94%;
+    margin: 2.5rem auto;
+}
+
+/* PC Wide 2-Column Responsive Layout */
+.creator-grid-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1.8rem;
+    align-items: start;
+}
+
+.creator-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.creator-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    position: sticky;
+    top: 2rem;
+}
+
+/* Mobile & Tablet Fallback: 1-Column */
+@media (max-width: 992px) {
+    .container {
+        max-width: 750px;
+        width: 92%;
+        margin: 1.5rem auto;
+    }
+
+    .creator-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .creator-col-right {
+        position: static;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
 }
 
 /* Header style */
