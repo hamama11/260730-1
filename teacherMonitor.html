@@ -143,9 +143,10 @@
                 <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--text-primary);">➕ 새로운 탭 추가하기</h4>
                 
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-secondary btn-sm active" id="btn-tabtype-url" style="flex: 1; min-width: 100px; padding: 0.5rem; background: var(--primary); color: white;">🌐 웹 링크</button>
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-blank" style="flex: 1; min-width: 100px; padding: 0.5rem;">📄 빈 페이지</button>
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-coord" style="flex: 1; min-width: 100px; padding: 0.5rem;">📐 좌표평면</button>
+                    <button type="button" class="btn btn-secondary btn-sm active" id="btn-tabtype-url" style="flex: 1; min-width: 90px; padding: 0.5rem; background: var(--primary); color: white;">🌐 웹 링크</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-file" style="flex: 1; min-width: 90px; padding: 0.5rem;">📁 파일 업로드</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-blank" style="flex: 1; min-width: 90px; padding: 0.5rem;">📄 빈 페이지</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-coord" style="flex: 1; min-width: 90px; padding: 0.5rem;">📐 좌표평면</button>
                 </div>
 
                 <!-- Type 1: URL Input -->
@@ -157,6 +158,18 @@
                     <div>
                         <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름</label>
                         <input type="text" id="new-tab-url-label" placeholder="예: 지오지브라 그래프" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <!-- Type 2: File Upload Box -->
+                <div id="add-tab-file-box" class="hidden" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">자료 파일 선택 (.html, .pdf, .png, .jpg, .webp)</label>
+                        <input type="file" id="new-tab-file-input" accept=".html,.pdf,.png,.jpg,.jpeg,.webp" style="width: 100%; padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름 (미입력 시 파일명 사용)</label>
+                        <input type="text" id="new-tab-file-label" placeholder="예: 1단원 탐구활동지" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
                     </div>
                 </div>
 

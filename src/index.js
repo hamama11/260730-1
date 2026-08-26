@@ -772,18 +772,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 file.label = e.target.value.trim() || file.name;
             });
 
-            // Action buttons
+            // Action buttons (Reorder Up/Down & Delete/Edit)
             const actions = document.createElement('div');
-            actions.style.cssText = 'display: flex; gap: 0.4rem;';
+            actions.style.cssText = 'display: flex; gap: 0.35rem; align-items: center;';
+
+            // Reorder buttons
+            const reorderGroup = document.createElement('div');
+            reorderGroup.style.cssText = 'display: flex; gap: 0.2rem; margin-right: 0.3rem;';
+            reorderGroup.innerHTML = `
+                <button type="button" class="btn btn-secondary btn-sm btn-move-up" style="padding: 0.35rem 0.55rem; font-size: 0.8rem; line-height: 1;" title="순서 위로" ${index === 0 ? 'disabled' : ''}>▲</button>
+                <button type="button" class="btn btn-secondary btn-sm btn-move-down" style="padding: 0.35rem 0.55rem; font-size: 0.8rem; line-height: 1;" title="순서 아래로" ${index === mealkitFiles.length - 1 ? 'disabled' : ''}>▼</button>
+            `;
+
+            reorderGroup.querySelector('.btn-move-up').addEventListener('click', () => {
+                if (index > 0) {
+                    const temp = mealkitFiles[index];
+                    mealkitFiles[index] = mealkitFiles[index - 1];
+                    mealkitFiles[index - 1] = temp;
+                    renderMealkitFilesList();
+                }
+            });
+
+            reorderGroup.querySelector('.btn-move-down').addEventListener('click', () => {
+                if (index < mealkitFiles.length - 1) {
+                    const temp = mealkitFiles[index];
+                    mealkitFiles[index] = mealkitFiles[index + 1];
+                    mealkitFiles[index + 1] = temp;
+                    renderMealkitFilesList();
+                }
+            });
+
+            actions.appendChild(reorderGroup);
 
             if (file.type === 'url') {
-                actions.innerHTML = `
+                const actionBtns = document.createElement('div');
+                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
+                actionBtns.innerHTML = `
                     <button type="button" class="btn btn-secondary btn-sm btn-edit-url" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">✏️ URL 수정</button>
                     <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
                 `;
 
                 // URL modify handler
-                actions.querySelector('.btn-edit-url').addEventListener('click', () => {
+                actionBtns.querySelector('.btn-edit-url').addEventListener('click', () => {
                     const newUrl = prompt("수정할 외부 웹사이트/시뮬레이션 주소(URL)를 입력해 주세요:", file.url);
                     if (newUrl !== null && newUrl.trim()) {
                         file.url = newUrl.trim();
@@ -799,36 +829,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 // Delete URL handler
-                actions.querySelectorAll('button')[1].addEventListener('click', () => {
+                actionBtns.querySelectorAll('button')[1].addEventListener('click', () => {
                     if (confirm(`'${file.label}' 링크를 목록에서 삭제하시겠습니까?`)) {
                         mealkitFiles.splice(index, 1);
                         renderMealkitFilesList();
                     }
                 });
+                actions.appendChild(actionBtns);
             } else if (file.type === 'blank' || file.type === 'coordinate') {
-                actions.innerHTML = `
+                const actionBtns = document.createElement('div');
+                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
+                actionBtns.innerHTML = `
                     <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
                 `;
-                actions.querySelector('button').addEventListener('click', () => {
+                actionBtns.querySelector('button').addEventListener('click', () => {
                     if (confirm(`'${file.label}' 탭을 목록에서 제외하시겠습니까?`)) {
                         mealkitFiles.splice(index, 1);
                         renderMealkitFilesList();
                     }
                 });
+                actions.appendChild(actionBtns);
             } else {
-                actions.innerHTML = `
+                const actionBtns = document.createElement('div');
+                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
+                actionBtns.innerHTML = `
                     <button type="button" class="btn btn-secondary btn-sm btn-replace-file" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🔄 교체</button>
                     <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
                 `;
 
                 // Replace handler
-                actions.querySelector('.btn-replace-file').addEventListener('click', () => {
+                actionBtns.querySelector('.btn-replace-file').addEventListener('click', () => {
                     replaceTargetId = file.id;
                     if (mealkitFileInput) mealkitFileInput.click();
                 });
 
                 // Delete handler
-                actions.querySelectorAll('button')[1].addEventListener('click', async () => {
+                actionBtns.querySelectorAll('button')[1].addEventListener('click', async () => {
                     if (confirm(`'${file.name}' 파일을 수업 목록에서 제외하시겠습니까?`)) {
                         if (file.storagePath && isFirebaseInitialized && storage) {
                             try {
@@ -843,6 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderMealkitFilesList();
                     }
                 });
+                actions.appendChild(actionBtns);
             }
 
             item.appendChild(infoArea);

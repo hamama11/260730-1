@@ -1,5 +1,6 @@
-import { db, auth, googleProvider, isFirebaseInitialized } from "./firebaseConfig.js";
+import { db, auth, storage, googleProvider, isFirebaseInitialized } from "./firebaseConfig.js";
 import { doc, getDoc, collection, onSnapshot, writeBatch, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import QRCode from 'qrcode';
 
@@ -162,8 +163,54 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${desc}</span>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm btn-delete-tab" data-tabidx="${idx}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05); flex-shrink: 0;">🗑️ 삭제</button>
+                <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-up" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 위로" ${idx === 0 ? 'disabled' : ''}>▲</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-down" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 아래로" ${idx === files.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-delete-tab" data-tabidx="${idx}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);">🗑️ 삭제</button>
+                </div>
             `;
+
+            // Up/Down Reorder handlers
+            const upBtn = item.querySelector('.btn-tab-up');
+            const downBtn = item.querySelector('.btn-tab-down');
+
+            if (upBtn) {
+                upBtn.addEventListener('click', async () => {
+                    if (idx > 0) {
+                        const newFiles = [...files];
+                        const temp = newFiles[idx];
+                        newFiles[idx] = newFiles[idx - 1];
+                        newFiles[idx - 1] = temp;
+                        try {
+                            const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                            await updateDoc(roomRef, { files: newFiles });
+                            currentRoomData.files = newFiles;
+                            renderMonitorTabsList();
+                        } catch (e) {
+                            console.error("순서 변경 실패:", e);
+                        }
+                    }
+                });
+            }
+
+            if (downBtn) {
+                downBtn.addEventListener('click', async () => {
+                    if (idx < files.length - 1) {
+                        const newFiles = [...files];
+                        const temp = newFiles[idx];
+                        newFiles[idx] = newFiles[idx + 1];
+                        newFiles[idx + 1] = temp;
+                        try {
+                            const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                            await updateDoc(roomRef, { files: newFiles });
+                            currentRoomData.files = newFiles;
+                            renderMonitorTabsList();
+                        } catch (e) {
+                            console.error("순서 변경 실패:", e);
+                        }
+                    }
+                });
+            }
 
             const delBtn = item.querySelector('.btn-delete-tab');
             delBtn.addEventListener('click', async () => {
@@ -478,11 +525,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addTabCoordBox = document.getElementById('add-tab-coord-box');
     const btnSubmitAddTab = document.getElementById('btn-submit-add-tab');
 
-    let currentAddType = 'url'; // 'url' | 'blank' | 'coordinate'
+    const btnTabTypeUrl = document.getElementById('btn-tabtype-url');
+    const btnTabTypeFile = document.getElementById('btn-tabtype-file');
+    const btnTabTypeBlank = document.getElementById('btn-tabtype-blank');
+    const btnTabTypeCoord = document.getElementById('btn-tabtype-coord');
+
+    const addTabUrlBox = document.getElementById('add-tab-url-box');
+    const addTabFileBox = document.getElementById('add-tab-file-box');
+    const addTabBlankBox = document.getElementById('add-tab-blank-box');
+    const addTabCoordBox = document.getElementById('add-tab-coord-box');
+
+    let currentAddType = 'url'; // 'url' | 'file' | 'blank' | 'coordinate'
 
     const setAddTabType = (type) => {
         currentAddType = type;
-        [btnTabTypeUrl, btnTabTypeBlank, btnTabTypeCoord].forEach(b => {
+        [btnTabTypeUrl, btnTabTypeFile, btnTabTypeBlank, btnTabTypeCoord].forEach(b => {
             if (b) {
                 b.classList.remove('active');
                 b.style.background = '';
@@ -491,6 +548,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (addTabUrlBox) addTabUrlBox.classList.add('hidden');
+        if (addTabFileBox) addTabFileBox.classList.add('hidden');
         if (addTabBlankBox) addTabBlankBox.classList.add('hidden');
         if (addTabCoordBox) addTabCoordBox.classList.add('hidden');
 
@@ -501,6 +559,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnTabTypeUrl.style.color = 'white';
             }
             if (addTabUrlBox) addTabUrlBox.classList.remove('hidden');
+        } else if (type === 'file') {
+            if (btnTabTypeFile) {
+                btnTabTypeFile.classList.add('active');
+                btnTabTypeFile.style.background = 'var(--primary)';
+                btnTabTypeFile.style.color = 'white';
+            }
+            if (addTabFileBox) addTabFileBox.classList.remove('hidden');
         } else if (type === 'blank') {
             if (btnTabTypeBlank) {
                 btnTabTypeBlank.classList.add('active');
@@ -519,6 +584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     if (btnTabTypeUrl) btnTabTypeUrl.addEventListener('click', () => setAddTabType('url'));
+    if (btnTabTypeFile) btnTabTypeFile.addEventListener('click', () => setAddTabType('file'));
     if (btnTabTypeBlank) btnTabTypeBlank.addEventListener('click', () => setAddTabType('blank'));
     if (btnTabTypeCoord) btnTabTypeCoord.addEventListener('click', () => setAddTabType('coordinate'));
 
@@ -547,6 +613,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnSubmitAddTab) {
         btnSubmitAddTab.addEventListener('click', async () => {
             const files = (currentRoomData && currentRoomData.files) ? [...currentRoomData.files] : [];
+            if (files.length >= 10) {
+                alert("탭 자료는 최대 10개까지만 등록할 수 있습니다.");
+                return;
+            }
 
             let newTabObj = null;
             const newId = 'tab_' + Math.random().toString(36).substr(2, 9);
@@ -589,6 +659,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Clear input
                 if (urlInput) urlInput.value = '';
                 if (labelInput) labelInput.value = '';
+
+            } else if (currentAddType === 'file') {
+                const fileInput = document.getElementById('new-tab-file-input');
+                const labelInput = document.getElementById('new-tab-file-label');
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    alert("업로드할 파일을 선택해 주세요.");
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                const fileType = ext === '.pdf' ? 'pdf' : (ext === '.html' ? 'html' : 'image');
+                const defaultLabel = labelInput && labelInput.value.trim() ? labelInput.value.trim() : file.name.substring(0, file.name.lastIndexOf('.'));
+
+                const btnText = btnSubmitAddTab.querySelector('.btn-text');
+                const spinner = btnSubmitAddTab.querySelector('.spinner');
+                if (btnText) btnText.classList.add('hidden');
+                if (spinner) spinner.classList.remove('hidden');
+                btnSubmitAddTab.disabled = true;
+
+                try {
+                    const storagePath = `mealkits/${roomId}/${newId}_${file.name}`;
+                    const fileRef = ref(storage, storagePath);
+                    await uploadBytes(fileRef, file);
+                    const downloadUrl = await getDownloadURL(fileRef);
+
+                    newTabObj = {
+                        id: newId,
+                        type: fileType,
+                        url: downloadUrl,
+                        name: file.name,
+                        label: defaultLabel,
+                        storagePath: storagePath
+                    };
+
+                    fileInput.value = '';
+                    if (labelInput) labelInput.value = '';
+                } catch (upErr) {
+                    console.error("파일 업로드 실패:", upErr);
+                    alert("파일 업로드에 실패했습니다: " + upErr.message);
+                    if (btnText) btnText.classList.remove('hidden');
+                    if (spinner) spinner.classList.add('hidden');
+                    btnSubmitAddTab.disabled = false;
+                    return;
+                }
 
             } else if (currentAddType === 'blank') {
                 const labelInput = document.getElementById('new-tab-blank-label');
