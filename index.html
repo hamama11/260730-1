@@ -22,11 +22,12 @@
                 <h1>i wanna Dash⛷️<br>we wanna ddash🧾보드</h1>
                 <p class="subtitle font-main-desc" style="margin-bottom: 1.5rem;"> 당신의 Web, GeoGebra 등 활동지 생성 밀키트
                     서비스: 로그인 한 번으로 URL 생성, 응답 데이터 통합 관리, 엑셀 다운로드 및 안전한 리셋까지 지원합니다. 여러가지!</p>
-                <!-- Warm Hero Illustration -->
-                <div class="hero-illustration"
-                    style="display: flex; justify-content: center; margin-bottom: 2.2rem; padding: 1.5rem; background: rgba(224, 122, 95, 0.04); border-radius: 20px; border: 1px dashed rgba(224, 122, 95, 0.15);">
-                    <svg width="240" height="150" viewBox="0 0 240 150" fill="none" xmlns="http://www.w3.org/2000/svg"
-                        style="max-width: 100%; height: auto;">
+                <!-- Integrated Hero Dropzone Area -->
+                <div class="hero-illustration" id="mealkit-dropzone"
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 2rem; padding: 2rem 1.5rem; background: rgba(224, 122, 95, 0.04); border-radius: 20px; border: 2px dashed rgba(224, 122, 95, 0.3); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; position: relative;">
+                    
+                    <svg width="180" height="110" viewBox="0 0 240 150" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        style="max-width: 100%; height: auto; margin-bottom: 0.8rem; pointer-events: none;">
                         <!-- Background Warm Circle -->
                         <circle cx="120" cy="75" r="60" fill="#FFF2EC" />
                         <circle cx="80" cy="90" r="45" fill="#FAF8F5" opacity="0.8" />
@@ -56,11 +57,20 @@
                         </g>
                         <!-- Sparkles / Ideas -->
                         <path d="M120 20 L122 25 L127 27 L122 29 L120 34 L118 29 L113 27 L118 25 Z" fill="#F4A261" />
-                        <path d="M55 45 L56 48 L59 49 L56 50 L55 53 L54 50 L51 49 L54 48 Z" fill="#E07A5F"
-                            opacity="0.6" />
-                        <path d="M185 40 L186 43 L189 44 L186 45 L185 48 L184 45 L181 44 L184 43 Z" fill="#81B29A"
-                            opacity="0.6" />
+                        <path d="M55 45 L56 48 L59 49 L56 50 L55 53 L54 50 L51 49 L54 48 Z" fill="#E07A5F" opacity="0.6" />
+                        <path d="M185 40 L186 43 L189 44 L186 45 L185 48 L184 45 L181 44 L184 43 Z" fill="#81B29A" opacity="0.6" />
                     </svg>
+
+                    <span style="font-size: 1.1rem; font-weight: 700; color: var(--primary); display: block; margin-bottom: 0.3rem;">
+                        📂 이곳에 수업 자료를 드래그 앤 드롭하거나 클릭하여 선택하세요
+                    </span>
+                    <span id="mealkit-dropzone-text" style="font-size: 0.85rem; color: var(--text-secondary); display: block; line-height: 1.5; text-align: center;">
+                        HTML 시뮬레이션, PDF 교안, 이미지(.png, .jpg, .webp) 업로드 (최대 10개)
+                    </span>
+                    <span style="font-size: 0.8rem; color: var(--accent); display: block; margin-top: 0.4rem; font-weight: 600;">
+                        💡 Tip: 캡처 도구 등으로 화면 캡처 후 이 창에 바로 Ctrl+V(Cmd+V)를 눌러 이미지를 붙여넣을 수 있습니다!
+                    </span>
+                    <input type="file" id="mealkit-file-input" accept=".html,.pdf,.png,.jpg,.jpeg,.webp" multiple style="display: none;">
                 </div>
             </header>
 
@@ -94,33 +104,28 @@
             </div>
 
             <form id="create-room-form" class="hidden">
-                <!-- Mealkit Multi-file Upload Dropzone -->
+                <!-- Mealkit Multi-file & Link Registration -->
                 <div class="form-group">
-                    <label style="font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">📂 수업 자료 등록 (최대 10개)</label>
+                    <label style="font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">🔗 웹 링크 및 템플릿 탭 추가</label>
                     <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 0.8rem;">
-                        HTML 시뮬레이션, PDF 교안, 이미지 파일(.png, .jpg, .jpeg, .webp), 웹 URL 링크를 등록하세요. (권장 5개 이내)
+                        GeoGebra/PhET 등 웹사이트 URL 링크나 빈 화이트보드/좌표평면 탭을 등록하세요.
                     </p>
-                    
-                    <!-- Drag & Drop Zone -->
-                    <div id="mealkit-dropzone" style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 2.2rem; text-align: center; background: rgba(255,255,255,0.02); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; margin-bottom: 1.2rem;">
-                        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.6rem;">📁</span>
-                        <span id="mealkit-dropzone-text" style="font-size: 0.95rem; color: var(--text-secondary); display: block; line-height: 1.5;">
-                            이곳에 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요.
-                        </span>
-                        <span style="font-size: 0.8rem; color: var(--accent); display: block; margin-top: 0.4rem; font-weight: 600;">
-                            💡 Tip: 캡처 도구 등으로 화면 캡처 후 이 창에 바로 Ctrl+V(Cmd+V)를 눌러 이미지를 붙여넣을 수 있습니다!
-                        </span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.4rem;">
-                            허용 확장자: .html, .pdf, .png, .jpg, .jpeg, .webp (전체 파일 합계 30MB 이내)
-                        </span>
-                        <input type="file" id="mealkit-file-input" accept=".html,.pdf,.png,.jpg,.jpeg,.webp" multiple style="display: none;">
+
+                    <!-- URL Link & Template Input Group -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.8rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap;">
+                        <span style="font-size: 1.2rem;">🔗</span>
+                        <input type="url" id="mealkit-url-input" placeholder="연동할 시뮬레이션 또는 웹사이트 URL 입력 (https://...)" style="flex: 1; min-width: 200px; padding: 0.6rem 0.8rem; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-primary); background: rgba(15,23,42,0.4);">
+                        <button type="button" id="btn-mealkit-add-url" class="btn btn-accent btn-sm" style="padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; height: 38px;">링크 추가</button>
                     </div>
 
-                    <!-- URL Link Input Group -->
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 1.2rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <span style="font-size: 1.2rem;">🔗</span>
-                        <input type="url" id="mealkit-url-input" placeholder="연동할 시뮬레이션 또는 웹사이트 URL 입력 (https://...)" style="flex: 1; padding: 0.6rem 0.8rem; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-primary); background: rgba(15,23,42,0.4);">
-                        <button type="button" id="btn-mealkit-add-url" class="btn btn-accent btn-sm" style="padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; height: 38px;">링크 추가</button>
+                    <!-- Quick Add Templates (Blank & Coordinate) -->
+                    <div style="display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap;">
+                        <button type="button" id="btn-add-blank-tab" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.55rem 0.9rem; font-size: 0.85rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                            📄 + 빈 페이지(화이트보드) 추가
+                        </button>
+                        <button type="button" id="btn-add-coord-tab" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.55rem 0.9rem; font-size: 0.85rem; background: rgba(129, 178, 154, 0.08); border-color: rgba(129, 178, 154, 0.2); color: var(--accent);">
+                            📐 + 좌표평면 탭 추가
+                        </button>
                     </div>
 
                     <!-- 보안 안내 경고 -->

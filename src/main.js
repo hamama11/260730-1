@@ -1,5 +1,5 @@
 import { db, isFirebaseInitialized } from "./firebaseConfig.js";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const studentSubmitForm = document.getElementById('student-submit-form');
@@ -480,8 +480,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
                         try {
                             const stream = await navigator.mediaDevices.getDisplayMedia({
-                                video: { displaySurface: "browser" },
-                                audio: false
+                                video: {
+                                    displaySurface: "monitor"
+                                },
+                                audio: false,
+                                surfaceSwitching: "include"
                             });
 
                             const video = document.createElement('video');
@@ -494,7 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 video.onerror = reject;
                             });
 
-                            await new Promise(r => setTimeout(r, 150));
+                            await new Promise(r => setTimeout(r, 200));
                             const canvas = document.createElement('canvas');
                             canvas.width = video.videoWidth;
                             canvas.height = video.videoHeight;
@@ -590,7 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mealkitTabsHeader = document.getElementById('mealkit-tabs-header');
     const mealkitViewportsBody = document.getElementById('mealkit-viewports-body');
 
-    function buildMealkitLayout() {
+    function buildMealkitLayout(keepActiveTabId = null) {
         if (!mealkitViewportsBody) return;
         mealkitViewportsBody.innerHTML = '';
         if (mealkitTabsHeader) mealkitTabsHeader.innerHTML = '';
@@ -605,14 +608,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (mealkitTabsHeader) mealkitTabsHeader.classList.remove('hidden');
             mealkitViewportsBody.style.flexDirection = 'row';
 
+            // Determine which tab to activate
+            let activeIndex = 0;
+            if (keepActiveTabId) {
+                const foundIdx = filesList.findIndex(f => f.id === keepActiveTabId);
+                if (foundIdx !== -1) activeIndex = foundIdx;
+            }
+
             filesList.forEach((file, index) => {
+                const isActive = (index === activeIndex);
+
                 // Tab Header Button
                 const tabBtn = document.createElement('button');
                 tabBtn.type = 'button';
-                tabBtn.className = 'tab-btn' + (index === 0 ? ' active' : '');
+                tabBtn.className = 'tab-btn' + (isActive ? ' active' : '');
                 tabBtn.style.padding = '0.5rem 1rem';
                 tabBtn.style.fontSize = '0.85rem';
-                tabBtn.textContent = file.label || file.name;
+                
+                let iconPrefix = '';
+                if (file.type === 'blank') iconPrefix = '📄 ';
+                else if (file.type === 'coordinate') iconPrefix = '📐 ';
+                else if (file.type === 'url') iconPrefix = '🌐 ';
+                else if (file.type === 'pdf') iconPrefix = '📕 ';
+                else if (file.type === 'image') iconPrefix = '🖼️ ';
+
+                tabBtn.textContent = iconPrefix + (file.label || file.name);
                 tabBtn.dataset.fileid = file.id;
 
                 tabBtn.addEventListener('click', () => {
@@ -634,7 +654,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Viewport Wrapper
                 const wrapper = document.createElement('div');
-                wrapper.className = 'mealkit-viewport-wrapper' + (index === 0 ? '' : ' hidden');
+                wrapper.className = 'mealkit-viewport-wrapper' + (isActive ? '' : ' hidden');
                 wrapper.dataset.fileid = file.id;
                 wrapper.style.cssText = 'position: relative; flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: #0f172a; overflow: hidden;';
 
@@ -789,7 +809,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function createViewerElement(file) {
         let viewer;
-        if (file.type === 'html' || file.type === 'url') {
+        if (file.type === 'blank') {
+            viewer = document.createElement('div');
+            viewer.style.cssText = 'width: 100%; height: 100%; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; user-select: none;';
+            viewer.innerHTML = `
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: rgba(74, 62, 61, 0.4); font-size: 0.85rem; font-weight: 600; pointer-events: none;">
+                    📄 자유 화이트보드 (상단 판서 툴을 이용해 자유롭게 필기하세요)
+                </div>
+            `;
+        } else if (file.type === 'coordinate') {
+            viewer = document.createElement('div');
+            viewer.style.cssText = 'width: 100%; height: 100%; background: #ffffff; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden;';
+            
+            // Generate full-size SVG coordinate grid
+            viewer.innerHTML = `
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                    <defs>
+                        <!-- Small grid (10px) -->
+                        <pattern id="grid-small" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(74, 62, 61, 0.08)" stroke-width="0.8"/>
+                        </pattern>
+                        <!-- Large grid (100px) -->
+                        <pattern id="grid-large" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#grid-small)"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(74, 62, 61, 0.2)" stroke-width="1.2"/>
+                        </pattern>
+                    </defs>
+                    <!-- Background grid -->
+                    <rect width="100%" height="100%" fill="url(#grid-large)"/>
+                    
+                    <!-- Axes (centered dynamically via CSS percentages) -->
+                    <!-- X Axis -->
+                    <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#4a3e3d" stroke-width="2.5" />
+                    <!-- Y Axis -->
+                    <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#4a3e3d" stroke-width="2.5" />
+
+                    <!-- Axis Arrows -->
+                    <polygon points="100%,50% calc(100% - 10px),calc(50% - 5px) calc(100% - 10px),calc(50% + 5px)" fill="#4a3e3d" />
+                    <polygon points="50%,0 calc(50% - 5px),10px calc(50% + 5px),10px" fill="#4a3e3d" />
+                    
+                    <!-- Labels -->
+                    <text x="calc(100% - 18px)" y="calc(50% + 22px)" font-size="16" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">x</text>
+                    <text x="calc(50% + 12px)" y="20" font-size="16" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">y</text>
+                    <text x="calc(50% - 18px)" y="calc(50% + 20px)" font-size="15" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">O</text>
+                </svg>
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: rgba(74, 62, 61, 0.5); font-size: 0.85rem; font-weight: 600; pointer-events: none; background: rgba(255,255,255,0.85); padding: 0.2rem 0.5rem; border-radius: 6px;">
+                    📐 좌표평면 (원점 및 격자 기반 판서/그래프 작성)
+                </div>
+            `;
+        } else if (file.type === 'html' || file.type === 'url') {
             viewer = document.createElement('iframe');
             viewer.src = file.url;
             viewer.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
@@ -877,56 +945,70 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("미리보기 데이터를 불러오는데 실패했습니다.");
         }
     } else {
-        // Fetch room info from Firestore
+        // Fetch room info from Firestore & subscribe to real-time updates for tabs
         try {
             if (!db) throw new Error("Firebase가 초기화되지 않았습니다.");
             const roomRef = doc(db, "users", teacherId, "rooms", roomId);
-            const roomSnap = await getDoc(roomRef);
+            let isInitialLoad = true;
 
-            if (!roomSnap.exists()) {
-                alert("존재하지 않는 수업방입니다.");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            const roomData = roomSnap.data();
-
-            // Support legacy rooms backward compatibility
-            if (!roomData.files) {
-                filesList = [{
-                    id: 'sim_legacy',
-                    name: roomData.simType === 'url' ? '시뮬레이션 URL' : '시뮬레이션 HTML',
-                    label: '시뮬레이션',
-                    type: roomData.simType,
-                    url: roomData.simType === 'url' ? roomData.simData : ''
-                }];
-                currentLayoutMode = 'tab';
-                isGlobalCanvas = false;
-                enableTimeTracking = false;
-            } else {
-                filesList = roomData.files || [];
-                currentLayoutMode = roomData.layoutMode || 'tab';
-                isGlobalCanvas = roomData.globalCanvas || false;
-                enableTimeTracking = roomData.enableTimeTracking !== false;
-            }
-
-            buildMealkitLayout();
-            renderStudentQuestions(roomData.questions);
-
-            // Start student-side timer if enabled
-            if (enableTimeTracking) {
-                const timerContainer = document.getElementById('student-timer-container');
-                const timerVal = document.getElementById('student-elapsed-timer');
-                if (timerContainer && timerVal) {
-                    timerContainer.classList.remove('hidden');
-                    setInterval(() => {
-                        const elapsed = Math.round((Date.now() - startTime) / 1000);
-                        const min = Math.floor(elapsed / 60);
-                        const sec = elapsed % 60;
-                        timerVal.textContent = `${min}분 ${sec}초`;
-                    }, 1000);
+            onSnapshot(roomRef, (roomSnap) => {
+                if (!roomSnap.exists()) {
+                    alert("존재하지 않거나 삭제된 수업방입니다.");
+                    window.location.href = 'index.html';
+                    return;
                 }
-            }
+
+                const roomData = roomSnap.data();
+
+                // Track currently selected tab ID before updating
+                const activeTabBtn = mealkitTabsHeader ? mealkitTabsHeader.querySelector('.tab-btn.active') : null;
+                const currentActiveTabId = activeTabBtn ? activeTabBtn.dataset.fileid : null;
+
+                // Support legacy rooms backward compatibility
+                if (!roomData.files) {
+                    filesList = [{
+                        id: 'sim_legacy',
+                        name: roomData.simType === 'url' ? '시뮬레이션 URL' : '시뮬레이션 HTML',
+                        label: '시뮬레이션',
+                        type: roomData.simType,
+                        url: roomData.simType === 'url' ? roomData.simData : ''
+                    }];
+                    currentLayoutMode = 'tab';
+                    isGlobalCanvas = false;
+                    enableTimeTracking = false;
+                } else {
+                    filesList = roomData.files || [];
+                    currentLayoutMode = roomData.layoutMode || 'tab';
+                    isGlobalCanvas = roomData.globalCanvas || false;
+                    enableTimeTracking = roomData.enableTimeTracking !== false;
+                }
+
+                // Rebuild layout with active tab preserved
+                buildMealkitLayout(currentActiveTabId);
+
+                // Initial questions & timer setup
+                if (isInitialLoad) {
+                    renderStudentQuestions(roomData.questions);
+
+                    // Start student-side timer if enabled
+                    if (enableTimeTracking) {
+                        const timerContainer = document.getElementById('student-timer-container');
+                        const timerVal = document.getElementById('student-elapsed-timer');
+                        if (timerContainer && timerVal) {
+                            timerContainer.classList.remove('hidden');
+                            setInterval(() => {
+                                const elapsed = Math.round((Date.now() - startTime) / 1000);
+                                const min = Math.floor(elapsed / 60);
+                                const sec = elapsed % 60;
+                                timerVal.textContent = `${min}분 ${sec}초`;
+                            }, 1000);
+                        }
+                    }
+                    isInitialLoad = false;
+                }
+            }, (err) => {
+                console.error("수업방 실시간 구독 에러:", err);
+            });
 
         } catch (err) {
             console.error("수업방 조회 에러:", err);
@@ -989,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const aiBox = document.getElementById('student-ai-box');
                 const feedbackText = document.getElementById('student-ai-feedback');
 
-                feedbackText.innerHTML = `<strong>[미리보기 모드 피드백]</strong><br><br>학생이 제출한 답안에 대한 피드백 예시입니다. 실 배포에서는 Google Gemini API가 실시간 응답합니다.`;
+                feedbackText.innerHTML = `<strong>[미리보기 모드]</strong><br><br>학생이 제출한 답안 저장이 정상적으로 완료되었습니다.`;
                 aiBox.classList.remove('hidden');
                 aiBox.scrollIntoView({ behavior: 'smooth' });
 
@@ -998,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnSubmit.disabled = false;
 
                 alert('답안 제출 시뮬레이션 성공! (미리보기)');
-            }, 1000);
+            }, 600);
             return;
         }
 
@@ -1009,92 +1091,45 @@ document.addEventListener('DOMContentLoaded', async () => {
             drawings[fileId] = canvas.toDataURL('image/png');
         });
 
-        let aiHint = "";
-        let functionSuccess = false;
-
-        try {
-            const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-            const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-            const functionUrl = isLocal 
-                ? `https://us-central1-${projectId}.cloudfunctions.net/getAiHint` 
-                : '/api/getAiHint';
-
-            const elapsedSeconds = enableTimeTracking ? Math.round((Date.now() - startTime) / 1000) : null;
-            const response = await fetch(functionUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    teacherId,
-                    roomId,
+        // Direct submission save to Firestore
+        if (isFirebaseInitialized && db) {
+            try {
+                const subDocRef = doc(db, "users", teacherId, "rooms", roomId, "submissions", studentId);
+                const elapsedSeconds = enableTimeTracking ? Math.round((Date.now() - startTime) / 1000) : null;
+                const submissionData = {
                     studentId,
                     studentName,
                     answers,
                     copyCount,
                     pasteCount,
                     drawings,
-                    elapsedSeconds
-                })
-            });
+                    elapsedSeconds,
+                    timestamp: serverTimestamp()
+                };
+                await setDoc(subDocRef, submissionData);
 
-            if (response.ok) {
-                const result = await response.json();
-                if (result && result.success) {
-                    aiHint = result.hint;
-                    functionSuccess = true;
+                const aiBox = document.getElementById('student-ai-box');
+                const feedbackText = document.getElementById('student-ai-feedback');
+                if (feedbackText) feedbackText.textContent = `${studentName} 학생의 탐구 답안이 성공적으로 저장되었습니다. 수고하셨습니다!`;
+                if (aiBox) {
+                    aiBox.classList.remove('hidden');
+                    aiBox.scrollIntoView({ behavior: 'smooth' });
                 }
-            }
-        } catch (err) {
-            console.warn("Cloud Function API 호출 실패. 로컬 fallback 모드로 전환합니다.", err);
-        }
 
-        if (!functionSuccess) {
-            aiHint = `[피드백] ${studentName} 학생의 다중 뷰어 탐구 활동지를 확인하였습니다. 파일별로 작성해주신 탐구 내용과 그리기 판서를 분석한 결과 훌륭한 접근을 보이고 있습니다! 조금만 더 확장하여 원리를 도출해 보세요.`;
-            
-            if (isFirebaseInitialized && db) {
-                try {
-                    const subDocRef = doc(db, "users", teacherId, "rooms", roomId, "submissions", studentId);
-                    const elapsedSeconds = enableTimeTracking ? Math.round((Date.now() - startTime) / 1000) : null;
-                    const submissionData = {
-                        studentId,
-                        studentName,
-                        aiHint,
-                        answers,
-                        copyCount,
-                        pasteCount,
-                        drawings,
-                        elapsedSeconds,
-                        timestamp: serverTimestamp()
-                    };
-                    await setDoc(subDocRef, submissionData);
-                    functionSuccess = true;
-                } catch (writeErr) {
-                    console.error("Direct Firestore write failed:", writeErr);
-                    alert("제출 도중 파이어베이스 쓰기 에러가 발생했습니다: " + writeErr.message);
-                    btnText.classList.remove('hidden');
-                    spinner.classList.add('hidden');
-                    btnSubmit.disabled = false;
-                    return;
-                }
-            } else {
-                alert("답안 제출 실패: 오프라인 환경입니다.");
+                alert('답안이 성공적으로 제출되었습니다!');
+            } catch (writeErr) {
+                console.error("Direct Firestore write failed:", writeErr);
+                alert("제출 도중 오류가 발생했습니다: " + writeErr.message);
+            } finally {
                 btnText.classList.remove('hidden');
                 spinner.classList.add('hidden');
                 btnSubmit.disabled = false;
-                return;
             }
+        } else {
+            alert("답안 제출 실패: 네트워크 또는 Firebase 연결 상태를 확인해 주세요.");
+            btnText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            btnSubmit.disabled = false;
         }
-
-        const aiBox = document.getElementById('student-ai-box');
-        const feedbackText = document.getElementById('student-ai-feedback');
-
-        feedbackText.textContent = aiHint;
-        aiBox.classList.remove('hidden');
-        aiBox.scrollIntoView({ behavior: 'smooth' });
-
-        if (functionSuccess) alert('답안이 성공적으로 제출되었습니다!');
-        
-        btnText.classList.remove('hidden');
-        spinner.classList.add('hidden');
-        btnSubmit.disabled = false;
     });
 });

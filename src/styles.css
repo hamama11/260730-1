@@ -113,6 +113,12 @@ body {
     color: var(--text-secondary);
 }
 
+.hero-illustration:hover {
+    background: rgba(224, 122, 95, 0.08) !important;
+    border-color: var(--primary) !important;
+    transform: translateY(-2px);
+}
+
 /* Forms & Inputs */
 .form-group {
     margin-bottom: 1.5rem;

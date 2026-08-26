@@ -1,5 +1,5 @@
 import { db, auth, googleProvider, isFirebaseInitialized } from "./firebaseConfig.js";
-import { doc, getDoc, collection, onSnapshot, writeBatch } from "firebase/firestore";
+import { doc, getDoc, collection, onSnapshot, writeBatch, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import QRCode from 'qrcode';
 
@@ -97,6 +97,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    const tabsManagerModal = document.getElementById('tabs-manager-modal');
+    if (tabsManagerModal) {
+        const card = tabsManagerModal.querySelector('.draggable-card');
+        const handle = tabsManagerModal.querySelector('.drag-handle');
+        if (card && handle) {
+            makeDraggable(card, handle);
+        }
+    }
+
     if (!roomId || !secretKey || !teacherId) {
         alert("잘못된 접근입니다. 수업 ID, 교사 식별 정보 및 보안 키가 필요합니다.");
         window.location.href = 'index.html';
@@ -106,6 +115,81 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSubmissions = [];
     let currentRoomData = null;
     let isListenerActive = false;
+
+    // Render current tabs list inside Modal
+    function renderMonitorTabsList() {
+        const listEl = document.getElementById('monitor-tabs-list');
+        const countEl = document.getElementById('monitor-tabs-count');
+        if (!listEl) return;
+
+        const files = (currentRoomData && currentRoomData.files) || [];
+        if (countEl) countEl.textContent = `${files.length}`;
+        listEl.innerHTML = '';
+
+        if (files.length === 0) {
+            listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">등록된 탭 자료가 없습니다.</p>';
+            return;
+        }
+
+        files.forEach((file, idx) => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; gap: 0.6rem;';
+
+            let icon = '🌐';
+            let desc = file.url || '웹 링크';
+            if (file.type === 'blank') {
+                icon = '📄';
+                desc = '자유 화이트보드 (판서용)';
+            } else if (file.type === 'coordinate') {
+                icon = '📐';
+                desc = '좌표평면 (수학 격자 판서용)';
+            } else if (file.type === 'pdf') {
+                icon = '📕';
+                desc = 'PDF 문서';
+            } else if (file.type === 'html') {
+                icon = '💻';
+                desc = 'HTML 시뮬레이션';
+            } else if (file.type === 'image') {
+                icon = '🖼️';
+                desc = '이미지 자료';
+            }
+
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.6rem; overflow: hidden; flex: 1;">
+                    <span style="font-size: 1.2rem;">${icon}</span>
+                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block;">${file.label || file.name}</span>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${desc}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm btn-delete-tab" data-tabidx="${idx}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05); flex-shrink: 0;">🗑️ 삭제</button>
+            `;
+
+            const delBtn = item.querySelector('.btn-delete-tab');
+            delBtn.addEventListener('click', async () => {
+                if (files.length <= 1) {
+                    if (!confirm("마지막 탭을 삭제하시겠습니까? 학생 화면에 표시할 자료가 없게 됩니다.")) return;
+                } else {
+                    if (!confirm(`'${file.label || file.name}' 탭을 수업에서 삭제하시겠습니까?\n모든 학생의 화면에서 즉시 제거됩니다.`)) return;
+                }
+
+                try {
+                    const newFiles = [...files];
+                    newFiles.splice(idx, 1);
+                    const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                    await updateDoc(roomRef, { files: newFiles });
+                    currentRoomData.files = newFiles;
+                    renderMonitorTabsList();
+                    alert("탭이 삭제되었으며 모든 학생 화면에 실시간 반영되었습니다.");
+                } catch (err) {
+                    console.error("탭 삭제 에러:", err);
+                    alert("탭 삭제에 실패했습니다: " + err.message);
+                }
+            });
+
+            listEl.appendChild(item);
+        });
+    }
 
     // Start Firestore real-time listener on submissions
     function setupSubmissionsListener() {
@@ -296,10 +380,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="card-body">
                         ${answersHtml}
                         ${drawingHtml}
-                        <div class="response-block feedback-block">
-                            <strong>✅ 제출 되었습니다.</strong>
-                            <p>${sub.aiHint}</p>
-                        </div>
                     </div>
                 `;
                 submissionsContainer.appendChild(card);
@@ -381,6 +461,181 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnEnterStudentRoom.addEventListener('click', () => {
             const studentUrl = `${window.location.origin}/student.html?teacherId=${teacherId}&id=${roomId}`;
             window.open(studentUrl, '_blank');
+        });
+    }
+
+    // ── Tab Management Modal Handler ──
+    const btnManageTabs = document.getElementById('btn-manage-tabs');
+    const btnCloseTabsManager = document.getElementById('btn-close-tabs-manager');
+    const btnCloseTabsManagerFooter = document.getElementById('btn-close-tabs-manager-footer');
+    
+    // Tab Type Switches
+    const btnTabTypeUrl = document.getElementById('btn-tabtype-url');
+    const btnTabTypeBlank = document.getElementById('btn-tabtype-blank');
+    const btnTabTypeCoord = document.getElementById('btn-tabtype-coord');
+    const addTabUrlBox = document.getElementById('add-tab-url-box');
+    const addTabBlankBox = document.getElementById('add-tab-blank-box');
+    const addTabCoordBox = document.getElementById('add-tab-coord-box');
+    const btnSubmitAddTab = document.getElementById('btn-submit-add-tab');
+
+    let currentAddType = 'url'; // 'url' | 'blank' | 'coordinate'
+
+    const setAddTabType = (type) => {
+        currentAddType = type;
+        [btnTabTypeUrl, btnTabTypeBlank, btnTabTypeCoord].forEach(b => {
+            if (b) {
+                b.classList.remove('active');
+                b.style.background = '';
+                b.style.color = '';
+            }
+        });
+
+        if (addTabUrlBox) addTabUrlBox.classList.add('hidden');
+        if (addTabBlankBox) addTabBlankBox.classList.add('hidden');
+        if (addTabCoordBox) addTabCoordBox.classList.add('hidden');
+
+        if (type === 'url') {
+            if (btnTabTypeUrl) {
+                btnTabTypeUrl.classList.add('active');
+                btnTabTypeUrl.style.background = 'var(--primary)';
+                btnTabTypeUrl.style.color = 'white';
+            }
+            if (addTabUrlBox) addTabUrlBox.classList.remove('hidden');
+        } else if (type === 'blank') {
+            if (btnTabTypeBlank) {
+                btnTabTypeBlank.classList.add('active');
+                btnTabTypeBlank.style.background = 'var(--primary)';
+                btnTabTypeBlank.style.color = 'white';
+            }
+            if (addTabBlankBox) addTabBlankBox.classList.remove('hidden');
+        } else if (type === 'coordinate') {
+            if (btnTabTypeCoord) {
+                btnTabTypeCoord.classList.add('active');
+                btnTabTypeCoord.style.background = 'var(--primary)';
+                btnTabTypeCoord.style.color = 'white';
+            }
+            if (addTabCoordBox) addTabCoordBox.classList.remove('hidden');
+        }
+    };
+
+    if (btnTabTypeUrl) btnTabTypeUrl.addEventListener('click', () => setAddTabType('url'));
+    if (btnTabTypeBlank) btnTabTypeBlank.addEventListener('click', () => setAddTabType('blank'));
+    if (btnTabTypeCoord) btnTabTypeCoord.addEventListener('click', () => setAddTabType('coordinate'));
+
+    if (btnManageTabs && tabsManagerModal) {
+        btnManageTabs.addEventListener('click', () => {
+            const draggableCard = tabsManagerModal.querySelector('.draggable-card');
+            if (draggableCard) {
+                draggableCard.style.top = '';
+                draggableCard.style.left = '';
+                draggableCard.style.position = '';
+                draggableCard.style.margin = '';
+            }
+            renderMonitorTabsList();
+            tabsManagerModal.classList.remove('hidden');
+        });
+    }
+
+    const hideTabsManager = () => {
+        if (tabsManagerModal) tabsManagerModal.classList.add('hidden');
+    };
+
+    if (btnCloseTabsManager) btnCloseTabsManager.addEventListener('click', hideTabsManager);
+    if (btnCloseTabsManagerFooter) btnCloseTabsManagerFooter.addEventListener('click', hideTabsManager);
+
+    // Submit Add New Tab
+    if (btnSubmitAddTab) {
+        btnSubmitAddTab.addEventListener('click', async () => {
+            const files = (currentRoomData && currentRoomData.files) ? [...currentRoomData.files] : [];
+
+            let newTabObj = null;
+            const newId = 'tab_' + Math.random().toString(36).substr(2, 9);
+
+            if (currentAddType === 'url') {
+                const urlInput = document.getElementById('new-tab-url');
+                const labelInput = document.getElementById('new-tab-url-label');
+                const urlVal = urlInput ? urlInput.value.trim() : '';
+                let labelVal = labelInput ? labelInput.value.trim() : '';
+
+                if (!urlVal) {
+                    alert("추가할 웹사이트 / 시뮬레이션 URL을 입력해 주세요.");
+                    if (urlInput) urlInput.focus();
+                    return;
+                }
+
+                if (!urlVal.startsWith('http://') && !urlVal.startsWith('https://')) {
+                    alert("URL은 http:// 또는 https:// 로 시작해야 합니다.");
+                    if (urlInput) urlInput.focus();
+                    return;
+                }
+
+                if (!labelVal) {
+                    try {
+                        const parsed = new URL(urlVal);
+                        labelVal = parsed.hostname.replace('www.', '');
+                    } catch (e) {
+                        labelVal = '웹 링크';
+                    }
+                }
+
+                newTabObj = {
+                    id: newId,
+                    type: 'url',
+                    url: urlVal,
+                    name: labelVal,
+                    label: labelVal
+                };
+
+                // Clear input
+                if (urlInput) urlInput.value = '';
+                if (labelInput) labelInput.value = '';
+
+            } else if (currentAddType === 'blank') {
+                const labelInput = document.getElementById('new-tab-blank-label');
+                const labelVal = labelInput ? labelInput.value.trim() || '자유 화이트보드' : '자유 화이트보드';
+
+                newTabObj = {
+                    id: newId,
+                    type: 'blank',
+                    name: labelVal,
+                    label: labelVal
+                };
+
+            } else if (currentAddType === 'coordinate') {
+                const labelInput = document.getElementById('new-tab-coord-label');
+                const labelVal = labelInput ? labelInput.value.trim() || '좌표평면' : '좌표평면';
+
+                newTabObj = {
+                    id: newId,
+                    type: 'coordinate',
+                    name: labelVal,
+                    label: labelVal
+                };
+            }
+
+            if (!newTabObj) return;
+
+            const btnText = btnSubmitAddTab.querySelector('.btn-text');
+            const spinner = btnSubmitAddTab.querySelector('.spinner');
+            if (btnText) btnText.classList.add('hidden');
+            if (spinner) spinner.classList.remove('hidden');
+            btnSubmitAddTab.disabled = true;
+
+            try {
+                files.push(newTabObj);
+                const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                await updateDoc(roomRef, { files: files });
+                currentRoomData.files = files;
+                renderMonitorTabsList();
+                alert(`'${newTabObj.label}' 탭이 추가되었습니다!\n모든 학생의 화면에 실시간으로 생성됩니다.`);
+            } catch (err) {
+                console.error("탭 추가 실패:", err);
+                alert("탭 추가에 실패했습니다: " + err.message);
+            } finally {
+                if (btnText) btnText.classList.remove('hidden');
+                if (spinner) spinner.classList.add('hidden');
+                btnSubmitAddTab.disabled = false;
+            }
         });
     }
 
@@ -477,7 +732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 questions.forEach((q, idx) => {
                     headers.push(`질문 ${idx + 1}: ${q.question}`);
                 });
-                headers.push("AI 피드백 힌트", "소요시간(초)", "제출시간");
+                headers.push("소요시간(초)", "제출시간");
 
                 const csvRows = [headers.join(",")];
 
@@ -502,7 +757,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
 
                     const elapsedSecStr = doc.elapsedSeconds !== undefined && doc.elapsedSeconds !== null ? `${doc.elapsedSeconds}초` : "";
-                    row.push(doc.aiHint || "", elapsedSecStr, timeStr);
+                    row.push(elapsedSecStr, timeStr);
                     csvRows.push(row.map(escapeCsv).join(","));
                 });
 

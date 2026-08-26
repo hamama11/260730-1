@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             questions.forEach((q, idx) => {
                 headers.push(`질문 ${idx + 1}: ${q.question}`);
             });
-            headers.push("AI 피드백 힌트", "소요시간(초)", "제출시간");
+            headers.push("소요시간(초)", "제출시간");
 
             const csvRows = [headers.join(",")];
 
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const elapsedSecStr = sub.elapsedSeconds !== undefined && sub.elapsedSeconds !== null ? `${sub.elapsedSeconds}초` : "";
-                row.push(sub.aiHint || "", elapsedSecStr, timeStr);
+                row.push(elapsedSecStr, timeStr);
                 csvRows.push(row.map(escapeCsv).join(","));
             });
 
@@ -711,11 +711,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let subtitle = '';
 
             if (file.type === 'url') {
-                icon = '🔗';
+                icon = '🌐';
                 subtitle = file.url;
+            } else if (file.type === 'blank') {
+                icon = '📄';
+                subtitle = '자유 화이트보드 (판서용)';
+            } else if (file.type === 'coordinate') {
+                icon = '📐';
+                subtitle = '좌표평면 (수학 격자 판서용)';
             } else {
                 if (file.name.toLowerCase().endsWith('.pdf')) icon = '📕';
-                else if (file.name.toLowerCase().endsWith('.html')) icon = '🌐';
+                else if (file.name.toLowerCase().endsWith('.html')) icon = '💻';
                 else if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) icon = '🖼️';
                 subtitle = `${(file.size / 1024).toFixed(1)} KB`;
             }
@@ -771,6 +777,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Delete URL handler
                 actions.querySelectorAll('button')[1].addEventListener('click', () => {
                     if (confirm(`'${file.label}' 링크를 목록에서 삭제하시겠습니까?`)) {
+                        mealkitFiles.splice(index, 1);
+                        renderMealkitFilesList();
+                    }
+                });
+            } else if (file.type === 'blank' || file.type === 'coordinate') {
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
+                `;
+                actions.querySelector('button').addEventListener('click', () => {
+                    if (confirm(`'${file.label}' 탭을 목록에서 제외하시겠습니까?`)) {
                         mealkitFiles.splice(index, 1);
                         renderMealkitFilesList();
                     }
@@ -944,6 +960,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Bind Blank & Coordinate Tab Quick Adders
+    const btnAddBlankTab = document.getElementById('btn-add-blank-tab');
+    if (btnAddBlankTab) {
+        btnAddBlankTab.addEventListener('click', () => {
+            if (mealkitFiles.length >= 10) {
+                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
+                return;
+            }
+            const count = mealkitFiles.filter(f => f.type === 'blank').length + 1;
+            const tabName = `화이트보드 ${count}`;
+            mealkitFiles.push({
+                id: generateId(),
+                name: tabName,
+                size: 0,
+                type: 'blank',
+                fileObject: null,
+                label: tabName,
+                url: '',
+                storagePath: ''
+            });
+            renderMealkitFilesList();
+        });
+    }
+
+    const btnAddCoordTab = document.getElementById('btn-add-coord-tab');
+    if (btnAddCoordTab) {
+        btnAddCoordTab.addEventListener('click', () => {
+            if (mealkitFiles.length >= 10) {
+                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
+                return;
+            }
+            const count = mealkitFiles.filter(f => f.type === 'coordinate').length + 1;
+            const tabName = `좌표평면 ${count}`;
+            mealkitFiles.push({
+                id: generateId(),
+                name: tabName,
+                size: 0,
+                type: 'coordinate',
+                fileObject: null,
+                label: tabName,
+                url: '',
+                storagePath: ''
+            });
+            renderMealkitFilesList();
+        });
+    }
+
     // Bind Clipboard Paste (Ctrl+V) for Screenshots
     document.addEventListener('paste', (e) => {
         // Only trigger if focus is not in textarea/input
@@ -1089,6 +1152,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: file.label,
                         type: 'url',
                         url: file.url,
+                        storagePath: ''
+                    });
+                } else if (file.type === 'blank' || file.type === 'coordinate') {
+                    finalFilesList.push({
+                        id: file.id,
+                        name: file.name,
+                        label: file.label,
+                        type: file.type,
+                        url: '',
                         storagePath: ''
                     });
                 } else if (file.url) {
@@ -1239,9 +1311,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (file.type === 'url') {
                     fileDataUrl = file.url;
+                } else if (file.type === 'blank' || file.type === 'coordinate') {
+                    fileDataUrl = '';
                 } else if (file.url) {
                     fileDataUrl = file.url;
-                } else {
+                } else if (file.fileObject) {
                     fileDataUrl = await new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = (e) => resolve(e.target.result);
