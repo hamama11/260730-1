@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let drawingHistory = {}; // fileId -> Array of strokes { color, width, tool, points: [{rx, ry}] }
     let globalCanvasHistory = []; // shared global strokes
     let isGlobalCanvas = false;
-    let filesList = [];
-    let currentLayoutMode = 'tab';
+    let tabsDataList = []; // Array of { id, title, layout, items: [...] }
 
     // Toolbar elements
     const btnDrawMode = document.getElementById('btn-draw-mode');
@@ -600,7 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ── Build Mealkit Multi-Viewer Layout ──
+    // ── Build Mealkit Multi-Viewer Layout (2-Tier: Tabs -> Multiple Items) ──
     const mealkitTabsHeader = document.getElementById('mealkit-tabs-header');
     const mealkitViewportsBody = document.getElementById('mealkit-viewports-body');
 
@@ -610,196 +609,156 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (mealkitTabsHeader) mealkitTabsHeader.innerHTML = '';
         activeCanvases = [];
 
-        if (filesList.length === 0) {
+        if (tabsDataList.length === 0) {
             mealkitViewportsBody.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">수업방에 등록된 교안 자료가 없습니다.</p>';
+            if (mealkitTabsHeader) mealkitTabsHeader.classList.add('hidden');
             return;
         }
 
-        if (currentLayoutMode === 'tab') {
-            if (mealkitTabsHeader) mealkitTabsHeader.classList.remove('hidden');
-            mealkitViewportsBody.style.flexDirection = 'row';
+        // Show top tabs header
+        if (mealkitTabsHeader) mealkitTabsHeader.classList.remove('hidden');
 
-            // Determine which tab to activate
-            let activeIndex = 0;
-            if (keepActiveTabId) {
-                const foundIdx = filesList.findIndex(f => f.id === keepActiveTabId);
-                if (foundIdx !== -1) activeIndex = foundIdx;
+        // Determine active tab
+        let activeIndex = 0;
+        if (keepActiveTabId) {
+            const foundIdx = tabsDataList.findIndex(t => t.id === keepActiveTabId);
+            if (foundIdx !== -1) activeIndex = foundIdx;
+        }
+
+        // Render Tabs Bar & Content Panels
+        tabsDataList.forEach((tab, index) => {
+            const isActive = (index === activeIndex);
+
+            // Tab Header Button
+            const tabBtn = document.createElement('button');
+            tabBtn.type = 'button';
+            tabBtn.className = 'tab-btn' + (isActive ? ' active' : '');
+            tabBtn.style.padding = '0.5rem 1rem';
+            tabBtn.style.fontSize = '0.85rem';
+            tabBtn.textContent = `📑 ${tab.title || ('탭 ' + (index + 1))}`;
+            tabBtn.dataset.tabid = tab.id;
+
+            tabBtn.addEventListener('click', () => {
+                mealkitTabsHeader.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                tabBtn.classList.add('active');
+
+                mealkitViewportsBody.querySelectorAll('.mealkit-tab-content-panel').forEach(panel => {
+                    if (panel.dataset.tabid === tab.id) {
+                        panel.classList.remove('hidden');
+                        // Trigger canvas resize update on reveal
+                        const canvases = panel.querySelectorAll('canvas');
+                        canvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
+                    } else {
+                        panel.classList.add('hidden');
+                    }
+                });
+            });
+            mealkitTabsHeader.appendChild(tabBtn);
+
+            // Content Panel for each tab
+            const panel = document.createElement('div');
+            panel.className = 'mealkit-tab-content-panel' + (isActive ? '' : ' hidden');
+            panel.dataset.tabid = tab.id;
+            panel.style.cssText = 'width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column;';
+
+            // Layout for items within this tab: 'split' vs 'scroll'
+            const isScrollMode = (tab.layout === 'scroll');
+            const items = tab.items || [];
+
+            const tabBody = document.createElement('div');
+            if (isScrollMode) {
+                tabBody.style.cssText = 'display: flex; flex-direction: column; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; gap: 1.5rem; padding: 1rem; background: var(--bg-primary);';
+            } else {
+                // Split view (horizontal multi-column with resizers)
+                tabBody.style.cssText = 'display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; position: relative; background: #0f172a;';
             }
 
-            filesList.forEach((file, index) => {
-                const isActive = (index === activeIndex);
+            if (items.length === 0) {
+                tabBody.innerHTML = '<p style="text-align: center; padding: 3rem; color: var(--text-secondary); width: 100%;">이 탭에 등록된 자료가 없습니다.</p>';
+            } else {
+                const count = items.length;
 
-                // Tab Header Button
-                const tabBtn = document.createElement('button');
-                tabBtn.type = 'button';
-                tabBtn.className = 'tab-btn' + (isActive ? ' active' : '');
-                tabBtn.style.padding = '0.5rem 1rem';
-                tabBtn.style.fontSize = '0.85rem';
-                
-                let iconPrefix = '';
-                if (file.type === 'blank') iconPrefix = '📄 ';
-                else if (file.type === 'coordinate') iconPrefix = '📐 ';
-                else if (file.type === 'url') iconPrefix = '🌐 ';
-                else if (file.type === 'pdf') iconPrefix = '📕 ';
-                else if (file.type === 'image') iconPrefix = '🖼️ ';
+                items.forEach((item, itemIndex) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'mealkit-viewport-wrapper';
+                    wrapper.dataset.fileid = item.id;
 
-                tabBtn.textContent = iconPrefix + (file.label || file.name);
-                tabBtn.dataset.fileid = file.id;
+                    if (isScrollMode) {
+                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+                    } else {
+                        const shareWidth = (100 / count).toFixed(2);
+                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: #0f172a; overflow: hidden; display: flex; align-items: center; justify-content: center;`;
+                    }
 
-                tabBtn.addEventListener('click', () => {
-                    mealkitTabsHeader.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    tabBtn.classList.add('active');
+                    const viewer = createViewerElement(item);
+                    const canvas = document.createElement('canvas');
+                    canvas.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;';
+                    canvas.dataset.fileid = item.id;
 
-                    mealkitViewportsBody.querySelectorAll('.mealkit-viewport-wrapper').forEach(wrapper => {
-                        if (wrapper.dataset.fileid === file.id) {
-                            wrapper.classList.remove('hidden');
-                            // Trigger canvas resize update on reveal
-                            const c = wrapper.querySelector('canvas');
-                            if (c && c.resizeHandler) c.resizeHandler();
-                        } else {
-                            wrapper.classList.add('hidden');
-                        }
-                    });
+                    wrapper.appendChild(viewer);
+                    wrapper.appendChild(canvas);
+
+                    // Add warning banner if external link URL
+                    appendUrlBannerIfNeeded(wrapper, item, viewer);
+                    addZoomControls(wrapper, viewer);
+
+                    tabBody.appendChild(wrapper);
+                    activeCanvases.push(canvas);
+                    setupDrawingCanvas(canvas, item.id);
+
+                    // If in Split mode and not last item, add resizer bar
+                    if (!isScrollMode && itemIndex < count - 1) {
+                        const resizer = document.createElement('div');
+                        resizer.style.cssText = 'width: 8px; background: rgba(74, 62, 61, 0.25); cursor: col-resize; transition: background 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+                        resizer.innerHTML = '<div style="width: 2px; height: 30px; background: rgba(255,255,255,0.4); border-radius: 1px;"></div>';
+
+                        resizer.addEventListener('mouseover', () => { resizer.style.background = 'var(--primary)'; });
+                        resizer.addEventListener('mouseout', () => { resizer.style.background = 'rgba(74, 62, 61, 0.25)'; });
+
+                        let startX = 0;
+                        let startLeftWidth = 0;
+
+                        const onDrag = (e) => {
+                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                            const deltaX = clientX - startX;
+                            let newWidth = startLeftWidth + deltaX;
+
+                            const parentWidth = tabBody.getBoundingClientRect().width;
+                            if (newWidth > 100 && newWidth < parentWidth - 100) {
+                                wrapper.style.width = newWidth + 'px';
+                                wrapper.style.flex = 'none';
+
+                                activeCanvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
+                            }
+                        };
+
+                        const stopDrag = () => {
+                            document.removeEventListener('mousemove', onDrag);
+                            document.removeEventListener('mouseup', stopDrag);
+                            document.removeEventListener('touchmove', onDrag);
+                            document.removeEventListener('touchend', stopDrag);
+                        };
+
+                        const initDrag = (e) => {
+                            startX = e.touches ? e.touches[0].clientX : e.clientX;
+                            startLeftWidth = wrapper.getBoundingClientRect().width;
+                            document.addEventListener('mousemove', onDrag);
+                            document.addEventListener('mouseup', stopDrag);
+                            document.addEventListener('touchmove', onDrag, { passive: true });
+                            document.addEventListener('touchend', stopDrag);
+                        };
+
+                        resizer.addEventListener('mousedown', initDrag);
+                        resizer.addEventListener('touchstart', initDrag, { passive: true });
+
+                        tabBody.appendChild(resizer);
+                    }
                 });
-                mealkitTabsHeader.appendChild(tabBtn);
+            }
 
-                // Viewport Wrapper
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mealkit-viewport-wrapper' + (isActive ? '' : ' hidden');
-                wrapper.dataset.fileid = file.id;
-                wrapper.style.cssText = 'position: relative; flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: #0f172a; overflow: hidden;';
-
-                // File element
-                const viewer = createViewerElement(file);
-                // Canvas layer
-                const canvas = document.createElement('canvas');
-                canvas.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;';
-                canvas.dataset.fileid = file.id;
-
-                wrapper.appendChild(viewer);
-                wrapper.appendChild(canvas);
-                
-                // Add warning banner if external link URL
-                appendUrlBannerIfNeeded(wrapper, file, viewer);
-
-                // Add zoom controls
-                addZoomControls(wrapper, viewer);
-
-                mealkitViewportsBody.appendChild(wrapper);
-                activeCanvases.push(canvas);
-                setupDrawingCanvas(canvas, file.id);
-            });
-
-        } else if (currentLayoutMode === 'split') {
-            if (mealkitTabsHeader) mealkitTabsHeader.classList.add('hidden');
-            mealkitViewportsBody.style.cssText = 'display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; position: relative;';
-
-            const count = filesList.length;
-
-            filesList.forEach((file, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mealkit-viewport-wrapper';
-                wrapper.dataset.fileid = file.id;
-                
-                // Equal split width default
-                const shareWidth = (100 / count).toFixed(2);
-                wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: #0f172a; overflow: hidden; display: flex; align-items: center; justify-content: center;`;
-
-                const viewer = createViewerElement(file);
-                const canvas = document.createElement('canvas');
-                canvas.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;';
-                canvas.dataset.fileid = file.id;
-
-                wrapper.appendChild(viewer);
-                wrapper.appendChild(canvas);
-
-                // Add warning banner if external link URL
-                appendUrlBannerIfNeeded(wrapper, file, viewer);
-
-                addZoomControls(wrapper, viewer);
-                mealkitViewportsBody.appendChild(wrapper);
-                activeCanvases.push(canvas);
-                setupDrawingCanvas(canvas, file.id);
-
-                // Add Resizer Bar (except for the last column)
-                if (index < count - 1) {
-                    const resizer = document.createElement('div');
-                    resizer.style.cssText = 'width: 8px; background: rgba(74, 62, 61, 0.25); cursor: col-resize; transition: background 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center;';
-                    resizer.innerHTML = '<div style="width: 2px; height: 30px; background: rgba(255,255,255,0.4); border-radius: 1px;"></div>';
-                    
-                    resizer.addEventListener('mouseover', () => { resizer.style.background = 'var(--primary)'; });
-                    resizer.addEventListener('mouseout', () => { resizer.style.background = 'rgba(74, 62, 61, 0.25)'; });
-
-                    // Resizer drag handler
-                    let startX = 0;
-                    let startLeftWidth = 0;
-
-                    const onDrag = (e) => {
-                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                        const deltaX = clientX - startX;
-                        let newWidth = startLeftWidth + deltaX;
-
-                        // Constraint boundaries
-                        const parentWidth = mealkitViewportsBody.getBoundingClientRect().width;
-                        if (newWidth > 100 && newWidth < parentWidth - 100) {
-                            wrapper.style.width = newWidth + 'px';
-                            wrapper.style.flex = 'none';
-
-                            // Recalculate canvases on resize
-                            activeCanvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
-                        }
-                    };
-
-                    const stopDrag = () => {
-                        document.removeEventListener('mousemove', onDrag);
-                        document.removeEventListener('mouseup', stopDrag);
-                        document.removeEventListener('touchmove', onDrag);
-                        document.removeEventListener('touchend', stopDrag);
-                    };
-
-                    const initDrag = (e) => {
-                        startX = e.touches ? e.touches[0].clientX : e.clientX;
-                        startLeftWidth = wrapper.getBoundingClientRect().width;
-                        document.addEventListener('mousemove', onDrag);
-                        document.addEventListener('mouseup', stopDrag);
-                        document.addEventListener('touchmove', onDrag, { passive: true });
-                        document.addEventListener('touchend', stopDrag);
-                    };
-
-                    resizer.addEventListener('mousedown', initDrag);
-                    resizer.addEventListener('touchstart', initDrag, { passive: true });
-
-                    mealkitViewportsBody.appendChild(resizer);
-                }
-            });
-
-        } else if (currentLayoutMode === 'scroll') {
-            if (mealkitTabsHeader) mealkitTabsHeader.classList.add('hidden');
-            mealkitViewportsBody.style.cssText = 'display: flex; flex-direction: column; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; gap: 1.5rem; padding: 1rem;';
-
-            filesList.forEach((file) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mealkit-viewport-wrapper';
-                wrapper.dataset.fileid = file.id;
-                wrapper.style.cssText = 'position: relative; width: 100%; height: 600px; min-height: 400px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center;';
-
-                const viewer = createViewerElement(file);
-                const canvas = document.createElement('canvas');
-                canvas.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;';
-                canvas.dataset.fileid = file.id;
-
-                wrapper.appendChild(viewer);
-                wrapper.appendChild(canvas);
-
-                // Add warning banner if external link URL
-                appendUrlBannerIfNeeded(wrapper, file, viewer);
-
-                addZoomControls(wrapper, viewer);
-                mealkitViewportsBody.appendChild(wrapper);
-                activeCanvases.push(canvas);
-                setupDrawingCanvas(canvas, file.id);
-            });
-        }
+            panel.appendChild(tabBody);
+            mealkitViewportsBody.appendChild(panel);
+        });
 
         updateCanvasPointerEvents();
     }
@@ -929,8 +888,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sanitizedBase64 = encodedData.replace(/ /g, '+');
             const decodedData = JSON.parse(decodeURIComponent(escape(atob(sanitizedBase64))));
 
-            filesList = decodedData.files || [];
-            currentLayoutMode = decodedData.layoutMode || 'tab';
+            if (decodedData.tabs && Array.isArray(decodedData.tabs)) {
+                tabsDataList = decodedData.tabs;
+            } else if (decodedData.files && Array.isArray(decodedData.files)) {
+                tabsDataList = decodedData.files.map(f => ({
+                    id: f.id,
+                    title: f.label || f.name,
+                    layout: f.layout || 'split',
+                    items: [{ id: 'item_' + f.id, name: f.name || f.label, type: f.type, url: f.url }]
+                }));
+            } else {
+                tabsDataList = [];
+            }
+
             isGlobalCanvas = decodedData.globalCanvas || false;
             enableTimeTracking = decodedData.enableTimeTracking || false;
 
@@ -973,26 +943,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Track currently selected tab ID before updating
                 const activeTabBtn = mealkitTabsHeader ? mealkitTabsHeader.querySelector('.tab-btn.active') : null;
-                const currentActiveTabId = activeTabBtn ? activeTabBtn.dataset.fileid : null;
+                const currentActiveTabId = activeTabBtn ? activeTabBtn.dataset.tabid : null;
 
-                // Support legacy rooms backward compatibility
-                if (!roomData.files) {
-                    filesList = [{
-                        id: 'sim_legacy',
-                        name: roomData.simType === 'url' ? '시뮬레이션 URL' : '시뮬레이션 HTML',
-                        label: '시뮬레이션',
-                        type: roomData.simType,
-                        url: roomData.simType === 'url' ? roomData.simData : ''
+                // Support new tabs structure and legacy rooms backward compatibility
+                if (roomData.tabs && Array.isArray(roomData.tabs)) {
+                    tabsDataList = roomData.tabs;
+                } else if (roomData.files && Array.isArray(roomData.files)) {
+                    tabsDataList = roomData.files.map(f => ({
+                        id: f.id,
+                        title: f.label || f.name,
+                        layout: f.layout || 'split',
+                        items: [{ id: 'item_' + f.id, name: f.name || f.label, type: f.type, url: f.url }]
+                    }));
+                } else if (roomData.simType) {
+                    tabsDataList = [{
+                        id: 'tab_legacy',
+                        title: '시뮬레이션',
+                        layout: 'split',
+                        items: [{
+                            id: 'item_legacy',
+                            name: roomData.simType === 'url' ? '시뮬레이션 URL' : '시뮬레이션 HTML',
+                            type: roomData.simType,
+                            url: roomData.simType === 'url' ? roomData.simData : ''
+                        }]
                     }];
-                    currentLayoutMode = 'tab';
-                    isGlobalCanvas = false;
-                    enableTimeTracking = false;
                 } else {
-                    filesList = roomData.files || [];
-                    currentLayoutMode = roomData.layoutMode || 'tab';
-                    isGlobalCanvas = roomData.globalCanvas || false;
-                    enableTimeTracking = roomData.enableTimeTracking !== false;
+                    tabsDataList = [];
                 }
+
+                isGlobalCanvas = roomData.globalCanvas || false;
+                enableTimeTracking = roomData.enableTimeTracking !== false;
 
                 // Rebuild layout with active tab preserved
                 buildMealkitLayout(currentActiveTabId);

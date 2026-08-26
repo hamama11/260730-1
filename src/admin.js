@@ -117,58 +117,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentRoomData = null;
     let isListenerActive = false;
 
-    // Render current tabs list inside Modal
+    // Render current tabs list inside Modal (2-tier tabs hierarchy support)
     function renderMonitorTabsList() {
         const listEl = document.getElementById('monitor-tabs-list');
         const countEl = document.getElementById('monitor-tabs-count');
         if (!listEl) return;
 
-        const files = (currentRoomData && currentRoomData.files) || [];
-        if (countEl) countEl.textContent = `${files.length}`;
+        let tabs = [];
+        if (currentRoomData && currentRoomData.tabs && Array.isArray(currentRoomData.tabs)) {
+            tabs = currentRoomData.tabs;
+        } else if (currentRoomData && currentRoomData.files && Array.isArray(currentRoomData.files)) {
+            tabs = currentRoomData.files.map(f => ({
+                id: f.id,
+                title: f.label || f.name,
+                layout: f.layout || 'split',
+                items: [{ id: 'item_' + f.id, name: f.name || f.label, type: f.type, url: f.url }]
+            }));
+        }
+
+        if (countEl) countEl.textContent = `${tabs.length}`;
         listEl.innerHTML = '';
 
-        if (files.length === 0) {
-            listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">등록된 탭 자료가 없습니다.</p>';
+        if (tabs.length === 0) {
+            listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">등록된 탭이 없습니다.</p>';
             return;
         }
 
-        files.forEach((file, idx) => {
+        tabs.forEach((tab, idx) => {
             const item = document.createElement('div');
             item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; gap: 0.6rem;';
 
-            let icon = '🌐';
-            let desc = file.url || '웹 링크';
-            if (file.type === 'blank') {
-                icon = '📄';
-                desc = '자유 화이트보드 (판서용)';
-            } else if (file.type === 'coordinate') {
-                icon = '📐';
-                desc = '좌표평면 (수학 격자 판서용)';
-            } else if (file.type === 'pdf') {
-                icon = '📕';
-                desc = 'PDF 문서';
-            } else if (file.type === 'html') {
-                icon = '💻';
-                desc = 'HTML 시뮬레이션';
-            } else if (file.type === 'image') {
-                icon = '🖼️';
-                desc = '이미지 자료';
-            }
+            const isScroll = tab.layout === 'scroll';
+            const itemsCount = (tab.items || []).length;
+            const itemsSummary = (tab.items || []).map(i => i.name).slice(0, 2).join(', ');
 
             item.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 0.6rem; overflow: hidden; flex: 1;">
-                    <span style="font-size: 1.2rem;">${icon}</span>
+                    <span style="font-size: 1.2rem;">📑</span>
                     <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block;">${file.label || file.name}</span>
-                        <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${desc}</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block;">${tab.title} (${itemsCount}개 자료)</span>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${itemsSummary || '자료 없음'}</span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                    <select class="tab-monitor-layout" data-tabidx="${idx}" style="padding: 0.25rem 0.4rem; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.4); color: var(--text-primary); cursor: pointer;">
+                        <option value="split" ${!isScroll ? 'selected' : ''}>🪟 분할</option>
+                        <option value="scroll" ${isScroll ? 'selected' : ''}>📜 스크롤</option>
+                    </select>
                     <button type="button" class="btn btn-secondary btn-sm btn-tab-up" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 위로" ${idx === 0 ? 'disabled' : ''}>▲</button>
-                    <button type="button" class="btn btn-secondary btn-sm btn-tab-down" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 아래로" ${idx === files.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-down" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 아래로" ${idx === tabs.length - 1 ? 'disabled' : ''}>▼</button>
                     <button type="button" class="btn btn-secondary btn-sm btn-delete-tab" data-tabidx="${idx}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);">🗑️ 삭제</button>
                 </div>
             `;
+
+            // Layout change handler
+            const layoutSelect = item.querySelector('.tab-monitor-layout');
+            if (layoutSelect) {
+                layoutSelect.addEventListener('change', async (e) => {
+                    const newLayout = e.target.value;
+                    const newTabs = [...tabs];
+                    newTabs[idx] = { ...newTabs[idx], layout: newLayout };
+                    try {
+                        const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                        await updateDoc(roomRef, { tabs: newTabs });
+                        currentRoomData.tabs = newTabs;
+                    } catch (err) {
+                        console.error("탭 레이아웃 업데이트 실패:", err);
+                        alert("탭 레이아웃 변경에 실패했습니다: " + err.message);
+                    }
+                });
+            }
 
             // Up/Down Reorder handlers
             const upBtn = item.querySelector('.btn-tab-up');
@@ -177,14 +195,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (upBtn) {
                 upBtn.addEventListener('click', async () => {
                     if (idx > 0) {
-                        const newFiles = [...files];
-                        const temp = newFiles[idx];
-                        newFiles[idx] = newFiles[idx - 1];
-                        newFiles[idx - 1] = temp;
+                        const newTabs = [...tabs];
+                        const temp = newTabs[idx];
+                        newTabs[idx] = newTabs[idx - 1];
+                        newTabs[idx - 1] = temp;
                         try {
                             const roomRef = doc(db, "users", teacherId, "rooms", roomId);
-                            await updateDoc(roomRef, { files: newFiles });
-                            currentRoomData.files = newFiles;
+                            await updateDoc(roomRef, { tabs: newTabs });
+                            currentRoomData.tabs = newTabs;
                             renderMonitorTabsList();
                         } catch (e) {
                             console.error("순서 변경 실패:", e);
@@ -195,15 +213,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (downBtn) {
                 downBtn.addEventListener('click', async () => {
-                    if (idx < files.length - 1) {
-                        const newFiles = [...files];
-                        const temp = newFiles[idx];
-                        newFiles[idx] = newFiles[idx + 1];
-                        newFiles[idx + 1] = temp;
+                    if (idx < tabs.length - 1) {
+                        const newTabs = [...tabs];
+                        const temp = newTabs[idx];
+                        newTabs[idx] = newTabs[idx + 1];
+                        newTabs[idx + 1] = temp;
                         try {
                             const roomRef = doc(db, "users", teacherId, "rooms", roomId);
-                            await updateDoc(roomRef, { files: newFiles });
-                            currentRoomData.files = newFiles;
+                            await updateDoc(roomRef, { tabs: newTabs });
+                            currentRoomData.tabs = newTabs;
                             renderMonitorTabsList();
                         } catch (e) {
                             console.error("순서 변경 실패:", e);
@@ -214,18 +232,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const delBtn = item.querySelector('.btn-delete-tab');
             delBtn.addEventListener('click', async () => {
-                if (files.length <= 1) {
+                if (tabs.length <= 1) {
                     if (!confirm("마지막 탭을 삭제하시겠습니까? 학생 화면에 표시할 자료가 없게 됩니다.")) return;
                 } else {
-                    if (!confirm(`'${file.label || file.name}' 탭을 수업에서 삭제하시겠습니까?\n모든 학생의 화면에서 즉시 제거됩니다.`)) return;
+                    if (!confirm(`'${tab.title}' 탭을 수업에서 삭제하시겠습니까?\n모든 학생의 화면에서 즉시 제거됩니다.`)) return;
                 }
 
                 try {
-                    const newFiles = [...files];
-                    newFiles.splice(idx, 1);
+                    const newTabs = [...tabs];
+                    newTabs.splice(idx, 1);
                     const roomRef = doc(db, "users", teacherId, "rooms", roomId);
-                    await updateDoc(roomRef, { files: newFiles });
-                    currentRoomData.files = newFiles;
+                    await updateDoc(roomRef, { tabs: newTabs });
+                    currentRoomData.tabs = newTabs;
                     renderMonitorTabsList();
                     alert("탭이 삭제되었으며 모든 학생 화면에 실시간 반영되었습니다.");
                 } catch (err) {
@@ -730,6 +748,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!newTabObj) return;
 
+            const layoutSelect = document.getElementById('new-tab-layout-select');
+            const selectedLayout = layoutSelect ? layoutSelect.value : 'split';
+
+            // Construct new tab with nested item
+            const newTab = {
+                id: 'tab_' + Math.random().toString(36).substr(2, 9),
+                title: newTabObj.label || newTabObj.name,
+                layout: selectedLayout,
+                items: [{
+                    id: newTabObj.id,
+                    name: newTabObj.label || newTabObj.name,
+                    type: newTabObj.type,
+                    url: newTabObj.url || '',
+                    storagePath: newTabObj.storagePath || ''
+                }]
+            };
+
             const btnText = btnSubmitAddTab.querySelector('.btn-text');
             const spinner = btnSubmitAddTab.querySelector('.spinner');
             if (btnText) btnText.classList.add('hidden');
@@ -737,12 +772,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnSubmitAddTab.disabled = true;
 
             try {
-                files.push(newTabObj);
+                let tabs = [];
+                if (currentRoomData && currentRoomData.tabs && Array.isArray(currentRoomData.tabs)) {
+                    tabs = [...currentRoomData.tabs];
+                } else if (currentRoomData && currentRoomData.files && Array.isArray(currentRoomData.files)) {
+                    tabs = currentRoomData.files.map(f => ({
+                        id: f.id,
+                        title: f.label || f.name,
+                        layout: f.layout || 'split',
+                        items: [{ id: 'item_' + f.id, name: f.name || f.label, type: f.type, url: f.url }]
+                    }));
+                }
+
+                tabs.push(newTab);
                 const roomRef = doc(db, "users", teacherId, "rooms", roomId);
-                await updateDoc(roomRef, { files: files });
-                currentRoomData.files = files;
+                await updateDoc(roomRef, { tabs: tabs });
+                currentRoomData.tabs = tabs;
                 renderMonitorTabsList();
-                alert(`'${newTabObj.label}' 탭이 추가되었습니다!\n모든 학생의 화면에 실시간으로 생성됩니다.`);
+                alert(`'${newTab.title}' 탭이 추가되었습니다!\n모든 학생의 화면에 실시간으로 생성됩니다.`);
             } catch (err) {
                 console.error("탭 추가 실패:", err);
                 alert("탭 추가에 실패했습니다: " + err.message);

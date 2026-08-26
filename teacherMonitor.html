@@ -191,6 +191,15 @@
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">💡 x축, y축, 원점 및 정밀 모눈 격자가 표시되는 수학 탐구용 좌표평면이 추가됩니다.</p>
                 </div>
 
+                <!-- Shared Layout Selection for New Tab -->
+                <div style="margin-top: 0.8rem; border-top: 1px dashed var(--border-color); padding-top: 0.8rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">탭 내부 화면 뷰</label>
+                    <select id="new-tab-layout-select" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary); cursor: pointer;">
+                        <option value="split" selected>🪟 다단 분할 뷰</option>
+                        <option value="scroll">📜 상하 스크롤 뷰</option>
+                    </select>
+                </div>
+
                 <button type="button" id="btn-submit-add-tab" class="btn btn-primary btn-block" style="margin-top: 1rem; padding: 0.75rem;">
                     <span class="btn-text">🚀 학생 화면에 탭 즉시 추가</span>
                     <div class="spinner hidden"></div>

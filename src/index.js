@@ -552,361 +552,420 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    questionsList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-delete-question')) {
-            const index = parseInt(e.target.dataset.index);
-            questions.splice(index, 1);
-            renderQuestionsConfig();
+    // ── 2-Tier Tabs Structure State ──
+    // Array of Tab objects:
+    // {
+    //    id: 'tab_xxx',
+    //    title: '1단원 탐구',
+    //    layout: 'split' | 'scroll',
+    //    items: [
+    //       { id: 'item_xxx', name: '...', type: 'url'|'html'|'pdf'|'image'|'blank'|'coordinate', url: '...', fileObject: File, storagePath: '...' }
+    //    ]
+    // }
+    let tabsList = [
+        {
+            id: 'tab_' + Math.random().toString(36).substr(2, 9),
+            title: '탐구 활동 1',
+            layout: 'split',
+            items: []
         }
-        if (e.target.classList.contains('btn-add-option')) {
-            const qIdx = parseInt(e.target.dataset.qidx);
-            questions[qIdx].options.push(`옵션 ${questions[qIdx].options.length + 1}`);
-            renderQuestionsConfig();
-        }
-        if (e.target.classList.contains('btn-delete-option')) {
-            const qIdx = parseInt(e.target.dataset.qidx);
-            const optIdx = parseInt(e.target.dataset.optidx);
-            questions[qIdx].options.splice(optIdx, 1);
-            renderQuestionsConfig();
-        }
-    });
+    ];
 
-    // ── Mealkit Files & Layout State ──
-    let mealkitFiles = []; // Array of { id, name, size, type, fileObject, label, url, storagePath }
-    let selectedLayout = 'tab'; // 'tab' | 'split' | 'scroll'
-    let replaceTargetId = null;
+    let selectedTabId = tabsList[0].id;
 
+    const tabsStructureContainer = document.getElementById('tabs-structure-container');
+    const btnAddNewTab = document.getElementById('btn-add-new-tab');
     const mealkitDropzone = document.getElementById('mealkit-dropzone');
     const mealkitFileInput = document.getElementById('mealkit-file-input');
-    const mealkitDropzoneText = document.getElementById('mealkit-dropzone-text');
-    const mealkitFilesContainer = document.getElementById('mealkit-files-container');
-    const mealkitFilesList = document.getElementById('mealkit-files-list');
-    const mealkitFilesCount = document.getElementById('mealkit-files-count');
-    const layoutModeWarning = document.getElementById('layout-mode-warning');
 
-    // URL link elements
-    const mealkitUrlInput = document.getElementById('mealkit-url-input');
-    const btnMealkitAddUrl = document.getElementById('btn-mealkit-add-url');
-
-    // Layout buttons
-    const layoutSelector = document.getElementById('layout-mode-selector');
-    const layoutBtns = layoutSelector ? layoutSelector.querySelectorAll('.tab-btn') : [];
-    const btnLayoutSplit = document.getElementById('btn-layout-split');
-
-    // Handle Layout Selection clicks
-    layoutBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const mode = btn.dataset.layout;
-            if (mode === 'split' && mealkitFiles.length >= 4) {
-                alert("자료가 4개 이상일 때는 다단 분할 모드를 선택할 수 없습니다.");
+    if (btnAddNewTab) {
+        btnAddNewTab.addEventListener('click', () => {
+            if (tabsList.length >= 10) {
+                alert("상단 탭은 최대 10개까지만 생성할 수 있습니다.");
                 return;
             }
-            layoutBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedLayout = mode;
+            const tabNum = tabsList.length + 1;
+            const newTab = {
+                id: 'tab_' + Math.random().toString(36).substr(2, 9),
+                title: `탐구 활동 ${tabNum}`,
+                layout: 'split',
+                items: []
+            };
+            tabsList.push(newTab);
+            selectedTabId = newTab.id; // automatically focus new tab
+            renderTabsStructure();
         });
-    });
-
-    // Auto-validate and update Layout options based on file count
-    function updateLayoutAvailability() {
-        if (mealkitFiles.length >= 4) {
-            if (btnLayoutSplit) {
-                btnLayoutSplit.style.opacity = '0.4';
-                btnLayoutSplit.style.cursor = 'not-allowed';
-            }
-            if (layoutModeWarning) layoutModeWarning.style.display = 'block';
-
-            if (selectedLayout === 'split') {
-                selectedLayout = 'tab';
-                layoutBtns.forEach(b => {
-                    b.classList.remove('active');
-                    if (b.dataset.layout === 'tab') b.classList.add('active');
-                });
-            }
-        } else {
-            if (btnLayoutSplit) {
-                btnLayoutSplit.style.opacity = '1';
-                btnLayoutSplit.style.cursor = 'pointer';
-            }
-            if (layoutModeWarning) layoutModeWarning.style.display = 'none';
-        }
     }
 
-    async function checkAndLoadEditMode(uid) {
-        if (!editRoomId) return;
-        if (editTeacherId !== uid) {
-            console.warn("Edit uid mismatch. Logged in uid:", uid, "URL teacherId:", editTeacherId);
+    function renderTabsStructure() {
+        if (!tabsStructureContainer) return;
+        tabsStructureContainer.innerHTML = '';
+
+        if (tabsList.length === 0) {
+            tabsStructureContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 1.5rem; border: 1px dashed var(--border-color); border-radius: 12px;">생성된 탭이 없습니다. [➕ 새 탭 추가] 버튼을 눌러주세요.</p>';
             return;
         }
 
-        try {
-            if (!isFirebaseInitialized || !db) return;
-            const roomRef = doc(db, "users", editTeacherId, "rooms", editRoomId);
-            const roomSnap = await getDoc(roomRef);
-            if (roomSnap.exists()) {
-                const roomData = roomSnap.data();
-                
-                // 1. Populate mealkitFiles list
-                mealkitFiles = (roomData.files || []).map(f => ({
-                    id: f.id,
-                    name: f.name,
-                    size: f.size || 0,
-                    type: f.type || (f.name.toLowerCase().endsWith('.html') ? 'html' : (f.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image')),
-                    fileObject: null, 
-                    label: f.label || f.name,
-                    url: f.url,
-                    storagePath: f.storagePath || ''
-                }));
-
-                // 2. Populate questions
-                questions = roomData.questions || [];
-
-                // 3. Populate selectedLayout
-                selectedLayout = roomData.layoutMode || 'tab';
-
-                // 4. Update UI: Canvas Option Radio
-                const canvasIndependent = document.querySelector('input[name="canvas-option"][value="independent"]');
-                const canvasGlobal = document.querySelector('input[name="canvas-option"][value="global"]');
-                if (roomData.globalCanvas) {
-                    if (canvasGlobal) canvasGlobal.checked = true;
-                } else {
-                    if (canvasIndependent) canvasIndependent.checked = true;
-                }
-
-                // 4-2. Update UI: Time Tracking Checkbox
-                const checkTimeTracking = document.getElementById('check-time-tracking');
-                if (checkTimeTracking) {
-                    checkTimeTracking.checked = roomData.enableTimeTracking !== false;
-                }
-
-                // 5. Update UI: Layout Buttons active state
-                if (layoutBtns) {
-                    layoutBtns.forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.layout === selectedLayout);
-                    });
-                }
-
-                // 6. Update UI: Room ID input (Disable it)
-                const customRoomIdInput = document.getElementById('custom-room-id');
-                if (customRoomIdInput) {
-                    customRoomIdInput.value = editRoomId;
-                    customRoomIdInput.disabled = true;
-                }
-
-                // 7. Update UI: Submit Button Text
-                const btnCreateRoom = document.getElementById('btn-create-room');
-                if (btnCreateRoom) {
-                    const btnText = btnCreateRoom.querySelector('.btn-text');
-                    if (btnText) btnText.textContent = '🛠️ 수업 밀키트 수정 완료';
-                }
-
-                // Render lists
-                renderMealkitFilesList();
-                renderQuestionsConfig();
-
-                console.log("Room settings loaded for editing:", editRoomId);
-            }
-        } catch (err) {
-            console.error("수업방 수정 정보 불러오기 실패:", err);
-        }
-    }
-
-    // Render Uploaded Files & URLs
-    function renderMealkitFilesList() {
-        if (!mealkitFilesList) return;
-        mealkitFilesList.innerHTML = '';
-
-        if (mealkitFiles.length === 0) {
-            if (mealkitFilesContainer) mealkitFilesContainer.classList.add('hidden');
-            if (mealkitFilesCount) mealkitFilesCount.textContent = '0';
-            updateLayoutAvailability();
-            return;
+        // Ensure selectedTabId exists
+        if (!tabsList.some(t => t.id === selectedTabId)) {
+            selectedTabId = tabsList[0].id;
         }
 
-        if (mealkitFilesContainer) mealkitFilesContainer.classList.remove('hidden');
-        if (mealkitFilesCount) mealkitFilesCount.textContent = mealkitFiles.length;
+        tabsList.forEach((tab, tabIdx) => {
+            const isSelected = (tab.id === selectedTabId);
+            const tabCard = document.createElement('div');
+            tabCard.className = 'tab-config-card' + (isSelected ? ' active-selected-tab' : '');
+            tabCard.dataset.tabid = tab.id;
+            
+            // Dynamic card border style for active/focused tab
+            const borderStyle = isSelected 
+                ? 'border: 2px solid var(--primary); box-shadow: 0 0 16px rgba(224, 122, 95, 0.18); background: rgba(224, 122, 95, 0.025);'
+                : 'border: 1px solid var(--border-color); background: rgba(255,255,255,0.02);';
 
-        mealkitFiles.forEach((file, index) => {
-            const item = document.createElement('div');
-            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.6rem 0.9rem; flex-wrap: wrap;';
+            tabCard.style.cssText = `${borderStyle} border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; transition: all 0.2s ease; position: relative;`;
 
-            // Extension icon or link icon
-            let icon = '📄';
-            let subtitle = '';
+            // Click tab card to select/focus for paste
+            tabCard.addEventListener('click', (e) => {
+                if (['INPUT', 'BUTTON', 'SELECT', 'A'].includes(e.target.tagName)) return;
+                if (selectedTabId !== tab.id) {
+                    selectedTabId = tab.id;
+                    renderTabsStructure();
+                }
+            });
 
-            if (file.type === 'url') {
-                icon = '🌐';
-                subtitle = file.url;
-            } else if (file.type === 'blank') {
-                icon = '📄';
-                subtitle = '자유 화이트보드 (판서용)';
-            } else if (file.type === 'coordinate') {
-                icon = '📐';
-                subtitle = '좌표평면 (수학 격자 판서용)';
-            } else {
-                if (file.name.toLowerCase().endsWith('.pdf')) icon = '📕';
-                else if (file.name.toLowerCase().endsWith('.html')) icon = '💻';
-                else if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) icon = '🖼️';
-                subtitle = `${(file.size / 1024).toFixed(1)} KB`;
-            }
+            // Tab Header Controls
+            const tabHeader = document.createElement('div');
+            tabHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem;';
 
-            const infoArea = document.createElement('div');
-            infoArea.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 220px; max-width: 320px; overflow: hidden;';
-            infoArea.innerHTML = `
-                <span style="font-size: 1.2rem;">${icon}</span>
-                <div style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: calc(100% - 2rem);">
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden;">${file.name}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden;">${subtitle}</span>
+            tabHeader.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 250px;">
+                    <span style="font-weight: 700; color: var(--primary); font-size: 1rem; white-space: nowrap;">
+                        📑 탭 #${tabIdx + 1} ${isSelected ? '<span style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.15rem 0.45rem; border-radius: 6px; font-weight: 600; margin-left: 0.25rem;">선택됨 (Ctrl+V 붙여넣기 대상)</span>' : ''}
+                    </span>
+                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목 입력" style="flex: 1; max-width: 260px; padding: 0.4rem 0.7rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                    <!-- Per-tab layout selector -->
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
+                        <select class="tab-layout-select" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.6); color: var(--text-primary); cursor: pointer;">
+                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할</option>
+                            <option value="scroll" ${tab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤</option>
+                        </select>
+                    </div>
+
+                    <!-- Reorder and delete tab -->
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-up" title="탭 순서 위로" style="padding: 0.35rem 0.55rem; font-size: 0.8rem;" ${tabIdx === 0 ? 'disabled' : ''}>▲</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-down" title="탭 순서 아래로" style="padding: 0.35rem 0.55rem; font-size: 0.8rem;" ${tabIdx === tabsList.length - 1 ? 'disabled' : ''}>▼</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-delete-entire-tab" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; color: #f87171; border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.06);" title="탭 삭제">🗑️ 탭 삭제</button>
+                    </div>
                 </div>
             `;
 
-            // Tab label editor input
-            const labelGroup = document.createElement('div');
-            labelGroup.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; min-width: 160px; flex: 1;';
-            labelGroup.innerHTML = `
-                <span style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">탭 이름:</span>
-                <input type="text" value="${file.label}" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; color: var(--text-primary); background: rgba(15,23,42,0.4);" placeholder="탭 표시 이름">
-            `;
-            const labelInput = labelGroup.querySelector('input');
-            labelInput.addEventListener('input', (e) => {
-                file.label = e.target.value.trim() || file.name;
+            // Tab title input listener
+            const titleInput = tabHeader.querySelector('.tab-title-input');
+            titleInput.addEventListener('focus', () => {
+                if (selectedTabId !== tab.id) {
+                    selectedTabId = tab.id;
+                    renderTabsStructure();
+                }
+            });
+            titleInput.addEventListener('input', (e) => {
+                tab.title = e.target.value.trim() || `탐구 활동 ${tabIdx + 1}`;
             });
 
-            // Action buttons (Reorder Up/Down & Delete/Edit)
-            const actions = document.createElement('div');
-            actions.style.cssText = 'display: flex; gap: 0.35rem; align-items: center;';
+            // Layout select listener
+            const layoutSelect = tabHeader.querySelector('.tab-layout-select');
+            layoutSelect.addEventListener('change', (e) => {
+                tab.layout = e.target.value;
+            });
 
-            // Reorder buttons
-            const reorderGroup = document.createElement('div');
-            reorderGroup.style.cssText = 'display: flex; gap: 0.2rem; margin-right: 0.3rem;';
-            reorderGroup.innerHTML = `
-                <button type="button" class="btn btn-secondary btn-sm btn-move-up" style="padding: 0.35rem 0.55rem; font-size: 0.8rem; line-height: 1;" title="순서 위로" ${index === 0 ? 'disabled' : ''}>▲</button>
-                <button type="button" class="btn btn-secondary btn-sm btn-move-down" style="padding: 0.35rem 0.55rem; font-size: 0.8rem; line-height: 1;" title="순서 아래로" ${index === mealkitFiles.length - 1 ? 'disabled' : ''}>▼</button>
-            `;
-
-            reorderGroup.querySelector('.btn-move-up').addEventListener('click', () => {
-                if (index > 0) {
-                    const temp = mealkitFiles[index];
-                    mealkitFiles[index] = mealkitFiles[index - 1];
-                    mealkitFiles[index - 1] = temp;
-                    renderMealkitFilesList();
+            // Tab move up
+            tabHeader.querySelector('.btn-tab-move-up').addEventListener('click', () => {
+                if (tabIdx > 0) {
+                    const temp = tabsList[tabIdx];
+                    tabsList[tabIdx] = tabsList[tabIdx - 1];
+                    tabsList[tabIdx - 1] = temp;
+                    renderTabsStructure();
                 }
             });
 
-            reorderGroup.querySelector('.btn-move-down').addEventListener('click', () => {
-                if (index < mealkitFiles.length - 1) {
-                    const temp = mealkitFiles[index];
-                    mealkitFiles[index] = mealkitFiles[index + 1];
-                    mealkitFiles[index + 1] = temp;
-                    renderMealkitFilesList();
+            // Tab move down
+            tabHeader.querySelector('.btn-tab-move-down').addEventListener('click', () => {
+                if (tabIdx < tabsList.length - 1) {
+                    const temp = tabsList[tabIdx];
+                    tabsList[tabIdx] = tabsList[tabIdx + 1];
+                    tabsList[tabIdx + 1] = temp;
+                    renderTabsStructure();
                 }
             });
 
-            actions.appendChild(reorderGroup);
+            // Tab delete
+            tabHeader.querySelector('.btn-delete-entire-tab').addEventListener('click', () => {
+                if (tabsList.length === 1) {
+                    alert("수업에는 최소 1개의 탭이 존재해야 합니다.");
+                    return;
+                }
+                if (confirm(`'${tab.title}' 탭과 탭 내부의 모든 자료를 삭제하시겠습니까?`)) {
+                    tabsList.splice(tabIdx, 1);
+                    if (selectedTabId === tab.id) {
+                        selectedTabId = tabsList[0].id;
+                    }
+                    renderTabsStructure();
+                }
+            });
 
-            if (file.type === 'url') {
-                const actionBtns = document.createElement('div');
-                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
-                actionBtns.innerHTML = `
-                    <button type="button" class="btn btn-secondary btn-sm btn-edit-url" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">✏️ URL 수정</button>
-                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
+            tabCard.appendChild(tabHeader);
+
+            // Nested Items Area
+            const itemsArea = document.createElement('div');
+            itemsArea.style.cssText = 'display: flex; flex-direction: column; gap: 0.6rem;';
+
+            // Items List Box
+            const itemsListBox = document.createElement('div');
+            itemsListBox.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
+
+            if (tab.items.length === 0) {
+                itemsListBox.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-secondary); font-size: 0.85rem;">
+                        이 탭에 담긴 자료가 없습니다. 아래 버튼으로 웹 링크, 파일, 화이트보드를 추가하거나, 탭을 선택하고 <strong>Ctrl+V</strong>로 캡처 이미지를 바로 붙여넣으세요!
+                    </div>
                 `;
-
-                // URL modify handler
-                actionBtns.querySelector('.btn-edit-url').addEventListener('click', () => {
-                    const newUrl = prompt("수정할 외부 웹사이트/시뮬레이션 주소(URL)를 입력해 주세요:", file.url);
-                    if (newUrl !== null && newUrl.trim()) {
-                        file.url = newUrl.trim();
-                        file.name = newUrl.trim();
-                        try {
-                            const urlObj = new URL(file.url);
-                            file.label = urlObj.hostname.replace('www.', '');
-                        } catch (e) {
-                            file.label = '웹 링크';
-                        }
-                        renderMealkitFilesList();
-                    }
-                });
-
-                // Delete URL handler
-                actionBtns.querySelectorAll('button')[1].addEventListener('click', () => {
-                    if (confirm(`'${file.label}' 링크를 목록에서 삭제하시겠습니까?`)) {
-                        mealkitFiles.splice(index, 1);
-                        renderMealkitFilesList();
-                    }
-                });
-                actions.appendChild(actionBtns);
-            } else if (file.type === 'blank' || file.type === 'coordinate') {
-                const actionBtns = document.createElement('div');
-                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
-                actionBtns.innerHTML = `
-                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
-                `;
-                actionBtns.querySelector('button').addEventListener('click', () => {
-                    if (confirm(`'${file.label}' 탭을 목록에서 제외하시겠습니까?`)) {
-                        mealkitFiles.splice(index, 1);
-                        renderMealkitFilesList();
-                    }
-                });
-                actions.appendChild(actionBtns);
             } else {
-                const actionBtns = document.createElement('div');
-                actionBtns.style.cssText = 'display: flex; gap: 0.35rem;';
-                actionBtns.innerHTML = `
-                    <button type="button" class="btn btn-secondary btn-sm btn-replace-file" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🔄 교체</button>
-                    <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #f87171; background: rgba(239, 68, 68, 0.05);">🗑️ 삭제</button>
-                `;
+                tab.items.forEach((item, itemIdx) => {
+                    const itemRow = document.createElement('div');
+                    itemRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; background: rgba(15,23,42,0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.8rem; flex-wrap: wrap;';
 
-                // Replace handler
-                actionBtns.querySelector('.btn-replace-file').addEventListener('click', () => {
-                    replaceTargetId = file.id;
-                    if (mealkitFileInput) mealkitFileInput.click();
-                });
-
-                // Delete handler
-                actionBtns.querySelectorAll('button')[1].addEventListener('click', async () => {
-                    if (confirm(`'${file.name}' 파일을 수업 목록에서 제외하시겠습니까?`)) {
-                        if (file.storagePath && isFirebaseInitialized && storage) {
-                            try {
-                                const fileRef = ref(storage, file.storagePath);
-                                await deleteObject(fileRef);
-                                console.log("Firebase Storage asset deleted:", file.storagePath);
-                            } catch (err) {
-                                console.warn("Storage deletion error (non-fatal):", err);
-                            }
-                        }
-                        mealkitFiles.splice(index, 1);
-                        renderMealkitFilesList();
+                    let icon = '📄';
+                    let desc = item.name || '';
+                    if (item.type === 'url') {
+                        icon = '🌐';
+                        desc = item.url;
+                    } else if (item.type === 'blank') {
+                        icon = '📄';
+                        desc = '자유 화이트보드';
+                    } else if (item.type === 'coordinate') {
+                        icon = '📐';
+                        desc = '수학 좌표평면';
+                    } else if (item.type === 'pdf' || (item.name && item.name.endsWith('.pdf'))) {
+                        icon = '📕';
+                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'PDF 문서';
+                    } else if (item.type === 'html' || (item.name && item.name.endsWith('.html'))) {
+                        icon = '💻';
+                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'HTML 시뮬레이션';
+                    } else {
+                        icon = '🖼️';
+                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : '이미지';
                     }
+
+                    itemRow.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px; overflow: hidden;">
+                            <span style="font-size: 1.1rem;">${icon}</span>
+                            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 240px; padding: 0.25rem 0.5rem; font-size: 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary);">
+                                <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${desc}</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.3rem;">
+                            <button type="button" class="btn btn-secondary btn-sm btn-item-up" title="자료 순서 위로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === 0 ? 'disabled' : ''}>▲</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-item-down" title="자료 순서 아래로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === tab.items.length - 1 ? 'disabled' : ''}>▼</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);">🗑️</button>
+                        </div>
+                    `;
+
+                    // Item name change
+                    const nameInput = itemRow.querySelector('.item-name-input');
+                    nameInput.addEventListener('focus', () => {
+                        if (selectedTabId !== tab.id) {
+                            selectedTabId = tab.id;
+                            renderTabsStructure();
+                        }
+                    });
+                    nameInput.addEventListener('input', (e) => {
+                        item.name = e.target.value.trim() || '자료';
+                    });
+
+                    // Item up
+                    itemRow.querySelector('.btn-item-up').addEventListener('click', () => {
+                        if (itemIdx > 0) {
+                            const temp = tab.items[itemIdx];
+                            tab.items[itemIdx] = tab.items[itemIdx - 1];
+                            tab.items[itemIdx - 1] = temp;
+                            renderTabsStructure();
+                        }
+                    });
+
+                    // Item down
+                    itemRow.querySelector('.btn-item-down').addEventListener('click', () => {
+                        if (itemIdx < tab.items.length - 1) {
+                            const temp = tab.items[itemIdx];
+                            tab.items[itemIdx] = tab.items[itemIdx + 1];
+                            tab.items[itemIdx + 1] = temp;
+                            renderTabsStructure();
+                        }
+                    });
+
+                    // Item delete
+                    itemRow.querySelector('.btn-delete-item').addEventListener('click', async () => {
+                        if (confirm(`'${item.name}' 자료를 이 탭에서 삭제하시겠습니까?`)) {
+                            if (item.storagePath && isFirebaseInitialized && storage) {
+                                try {
+                                    const fileRef = ref(storage, item.storagePath);
+                                    await deleteObject(fileRef);
+                                } catch (e) {
+                                    console.warn("Storage delete error:", e);
+                                }
+                            }
+                            tab.items.splice(itemIdx, 1);
+                            renderTabsStructure();
+                        }
+                    });
+
+                    itemsListBox.appendChild(itemRow);
                 });
-                actions.appendChild(actionBtns);
             }
 
-            item.appendChild(infoArea);
-            item.appendChild(labelGroup);
-            item.appendChild(actions);
-            mealkitFilesList.appendChild(item);
-        });
+            itemsArea.appendChild(itemsListBox);
 
-        updateLayoutAvailability();
+            // Item Quick Add Toolbar for this tab
+            const addToolbar = document.createElement('div');
+            addToolbar.style.cssText = 'display: flex; gap: 0.4rem; flex-wrap: wrap; background: rgba(255,255,255,0.015); border: 1px dashed var(--border-color); border-radius: 8px; padding: 0.6rem; align-items: center;';
+
+            addToolbar.innerHTML = `
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                    📁 + 파일 올리기 (.html, .pdf, 이미지)
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-url" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(224, 122, 95, 0.08); border-color: rgba(224, 122, 95, 0.2); color: var(--primary);">
+                    🌐 + 웹 링크 추가
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-blank" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">
+                    📄 + 화이트보드
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-coord" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(129, 178, 154, 0.08); border-color: rgba(129, 178, 154, 0.2); color: var(--accent);">
+                    📐 + 좌표평면
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-paste-hint" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(244, 162, 97, 0.1); border-color: rgba(244, 162, 97, 0.3); color: #f97316; margin-left: auto;">
+                    📋 Ctrl+V 붙여넣기 지원
+                </button>
+            `;
+
+            // Hidden file input for this tab
+            const tabFileInput = document.createElement('input');
+            tabFileInput.type = 'file';
+            tabFileInput.multiple = true;
+            tabFileInput.accept = '.html,.pdf,.png,.jpg,.jpeg,.webp';
+            tabFileInput.style.display = 'none';
+
+            tabFileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    processTabFiles(tab, e.target.files);
+                }
+            });
+
+            addToolbar.querySelector('.btn-tab-upload-file').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                tabFileInput.click();
+            });
+
+            // Add URL
+            addToolbar.querySelector('.btn-tab-add-url').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                const url = prompt("추가할 외부 웹사이트/시뮬레이션 URL을 입력하세요 (https://...):");
+                if (url && url.trim()) {
+                    let label = '웹 링크';
+                    try {
+                        const parsed = new URL(url.trim());
+                        label = parsed.hostname.replace('www.', '');
+                    } catch (e) {
+                        label = '웹 링크';
+                    }
+                    tab.items.push({
+                        id: 'item_' + Math.random().toString(36).substr(2, 9),
+                        name: label,
+                        type: 'url',
+                        url: url.trim(),
+                        fileObject: null,
+                        storagePath: ''
+                    });
+                    renderTabsStructure();
+                }
+            });
+
+            // Add Blank
+            addToolbar.querySelector('.btn-tab-add-blank').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                const blankNum = tab.items.filter(i => i.type === 'blank').length + 1;
+                tab.items.push({
+                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                    name: `화이트보드 ${blankNum}`,
+                    type: 'blank',
+                    url: '',
+                    fileObject: null,
+                    storagePath: ''
+                });
+                renderTabsStructure();
+            });
+
+            // Add Coordinate
+            addToolbar.querySelector('.btn-tab-add-coord').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                const coordNum = tab.items.filter(i => i.type === 'coordinate').length + 1;
+                tab.items.push({
+                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                    name: `좌표평면 ${coordNum}`,
+                    type: 'coordinate',
+                    url: '',
+                    fileObject: null,
+                    storagePath: ''
+                });
+                renderTabsStructure();
+            });
+
+            // Paste hint button click -> activate tab
+            addToolbar.querySelector('.btn-tab-paste-hint').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                renderTabsStructure();
+                alert(`'${tab.title}' 탭이 선택되었습니다!\n이제 Ctrl+V를 누르면 캡처한 이미지가 이 탭에 바로 추가됩니다.`);
+            });
+
+            // Drag over / drop into individual tab card
+            tabCard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                tabCard.style.borderColor = 'var(--primary)';
+            });
+            tabCard.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                if (selectedTabId !== tab.id) tabCard.style.borderColor = 'var(--border-color)';
+            });
+            tabCard.addEventListener('drop', (e) => {
+                e.preventDefault();
+                selectedTabId = tab.id;
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    processTabFiles(tab, e.dataTransfer.files);
+                }
+            });
+
+            itemsArea.appendChild(addToolbar);
+            tabCard.appendChild(itemsArea);
+            tabsStructureContainer.appendChild(tabCard);
+        });
     }
 
-    // File selection validation & adding logic
-    function processSelectedFiles(filesList) {
-        if (!filesList || filesList.length === 0) return;
-
+    function processTabFiles(targetTab, fileList) {
+        if (!fileList || fileList.length === 0) return;
         const allowedExtensions = ['.html', '.pdf', '.png', '.jpg', '.jpeg', '.webp'];
 
-        for (let i = 0; i < filesList.length; i++) {
-            const file = filesList[i];
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
             const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
             if (!allowedExtensions.includes(ext)) {
-                alert(`지원되지 않는 확장자입니다: ${file.name}\n(.html, .pdf, .png, .jpg, .jpeg, .webp 파일만 지원합니다)`);
+                alert(`지원하지 않는 파일 형식입니다: ${file.name}`);
                 continue;
             }
-
-            // Individual size check
             if (ext === '.pdf' && file.size > 10 * 1024 * 1024) {
                 alert(`PDF 파일의 최대 허용 크기는 10MB입니다: ${file.name}`);
                 continue;
@@ -915,160 +974,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 continue;
             }
 
-            // Total size check
-            const currentTotalSize = mealkitFiles.reduce((sum, f) => f.type !== 'url' ? sum + f.size : sum, 0);
-            if (currentTotalSize + file.size > 30 * 1024 * 1024) {
-                alert(`전체 파일의 합계 용량이 30MB를 초과하여 추가할 수 없습니다: ${file.name}`);
-                break;
-            }
+            const itemType = ext === '.pdf' ? 'pdf' : (ext === '.html' ? 'html' : 'image');
+            const defaultName = file.name.substring(0, file.name.lastIndexOf('.'));
 
-            // Default label: screenshot or filename without extension
-            let defaultLabel = file.name.substring(0, file.name.lastIndexOf('.'));
-            if (file.name.startsWith('screenshot_')) {
-                const screenshotNum = mealkitFiles.filter(f => f.name.startsWith('screenshot_')).length + 1;
-                defaultLabel = `스크린샷_${screenshotNum}`;
-            }
-
-            if (replaceTargetId) {
-                // Perform file replacement
-                const targetIdx = mealkitFiles.findIndex(f => f.id === replaceTargetId);
-                if (targetIdx !== -1) {
-                    const prevFile = mealkitFiles[targetIdx];
-                    if (prevFile.storagePath && isFirebaseInitialized && storage) {
-                        try {
-                            const fileRef = ref(storage, prevFile.storagePath);
-                            deleteObject(fileRef);
-                        } catch (err) {
-                            console.warn("Storage deletion error during replace:", err);
-                        }
-                    }
-                    mealkitFiles[targetIdx] = {
-                        id: prevFile.id,
-                        name: file.name,
-                        size: file.size,
-                        type: ext,
-                        fileObject: file,
-                        label: prevFile.label, // maintain label
-                        url: '',
-                        storagePath: ''
-                    };
-                }
-                replaceTargetId = null;
-                break;
-            } else {
-                if (mealkitFiles.length >= 10) {
-                    alert("자료는 최대 10개까지만 등록할 수 있습니다.");
-                    break;
-                }
-                mealkitFiles.push({
-                    id: generateId(),
-                    name: file.name,
-                    size: file.size,
-                    type: ext,
-                    fileObject: file,
-                    label: defaultLabel,
-                    url: '',
-                    storagePath: ''
-                });
-            }
+            targetTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: defaultName,
+                size: file.size,
+                type: itemType,
+                fileObject: file,
+                url: '',
+                storagePath: ''
+            });
         }
-
-        renderMealkitFilesList();
-        if (mealkitFileInput) mealkitFileInput.value = '';
+        renderTabsStructure();
     }
 
-    // Bind URL Link Add
-    if (btnMealkitAddUrl && mealkitUrlInput) {
-        btnMealkitAddUrl.addEventListener('click', () => {
-            const urlVal = mealkitUrlInput.value.trim();
-            if (!urlVal) {
-                alert("웹 링크 주소를 입력해 주세요.");
-                return;
-            }
-            if (!urlVal.startsWith('http://') && !urlVal.startsWith('https://')) {
-                alert("올바른 웹 주소 형식이 아닙니다. http:// 또는 https:// 포함 주소 전체를 입력해 주세요.");
-                return;
-            }
-
-            if (mealkitFiles.length >= 10) {
-                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
-                return;
-            }
-
-            // Extract domain name for default label
-            let domainLabel = '웹 링크';
-            try {
-                const urlObj = new URL(urlVal);
-                domainLabel = urlObj.hostname.replace('www.', '');
-            } catch (e) {
-                const linkNum = mealkitFiles.filter(f => f.type === 'url').length + 1;
-                domainLabel = `웹 링크 ${linkNum}`;
-            }
-
-            mealkitFiles.push({
-                id: generateId(),
-                name: urlVal,
-                size: 0,
-                type: 'url',
-                fileObject: null,
-                label: domainLabel,
-                url: urlVal,
-                storagePath: ''
-            });
-
-            mealkitUrlInput.value = '';
-            renderMealkitFilesList();
-        });
+    function getActiveTargetTab() {
+        if (tabsList.length === 0) {
+            const newTab = {
+                id: 'tab_' + Math.random().toString(36).substr(2, 9),
+                title: '탐구 활동 1',
+                layout: 'split',
+                items: []
+            };
+            tabsList.push(newTab);
+            selectedTabId = newTab.id;
+            return newTab;
+        }
+        let target = tabsList.find(t => t.id === selectedTabId);
+        if (!target) {
+            target = tabsList[0];
+            selectedTabId = target.id;
+        }
+        return target;
     }
 
-    // Bind Blank & Coordinate Tab Quick Adders
-    const btnAddBlankTab = document.getElementById('btn-add-blank-tab');
-    if (btnAddBlankTab) {
-        btnAddBlankTab.addEventListener('click', () => {
-            if (mealkitFiles.length >= 10) {
-                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
-                return;
-            }
-            const count = mealkitFiles.filter(f => f.type === 'blank').length + 1;
-            const tabName = `화이트보드 ${count}`;
-            mealkitFiles.push({
-                id: generateId(),
-                name: tabName,
-                size: 0,
-                type: 'blank',
-                fileObject: null,
-                label: tabName,
-                url: '',
-                storagePath: ''
-            });
-            renderMealkitFilesList();
-        });
+    // Helper for hero dropzone
+    function processSelectedFiles(fileList) {
+        const targetTab = getActiveTargetTab();
+        processTabFiles(targetTab, fileList);
     }
 
-    const btnAddCoordTab = document.getElementById('btn-add-coord-tab');
-    if (btnAddCoordTab) {
-        btnAddCoordTab.addEventListener('click', () => {
-            if (mealkitFiles.length >= 10) {
-                alert("자료는 최대 10개까지만 등록할 수 있습니다.");
-                return;
-            }
-            const count = mealkitFiles.filter(f => f.type === 'coordinate').length + 1;
-            const tabName = `좌표평면 ${count}`;
-            mealkitFiles.push({
-                id: generateId(),
-                name: tabName,
-                size: 0,
-                type: 'coordinate',
-                fileObject: null,
-                label: tabName,
-                url: '',
-                storagePath: ''
-            });
-            renderMealkitFilesList();
-        });
-    }
-
-    // Bind Clipboard Paste (Ctrl+V) for Screenshots
+    // Bind Clipboard Paste (Ctrl+V) for Screenshots to Active/Selected Tab
     document.addEventListener('paste', (e) => {
         // Only trigger if focus is not in textarea/input
         const activeTag = document.activeElement.tagName.toLowerCase();
@@ -1081,8 +1029,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (items[i].type.indexOf('image') !== -1) {
                 const blob = items[i].getAsFile();
                 const screenshotFile = new File([blob], `screenshot_${Date.now()}.png`, { type: blob.type });
-                processSelectedFiles([screenshotFile]);
-                console.log("Clipboard screenshot converted and added to mealkit list.");
+                
+                const targetTab = getActiveTargetTab();
+                processTabFiles(targetTab, [screenshotFile]);
+                console.log(`Clipboard screenshot added to active tab: ${targetTab.title}`);
             }
         }
     });
@@ -1121,21 +1071,113 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function checkAndLoadEditMode(uid) {
+        if (!editRoomId) return;
+        if (editTeacherId !== uid) {
+            console.warn("Edit uid mismatch. Logged in uid:", uid, "URL teacherId:", editTeacherId);
+            return;
+        }
+
+        try {
+            if (!isFirebaseInitialized || !db) return;
+            const roomRef = doc(db, "users", editTeacherId, "rooms", editRoomId);
+            const roomSnap = await getDoc(roomRef);
+            if (roomSnap.exists()) {
+                const roomData = roomSnap.data();
+                
+                // 1. Populate tabsList (supporting both new tabs structure and legacy flat files)
+                if (roomData.tabs && Array.isArray(roomData.tabs) && roomData.tabs.length > 0) {
+                    tabsList = roomData.tabs.map(t => ({
+                        id: t.id || ('tab_' + Math.random().toString(36).substr(2, 9)),
+                        title: t.title || t.name || '탐구 활동',
+                        layout: t.layout || 'split',
+                        items: (t.items || []).map(item => ({
+                            id: item.id || ('item_' + Math.random().toString(36).substr(2, 9)),
+                            name: item.name || '자료',
+                            size: item.size || 0,
+                            type: item.type || (item.name && item.name.endsWith('.pdf') ? 'pdf' : (item.name && item.name.endsWith('.html') ? 'html' : 'image')),
+                            url: item.url || '',
+                            storagePath: item.storagePath || '',
+                            fileObject: null
+                        }))
+                    }));
+                } else if (roomData.files && Array.isArray(roomData.files)) {
+                    // Normalize flat files into 2-tier tabs
+                    tabsList = roomData.files.map(f => ({
+                        id: f.id,
+                        title: f.label || f.name,
+                        layout: f.layout || 'split',
+                        items: [{
+                            id: 'item_' + f.id,
+                            name: f.name || f.label,
+                            size: f.size || 0,
+                            type: f.type || 'url',
+                            url: f.url || '',
+                            storagePath: f.storagePath || '',
+                            fileObject: null
+                        }]
+                    }));
+                }
+
+                // 2. Populate questions
+                questions = roomData.questions || [];
+
+                // 3. Update UI: Canvas Option Radio
+                const canvasIndependent = document.querySelector('input[name="canvas-option"][value="independent"]');
+                const canvasGlobal = document.querySelector('input[name="canvas-option"][value="global"]');
+                if (roomData.globalCanvas) {
+                    if (canvasGlobal) canvasGlobal.checked = true;
+                } else {
+                    if (canvasIndependent) canvasIndependent.checked = true;
+                }
+
+                // 3-2. Update UI: Time Tracking Checkbox
+                const checkTimeTracking = document.getElementById('check-time-tracking');
+                if (checkTimeTracking) {
+                    checkTimeTracking.checked = roomData.enableTimeTracking !== false;
+                }
+
+                // 4. Update UI: Room ID input (Disable it)
+                const customRoomIdInput = document.getElementById('custom-room-id');
+                if (customRoomIdInput) {
+                    customRoomIdInput.value = editRoomId;
+                    customRoomIdInput.disabled = true;
+                }
+
+                // 5. Update UI: Submit Button Text
+                const btnCreateRoom = document.getElementById('btn-create-room');
+                if (btnCreateRoom) {
+                    const btnText = btnCreateRoom.querySelector('.btn-text');
+                    if (btnText) btnText.textContent = '🛠️ 수업 밀키트 수정 완료';
+                }
+
+                // Render lists
+                renderTabsStructure();
+                renderQuestionsConfig();
+
+                console.log("Room settings loaded for editing:", editRoomId);
+            }
+        } catch (err) {
+            console.error("수업방 수정 정보 불러오기 실패:", err);
+        }
+    }
+
+    // Render initial empty or default tab
+    renderTabsStructure();
+
     // Create Room Submit
     createRoomForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        if (mealkitFiles.length === 0) {
-            alert("최소 한 개 이상의 수업 자료를 등록해 주세요.");
+        // Check that there is at least one tab and one item in total
+        const totalItemsCount = tabsList.reduce((sum, tab) => sum + tab.items.length, 0);
+        if (tabsList.length === 0 || totalItemsCount === 0) {
+            alert("최소 1개 이상의 탭과 자료를 등록해 주세요.");
             return;
         }
 
         if (!isFirebaseInitialized || !db || !storage) {
-            console.error("수업방 생성 실패: Firebase가 초기화되지 않았습니다.", {
-                isFirebaseInitialized,
-                db,
-                storage
-            });
+            console.error("수업방 생성 실패: Firebase가 초기화되지 않았습니다.");
             alert("Firebase 연동에 실패하여 수업방을 만들 수 없습니다.");
             return;
         }
@@ -1201,57 +1243,65 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCreateRoom.disabled = true;
 
         try {
-            // Upload files & link URLs
-            const finalFilesList = [];
-            for (let i = 0; i < mealkitFiles.length; i++) {
-                const file = mealkitFiles[i];
+            // Upload files for each tab and serialize 2-tier structure
+            const finalTabsList = [];
+            for (let t = 0; t < tabsList.length; t++) {
+                const tab = tabsList[t];
+                const finalItems = [];
 
-                if (file.type === 'url') {
-                    finalFilesList.push({
-                        id: file.id,
-                        name: file.name,
-                        label: file.label,
-                        type: 'url',
-                        url: file.url,
-                        storagePath: ''
-                    });
-                } else if (file.type === 'blank' || file.type === 'coordinate') {
-                    finalFilesList.push({
-                        id: file.id,
-                        name: file.name,
-                        label: file.label,
-                        type: file.type,
-                        url: '',
-                        storagePath: ''
-                    });
-                } else if (file.url) {
-                    // Already uploaded
-                    finalFilesList.push({
-                        id: file.id,
-                        name: file.name,
-                        label: file.label,
-                        type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
-                        url: file.url,
-                        storagePath: file.storagePath
-                    });
-                } else {
-                    const storagePath = `mealkits/${roomId}/${file.id}_${file.name}`;
-                    const fileRef = ref(storage, storagePath);
-                    await uploadBytes(fileRef, file.fileObject);
-                    const downloadUrl = await getDownloadURL(fileRef);
+                for (let i = 0; i < tab.items.length; i++) {
+                    const item = tab.items[i];
 
-                    file.url = downloadUrl;
-                    file.storagePath = storagePath;
+                    if (item.type === 'url') {
+                        finalItems.push({
+                            id: item.id,
+                            name: item.name,
+                            type: 'url',
+                            url: item.url,
+                            storagePath: ''
+                        });
+                    } else if (item.type === 'blank' || item.type === 'coordinate') {
+                        finalItems.push({
+                            id: item.id,
+                            name: item.name,
+                            type: item.type,
+                            url: '',
+                            storagePath: ''
+                        });
+                    } else if (item.url) {
+                        // Already uploaded
+                        finalItems.push({
+                            id: item.id,
+                            name: item.name,
+                            type: item.type || (item.name.endsWith('.pdf') ? 'pdf' : (item.name.endsWith('.html') ? 'html' : 'image')),
+                            url: item.url,
+                            storagePath: item.storagePath || ''
+                        });
+                    } else if (item.fileObject) {
+                        const storagePath = `mealkits/${roomId}/${tab.id}_${item.id}_${item.name}`;
+                        const fileRef = ref(storage, storagePath);
+                        await uploadBytes(fileRef, item.fileObject);
+                        const downloadUrl = await getDownloadURL(fileRef);
 
-                    finalFilesList.push({
-                        id: file.id,
-                        name: file.name,
-                        label: file.label,
-                        type: file.name.toLowerCase().endsWith('.html') ? 'html' : (file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'),
-                        url: downloadUrl,
-                        storagePath: storagePath
-                    });
+                        item.url = downloadUrl;
+                        item.storagePath = storagePath;
+
+                        finalItems.push({
+                            id: item.id,
+                            name: item.name,
+                            type: item.type || (item.name.endsWith('.pdf') ? 'pdf' : (item.name.endsWith('.html') ? 'html' : 'image')),
+                            url: downloadUrl,
+                            storagePath: storagePath
+                        });
+                    }
                 }
+
+                finalTabsList.push({
+                    id: tab.id,
+                    title: tab.title,
+                    layout: tab.layout || 'split',
+                    items: finalItems
+                });
             }
 
             const canvasOptionEl = document.querySelector('input[name="canvas-option"]:checked');
@@ -1275,9 +1325,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkTimeTrackingEl = document.getElementById('check-time-tracking');
             const enableTimeTracking = checkTimeTrackingEl ? checkTimeTrackingEl.checked : true;
 
+            // Construct roomData with tabs hierarchy as primary
             const roomData = {
-                files: finalFilesList,
-                layoutMode: selectedLayout,
+                tabs: finalTabsList,
                 globalCanvas: globalCanvas,
                 enableTimeTracking: enableTimeTracking,
                 secretKey: secretKey,
@@ -1353,8 +1403,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPreview = document.getElementById('btn-preview');
     if (btnPreview) {
         btnPreview.addEventListener('click', async () => {
-            if (mealkitFiles.length === 0) {
-                alert("미리보기를 하기 전에 자료를 1개 이상 추가해 주세요.");
+            const totalItemsCount = tabsList.reduce((sum, tab) => sum + tab.items.length, 0);
+            if (tabsList.length === 0 || totalItemsCount === 0) {
+                alert("미리보기를 하기 전에 최소 1개 이상의 탭과 자료를 등록해 주세요.");
                 return;
             }
             for (let i = 0; i < questions.length; i++) {
@@ -1365,31 +1416,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Convert local files to data urls for client preview
-            const tempFilesList = [];
-            for (let i = 0; i < mealkitFiles.length; i++) {
-                const file = mealkitFiles[i];
-                let fileDataUrl = '';
+            const tempTabsList = [];
+            for (let t = 0; t < tabsList.length; t++) {
+                const tab = tabsList[t];
+                const tempItems = [];
 
-                if (file.type === 'url') {
-                    fileDataUrl = file.url;
-                } else if (file.type === 'blank' || file.type === 'coordinate') {
-                    fileDataUrl = '';
-                } else if (file.url) {
-                    fileDataUrl = file.url;
-                } else if (file.fileObject) {
-                    fileDataUrl = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file.fileObject);
+                for (let i = 0; i < tab.items.length; i++) {
+                    const item = tab.items[i];
+                    let fileDataUrl = '';
+
+                    if (item.type === 'url') {
+                        fileDataUrl = item.url;
+                    } else if (item.type === 'blank' || item.type === 'coordinate') {
+                        fileDataUrl = '';
+                    } else if (item.url) {
+                        fileDataUrl = item.url;
+                    } else if (item.fileObject) {
+                        fileDataUrl = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.readAsDataURL(item.fileObject);
+                        });
+                    }
+
+                    tempItems.push({
+                        id: item.id,
+                        name: item.name,
+                        type: item.type,
+                        url: fileDataUrl
                     });
                 }
 
-                tempFilesList.push({
-                    id: file.id,
-                    name: file.name,
-                    label: file.label,
-                    type: file.type,
-                    url: fileDataUrl
+                tempTabsList.push({
+                    id: tab.id,
+                    title: tab.title,
+                    layout: tab.layout || 'split',
+                    items: tempItems
                 });
             }
 
@@ -1397,8 +1459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const globalCanvas = canvasOptionEl ? (canvasOptionEl.value === 'global') : false;
 
             const previewData = {
-                files: tempFilesList,
-                layoutMode: selectedLayout,
+                tabs: tempTabsList,
                 globalCanvas: globalCanvas,
                 questions: questions
             };
