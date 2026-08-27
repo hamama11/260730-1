@@ -1,6 +1,6 @@
 import { db, auth, googleProvider, storage, isFirebaseInitialized } from "./firebaseConfig.js";
 import { collection, doc, setDoc, query, where, onSnapshot, deleteDoc, getDocs, getDoc } from "firebase/firestore";
-import { signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult, signInAnonymously, signOut, onAuthStateChanged } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import QRCode from 'qrcode';
 
@@ -382,12 +382,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 authAvatar.classList.remove('hidden');
                 btnLogin.textContent = "Google 로그인";
 
+                const guestBtn = document.getElementById('btn-guest-login');
+                if (guestBtn) guestBtn.style.display = 'inline-block';
+
                 if (authDesc) authDesc.classList.remove('hidden');
+
+                // Check if already authenticated as guest/anonymous or local teacher
+                const localTeacherId = localStorage.getItem('local_teacher_uid');
+                const guestWarning = document.getElementById('guest-warning-text');
+                if (localTeacherId) {
+                    currentUser = { uid: localTeacherId, displayName: '선생님 (비회원 모드)' };
+                    authStatus.textContent = `안녕하세요, ${currentUser.displayName}님!`;
+                    if (guestBtn) guestBtn.style.display = 'none';
+                    if (guestWarning) guestWarning.classList.remove('hidden');
+                    btnLogin.textContent = "로그아웃";
+                    createRoomForm.classList.remove('hidden');
+                    const myRoomsSection = document.getElementById('my-rooms-section');
+                    if (myRoomsSection) myRoomsSection.classList.remove('hidden');
+                    setupMyRoomsListener(localTeacherId);
+                    checkAndLoadEditMode(localTeacherId);
+                    return;
+                }
+
+                if (guestWarning) guestWarning.classList.add('hidden');
 
                 // Hide room creation form and my rooms section
                 createRoomForm.classList.add('hidden');
                 const myRoomsSection = document.getElementById('my-rooms-section');
-                if (myRoomsSection) myRoomsSection.classList.add('hidden');
+                if (myRoomsSection) myRoomsSection.classList.remove('hidden');
 
                 if (unsubscribeMyRooms) {
                     unsubscribeMyRooms();
@@ -398,9 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add Google Login Button Click Listener (Redirect flow to bypass firewall/cross-origin popup blockage)
         document.getElementById('btn-google-login').addEventListener('click', async () => {
-            if (auth.currentUser) {
+            if (auth.currentUser || localStorage.getItem('local_teacher_uid')) {
                 if (confirm("로그아웃 하시겠습니까?")) {
-                    await signOut(auth);
+                    localStorage.removeItem('local_teacher_uid');
+                    if (auth.currentUser) await signOut(auth);
+                    window.location.reload();
                 }
             } else {
                 try {
@@ -411,6 +435,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // Add Instant Guest Teacher Login for firewalled school/company network
+        const btnGuestLogin = document.getElementById('btn-guest-login');
+        if (btnGuestLogin) {
+            btnGuestLogin.addEventListener('click', async () => {
+                try {
+                    await signInAnonymously(auth);
+                } catch (anonErr) {
+                    console.warn("Anonymous auth blocked, switching to local teacher ID mode:", anonErr);
+                    let guestUid = localStorage.getItem('local_teacher_uid');
+                    if (!guestUid) {
+                        guestUid = 'teacher_' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('local_teacher_uid', guestUid);
+                    }
+                    window.location.reload();
+                }
+            });
+        }
 
         // Handle redirect result if returning from Google OAuth page
         getRedirectResult(auth).catch((err) => {

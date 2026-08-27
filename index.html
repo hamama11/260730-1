@@ -50,9 +50,15 @@
                                 class="hidden"></div>
                         </div>
                     </div>
-                    <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
-                        style="padding: 0.45rem 0.9rem; font-size: 0.8rem; border-color: rgba(99,102,241,0.3);">Google
-                        로그인</button>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;">
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
+                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; border-color: rgba(99,102,241,0.3);">Google 로그인</button>
+                            <button type="button" id="btn-guest-login" class="btn btn-secondary btn-sm"
+                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; font-weight: 700; background: rgba(255,255,255,0.08); color: #f8fafc; border: 1px solid var(--border-color);" title="로그인 없이 바로 수업 만들기">👤 비회원 모드</button>
+                        </div>
+                        <span id="guest-warning-text" class="hidden" style="font-size: 0.72rem; color: #f87171; font-weight: 500;">⚠️ 비회원 모드는 브라우저 캐시 삭제 시 데이터가 저장되지 않습니다.</span>
+                    </div>
                     <p id="auth-desc" class="hidden"></p>
                 </div>
             </div>
