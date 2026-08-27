@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Add Google Login Button Click Listener (Redirect flow to bypass firewall/cross-origin popup blockage)
+        // Add Google Login Button Click Listener (Try Popup first for instant auth, fallback to Redirect)
         document.getElementById('btn-google-login').addEventListener('click', async () => {
             if (auth.currentUser) {
                 if (confirm("Google 계정에서 로그아웃 하시겠습니까?")) {
@@ -433,31 +433,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 try {
-                    await signInWithRedirect(auth, googleProvider);
-                } catch (err) {
-                    console.error("Google 로그인 에러:", err);
-                    alert("로그인에 실패했습니다: " + err.message);
+                    // Try popup first (fast & keeps state in tab)
+                    const { signInWithPopup } = await import("firebase/auth");
+                    const res = await signInWithPopup(auth, googleProvider);
+                    if (res && res.user) {
+                        currentUser = res.user;
+                        console.log("Popup login success:", res.user);
+                    }
+                } catch (popupErr) {
+                    console.warn("Popup login failed, trying redirect mode:", popupErr);
+                    if (popupErr.code !== 'auth/popup-closed-by-user') {
+                        try {
+                            await signInWithRedirect(auth, googleProvider);
+                        } catch (redirErr) {
+                            console.error("Redirect login error:", redirErr);
+                            alert("Google 로그인 연결이 차단되었습니다. 비회원 모드로 계속 이용하실 수 있습니다.");
+                        }
+                    }
                 }
             }
         });
-
-        // Add Instant Guest Teacher Login for firewalled school/company network
-        const btnGuestLogin = document.getElementById('btn-guest-login');
-        if (btnGuestLogin) {
-            btnGuestLogin.addEventListener('click', async () => {
-                try {
-                    await signInAnonymously(auth);
-                } catch (anonErr) {
-                    console.warn("Anonymous auth blocked, switching to local teacher ID mode:", anonErr);
-                    let guestUid = localStorage.getItem('local_teacher_uid');
-                    if (!guestUid) {
-                        guestUid = 'teacher_' + Math.random().toString(36).substr(2, 9);
-                        localStorage.setItem('local_teacher_uid', guestUid);
-                    }
-                    window.location.reload();
-                }
-            });
-        }
 
         // Handle redirect result if returning from Google OAuth page
         getRedirectResult(auth).then((result) => {
