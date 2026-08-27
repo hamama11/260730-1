@@ -603,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'tab_' + Math.random().toString(36).substr(2, 9),
             title: '탐구 활동 1',
-            layout: 'split',
+            layout: 'scroll',
             items: []
         }
     ];
@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newTab = {
                 id: 'tab_' + Math.random().toString(36).substr(2, 9),
                 title: `탐구 활동 ${tabNum}`,
-                layout: 'split',
+                layout: 'scroll',
                 items: []
             };
             tabsList.push(newTab);
