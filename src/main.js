@@ -725,12 +725,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isActive = (index === activeIndex);
 
             // Tab Header Button
+            const isTabPublished = (tab.published !== false);
             const tabBtn = document.createElement('button');
             tabBtn.type = 'button';
             tabBtn.className = 'tab-btn' + (isActive ? ' active' : '');
             tabBtn.style.padding = '0.5rem 1rem';
             tabBtn.style.fontSize = '0.85rem';
-            tabBtn.textContent = `📑 ${tab.title || ('탭 ' + (index + 1))}`;
+            tabBtn.innerHTML = `${isTabPublished ? '📑' : '🔒'} ${tab.title || ('탭 ' + (index + 1))}${!isTabPublished ? ' <span style="font-size:0.7rem; color:#f43f5e; font-weight:600; margin-left:2px;">[개봉예정]</span>' : ''}`;
             tabBtn.dataset.tabid = tab.id;
 
             tabBtn.addEventListener('click', () => {
@@ -819,6 +820,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <rect width="100%" height="100%" fill="url(#tab-lined-pat-${tab.id})"/>
                     </svg>
                 `;
+            }
+
+            // Check if tab is locked/unpublished by teacher
+            const isTabPublished = (tab.published !== false);
+
+            if (!isTabPublished) {
+                // 3 Sets of cute illustration images
+                const imageSets = [
+                    ['image/bright.png', 'image/bright-1.png'],
+                    ['image/da.png', 'image/da-1.png'],
+                    ['image/sic.png', 'image/sic-1.png', 'image/sic-3.png']
+                ];
+                // Pick a set randomly or based on tab index
+                const chosenSet = imageSets[tabIndex % imageSets.length];
+
+                const comingSoonContainer = document.createElement('div');
+                comingSoonContainer.className = 'coming-soon-container';
+                comingSoonContainer.innerHTML = `
+                    <div class="coming-soon-card">
+                        <div class="coming-soon-badge">🔒 개봉 예정</div>
+                        <div class="coming-soon-img-frame">
+                            <img class="coming-soon-img" src="${chosenSet[0]}" alt="개봉 예정 캐릭터">
+                        </div>
+                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin: 0;">곧 공개될 탐구 활동입니다</h2>
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.5;">선생님이 수업 진행에 맞춰 탭을 오픈하면<br>이곳에 탐구 시뮬레이션 및 활동 자료가 나타납니다!</p>
+                    </div>
+                `;
+
+                // Add frame-cycling animation for the chosen image set
+                if (chosenSet.length > 1) {
+                    const imgEl = comingSoonContainer.querySelector('.coming-soon-img');
+                    let frameIdx = 0;
+                    setInterval(() => {
+                        frameIdx = (frameIdx + 1) % chosenSet.length;
+                        if (imgEl) imgEl.src = chosenSet[frameIdx];
+                    }, 800); // cycle frames every 800ms
+                }
+
+                panel.appendChild(comingSoonContainer);
+                simulationContainer.appendChild(panel);
+                return;
             }
 
             if (isScrollMode) {

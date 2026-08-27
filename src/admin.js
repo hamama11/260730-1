@@ -148,18 +148,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; gap: 0.6rem;';
 
             const isScroll = tab.layout === 'scroll';
+            const isPublished = tab.published !== false;
             const itemsCount = (tab.items || []).length;
             const itemsSummary = (tab.items || []).map(i => i.name).slice(0, 2).join(', ');
 
             item.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 0.6rem; overflow: hidden; flex: 1;">
-                    <span style="font-size: 1.2rem;">📑</span>
+                    <span style="font-size: 1.2rem;">${isPublished ? '🔓' : '🔒'}</span>
                     <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
                         <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block;">${tab.title} (${itemsCount}개 자료)</span>
                         <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${itemsSummary || '자료 없음'}</span>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-toggle-publish" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; background: ${isPublished ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${isPublished ? '#4ade80' : '#f87171'}; border-color: ${isPublished ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'};" title="학생에게 공개/비공개 전환">
+                        ${isPublished ? '🔓 공개중' : '🔒 개봉예정'}
+                    </button>
                     <select class="tab-monitor-layout" data-tabidx="${idx}" style="padding: 0.25rem 0.4rem; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.4); color: var(--text-primary); cursor: pointer;">
                         <option value="split" ${!isScroll ? 'selected' : ''}>🪟 분할</option>
                         <option value="scroll" ${isScroll ? 'selected' : ''}>📜 스크롤</option>
@@ -169,6 +173,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <button type="button" class="btn btn-secondary btn-sm btn-delete-tab" data-tabidx="${idx}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);">🗑️ 삭제</button>
                 </div>
             `;
+
+            // Toggle publish handler
+            const togglePublishBtn = item.querySelector('.btn-tab-toggle-publish');
+            if (togglePublishBtn) {
+                togglePublishBtn.addEventListener('click', async () => {
+                    const newTabs = [...tabs];
+                    const nextStatus = !(newTabs[idx].published !== false);
+                    newTabs[idx] = { ...newTabs[idx], published: nextStatus };
+                    try {
+                        const roomRef = doc(db, "users", teacherId, "rooms", roomId);
+                        await updateDoc(roomRef, { tabs: newTabs });
+                        currentRoomData.tabs = newTabs;
+                        renderMonitorTabsList();
+                    } catch (err) {
+                        console.error("공개 상태 변경 실패:", err);
+                        alert("공개 상태 변경에 실패했습니다: " + err.message);
+                    }
+                });
+            }
 
             // Layout change handler
             const layoutSelect = item.querySelector('.tab-monitor-layout');

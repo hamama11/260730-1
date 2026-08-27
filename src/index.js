@@ -683,6 +683,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
+                    <!-- Per-tab visibility selector (공개/미공개) -->
+                    <div style="display: flex; align-items: center; gap: 0.45rem; background: rgba(255, 255, 255, 0.05); padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">학생 공개:</span>
+                        <select class="tab-visible-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: ${tab.published !== false ? '#dcfce7' : '#fee2e2'}; color: ${tab.published !== false ? '#15803d' : '#b91c1c'}; cursor: pointer; outline: none;">
+                            <option value="true" ${tab.published !== false ? 'selected' : ''}>🔓 공개 중</option>
+                            <option value="false" ${tab.published === false ? 'selected' : ''}>🔒 개봉 예정 (미공개)</option>
+                        </select>
+                    </div>
+
                     <!-- Per-tab layout selector -->
                     <div style="display: flex; align-items: center; gap: 0.45rem; background: rgba(255, 255, 255, 0.05); padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color);">
                         <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
@@ -711,6 +720,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             titleInput.addEventListener('input', (e) => {
                 tab.title = e.target.value.trim() || `탐구 활동 ${tabIdx + 1}`;
+            });
+
+            // Visibility select listener
+            const visibleSelect = tabHeader.querySelector('.tab-visible-select');
+            visibleSelect.addEventListener('change', (e) => {
+                tab.published = (e.target.value === 'true');
+                visibleSelect.style.background = tab.published ? '#dcfce7' : '#fee2e2';
+                visibleSelect.style.color = tab.published ? '#15803d' : '#b91c1c';
             });
 
             // Layout select listener
@@ -1422,6 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: tab.id,
                     title: tab.title,
                     layout: tab.layout || 'split',
+                    published: tab.published !== false,
                     items: finalItems
                 });
             }
