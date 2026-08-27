@@ -221,6 +221,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Check and Load Classroom Edit Mode
+    async function checkAndLoadEditMode(uid) {
+        if (!editRoomId) return;
+
+        try {
+            console.log(`수업방 수정 모드 로드 중: ID=${editRoomId}, UID=${uid}`);
+            const targetTeacherUid = editTeacherId !== 'offline' ? editTeacherId : uid;
+            const roomRef = doc(db, "users", targetTeacherUid, "rooms", editRoomId);
+            const snap = await getDoc(roomRef);
+
+            if (snap.exists()) {
+                const data = snap.data();
+                
+                // Set room title and lock room ID
+                const customTitleInput = document.getElementById('custom-room-title');
+                if (customTitleInput) customTitleInput.value = data.title || editRoomId;
+
+                const customRoomIdInput = document.getElementById('custom-room-id');
+                if (customRoomIdInput) {
+                    customRoomIdInput.value = editRoomId;
+                    customRoomIdInput.readOnly = true;
+                    customRoomIdInput.style.backgroundColor = '#f1f5f9';
+                    customRoomIdInput.style.cursor = 'not-allowed';
+                }
+
+                const lockNotice = document.getElementById('room-id-lock-notice');
+                if (lockNotice) lockNotice.classList.remove('hidden');
+
+                // Load canvas option
+                if (data.globalCanvas !== undefined) {
+                    const canvasVal = data.globalCanvas ? 'global' : 'independent';
+                    const radio = document.querySelector(`input[name="canvas-option"][value="${canvasVal}"]`);
+                    if (radio) radio.checked = true;
+                }
+
+                // Load time tracking
+                const timeCheck = document.getElementById('check-time-tracking');
+                if (timeCheck && data.enableTimeTracking !== undefined) {
+                    timeCheck.checked = data.enableTimeTracking;
+                }
+
+                // Load questions
+                if (Array.isArray(data.questions) && data.questions.length > 0) {
+                    questions = data.questions;
+                    renderQuestionsConfig();
+                }
+
+                // Load tabs hierarchy
+                if (Array.isArray(data.tabs) && data.tabs.length > 0) {
+                    tabsList = data.tabs.map(t => ({
+                        id: t.id || ('tab_' + Math.random().toString(36).substr(2, 9)),
+                        title: t.title || '탐구 활동',
+                        layout: t.layout || 'scroll',
+                        published: t.published !== false,
+                        items: (t.items || []).map(i => ({ ...i }))
+                    }));
+                    if (tabsList.length > 0) selectedTabId = tabsList[0].id;
+                    renderTabsStructure();
+                }
+
+                const submitBtn = document.getElementById('btn-create-room');
+                if (submitBtn) {
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    if (btnText) btnText.textContent = "💾 수업방 수정 완료";
+                }
+            } else {
+                console.warn("수정할 수업방을 찾을 수 없습니다:", editRoomId);
+            }
+        } catch (err) {
+            console.error("수업방 수정 데이터 로드 실패:", err);
+        }
+    }
+
     // Subscriptions listener for teacher's classrooms
     function setupMyRoomsListener(uid) {
         if (unsubscribeMyRooms) unsubscribeMyRooms();
@@ -263,8 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                         <div>
-                            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-                                📍 수업방 ID: <code style="color: var(--primary);">${roomId}</code>
+                            <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+                                🏷️ ${roomData.title || roomId} <code style="font-size: 0.85rem; color: var(--primary); font-weight: 600; background: rgba(224, 122, 95, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.4rem;">ID: ${roomId}</code>
                             </h4>
                             <div class="room-meta-info">
                                 <span class="room-meta-item">질문 수: <strong>${(roomData.questions || []).length}개</strong></span>
@@ -1391,6 +1464,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const customTitleInput = document.getElementById('custom-room-title');
+        const roomTitle = customTitleInput ? (customTitleInput.value.trim() || "탐구 활동 수업") : "탐구 활동 수업";
+
         const customRoomIdInput = document.getElementById('custom-room-id');
         const roomId = customRoomIdInput ? customRoomIdInput.value.trim() : "";
         // Allow Korean, English, numbers, hyphens, underscores, brackets, commas, dots
@@ -1539,6 +1615,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Construct roomData with tabs hierarchy as primary
             const roomData = {
+                title: roomTitle,
                 tabs: finalTabsList,
                 globalCanvas: globalCanvas,
                 enableTimeTracking: enableTimeTracking,
