@@ -98,8 +98,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    position: sticky;
-    top: 1.5rem;
 }
 
 /* Mobile & Tablet Fallback: 1-Column */
