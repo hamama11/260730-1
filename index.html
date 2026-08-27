@@ -22,7 +22,7 @@
                 style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border-color);">
                 <div>
                     <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.2rem; flex-wrap: wrap;">
-                        <a href="index.html" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 8px; background: rgba(255,255,255,0.08); color: #f8fafc; border: 1px solid var(--border-color);" title="홈(새 수업 만들기)으로 이동">
+                        <a href="index.html" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 8px; background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.06);" title="홈(새 수업 만들기)으로 이동">
                             🏠 홈
                         </a>
                         <span class="badge" style="margin-bottom: 0;">Teacher Mode</span>
@@ -37,14 +37,14 @@
 
                 <!-- Google Auth Section (Compact Top-Right) -->
                 <div id="auth-section"
-                    style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; gap: 0.9rem;">
+                    style="padding: 0.6rem 1rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; gap: 0.9rem; box-shadow: 0 2px 8px rgba(74,62,61,0.04);">
                     <div id="auth-user-info" style="display: flex; align-items: center; gap: 0.6rem;">
                         <img id="auth-photo" src="" alt="Profile" class="hidden"
                             style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;">
                         <span id="auth-avatar"
-                            style="font-size: 1.2rem; background: rgba(255,255,255,0.08); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</span>
+                            style="font-size: 1.2rem; background: rgba(74,62,61,0.06); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</span>
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px;">
-                            <div id="auth-status" style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">로그인 필요
+                            <div id="auth-status" style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">로그인 필요
                             </div>
                             <div id="auth-email" style="font-size: 0.75rem; color: var(--text-secondary);"
                                 class="hidden"></div>
@@ -53,11 +53,11 @@
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;">
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
                             <button type="button" id="btn-google-login" class="btn btn-secondary btn-sm"
-                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; border-color: rgba(99,102,241,0.3);">Google 로그인</button>
+                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; font-weight: 600; background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color);">Google 로그인</button>
                             <button type="button" id="btn-guest-login" class="btn btn-secondary btn-sm"
-                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; font-weight: 700; background: rgba(255,255,255,0.08); color: #f8fafc; border: 1px solid var(--border-color);" title="로그인 없이 바로 수업 만들기">👤 비회원 모드</button>
+                                style="padding: 0.45rem 0.8rem; font-size: 0.8rem; font-weight: 700; background: rgba(224, 122, 95, 0.1); color: var(--primary); border: 1.5px solid var(--primary);" title="로그인 없이 바로 수업 만들기">👤 비회원 모드</button>
                         </div>
-                        <span id="guest-warning-text" class="hidden" style="font-size: 0.72rem; color: #f87171; font-weight: 500;">⚠️ 비회원 모드는 브라우저 캐시 삭제 시 데이터가 저장되지 않습니다.</span>
+                        <span id="guest-warning-text" class="hidden" style="font-size: 0.72rem; color: #dc2626; font-weight: 600;">⚠️ 비회원 모드는 브라우저 캐시 삭제 시 데이터가 저장되지 않습니다.</span>
                     </div>
                     <p id="auth-desc" class="hidden"></p>
                 </div>
