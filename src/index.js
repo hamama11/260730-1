@@ -439,6 +439,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (res && res.user) {
                         currentUser = res.user;
                         console.log("Popup login success:", res.user);
+                        // Trigger immediate UI switch without waiting
+                        authStatus.textContent = `안녕하세요, ${res.user.displayName || "선생님"}님!`;
+                        authEmail.textContent = `(${res.user.email})`;
+                        authEmail.classList.remove('hidden');
+                        btnLogin.textContent = "로그아웃";
+                        if (guestWarning) guestWarning.classList.add('hidden');
+                        if (res.user.photoURL) {
+                            authPhoto.src = res.user.photoURL;
+                            authPhoto.classList.remove('hidden');
+                            authAvatar.classList.add('hidden');
+                        }
+                        setupMyRoomsListener(res.user.uid);
                     }
                 } catch (popupErr) {
                     console.warn("Popup login failed, trying redirect mode:", popupErr);
@@ -447,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             await signInWithRedirect(auth, googleProvider);
                         } catch (redirErr) {
                             console.error("Redirect login error:", redirErr);
-                            alert("Google 로그인 연결이 차단되었습니다. 비회원 모드로 계속 이용하실 수 있습니다.");
+                            alert("Google 로그인 연결에 실패했습니다: " + redirErr.message);
                         }
                     }
                 }
