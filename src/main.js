@@ -823,8 +823,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Check if tab is locked/unpublished by teacher
-            const isTabPublished = (tab.published !== false);
-
             if (!isTabPublished) {
                 // 3 Sets of cute illustration images
                 const imageSets = [
