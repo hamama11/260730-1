@@ -30,12 +30,14 @@
 
                 <!-- Collapsible Header QR Dropdown Panel -->
                 <div id="header-qr-panel" class="hidden"
-                    style="position: absolute; top: 100%; left: 1.2rem; background: #1e1b1b; border: 1.5px solid var(--border-color); border-top: none; border-radius: 0 0 16px 16px; padding: 1.2rem; box-shadow: 0 16px 36px rgba(0,0,0,0.5); z-index: 100; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 280px;">
-                    <span style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">📱 수업 참여 QR 코드</span>
-                    <img id="header-qr-img" src="" alt="수업방 QR" style="width: 230px; height: 230px; border-radius: 12px; background: white; padding: 0.6rem; border: 1px solid var(--border-color);">
+                    style="position: absolute; top: 100%; left: 1.2rem; background: #1e1b1b; border: 1.5px solid var(--border-color); border-top: none; border-radius: 0 0 16px 16px; padding: 1.2rem; box-shadow: 0 16px 36px rgba(0,0,0,0.5); z-index: 100; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 300px;">
+                    <span style="font-size: 0.9rem; font-weight: 700; color: #f8fafc;">📱 수업 참여 QR 코드</span>
+                    <div style="background: white; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+                        <canvas id="header-qr-canvas" style="width: 250px; height: 250px; display: block;"></canvas>
+                    </div>
                     <div style="display: flex; gap: 0.4rem; width: 100%;">
-                        <button type="button" id="btn-copy-header-link" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem; padding: 0.4rem;">🔗 링크 복사</button>
-                        <button type="button" id="btn-close-header-qr" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.78rem; padding: 0.4rem;">접기 ▲</button>
+                        <button type="button" id="btn-copy-header-link" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.82rem; padding: 0.45rem;">🔗 링크 복사</button>
+                        <button type="button" id="btn-close-header-qr" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.82rem; padding: 0.45rem;">접기 ▲</button>
                     </div>
                 </div>
                 <!-- Drawing Toolbar -->

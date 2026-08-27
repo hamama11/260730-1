@@ -1,5 +1,6 @@
 import { db, isFirebaseInitialized } from "./firebaseConfig.js";
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import QRCode from 'qrcode';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const studentSubmitForm = document.getElementById('student-submit-form');
@@ -1418,7 +1419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Header Collapsible QR Dropdown Controls ──
     const btnToggleQrHeader = document.getElementById('btn-toggle-qr-header');
     const headerQrPanel = document.getElementById('header-qr-panel');
-    const headerQrImg = document.getElementById('header-qr-img');
+    const headerQrCanvas = document.getElementById('header-qr-canvas');
     const qrToggleArrow = document.getElementById('qr-toggle-arrow');
     const btnCloseHeaderQr = document.getElementById('btn-close-header-qr');
     const btnCopyHeaderLink = document.getElementById('btn-copy-header-link');
@@ -1429,8 +1430,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isHidden = headerQrPanel.classList.contains('hidden');
             if (isHidden) {
                 const currentStudentUrl = window.location.href;
-                if (headerQrImg && (!headerQrImg.src || headerQrImg.src.includes('undefined') || !headerQrImg.complete)) {
-                    headerQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(currentStudentUrl)}`;
+                if (headerQrCanvas) {
+                    QRCode.toCanvas(headerQrCanvas, currentStudentUrl, {
+                        width: 250,
+                        margin: 1,
+                        color: { dark: '#000000', light: '#ffffff' }
+                    }, (err) => {
+                        if (err) console.error("QR Code Error:", err);
+                    });
                 }
                 headerQrPanel.classList.remove('hidden');
                 if (qrToggleArrow) qrToggleArrow.textContent = '▲';
