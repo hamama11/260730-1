@@ -1381,11 +1381,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             url: item.url,
                             storagePath: ''
                         });
-                    } else if (item.type === 'blank' || item.type === 'coordinate') {
+                    } else if (['blank', 'coordinate', 'grid', 'lined'].includes(item.type)) {
                         finalItems.push({
                             id: item.id,
                             name: item.name,
                             type: item.type,
+                            bgTheme: item.bgTheme || 'white',
                             url: '',
                             storagePath: ''
                         });

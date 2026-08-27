@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnDrawEraser = document.getElementById('btn-draw-eraser');
     const btnDrawClear = document.getElementById('btn-draw-clear');
     const colorPicker = document.getElementById('draw-color-picker');
+    const opacitySlider = document.getElementById('draw-opacity-slider');
+    const thicknessSlider = document.getElementById('draw-thickness-slider');
     const penSizeGroup = document.getElementById('pen-size-group');
     const eraserSizeGroup = document.getElementById('eraser-size-group');
     const penSizeBtns = document.querySelectorAll('.btn-pen-size');
@@ -845,10 +847,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     wrapper.dataset.fileid = item.id;
 
                     if (isScrollMode) {
-                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;';
+                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: transparent; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;';
                     } else {
                         const shareWidth = (100 / count).toFixed(2);
-                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: #0f172a; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2;`;
+                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: transparent; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2;`;
                     }
 
                     const viewer = createViewerElement(item);
