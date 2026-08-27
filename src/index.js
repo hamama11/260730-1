@@ -1,6 +1,6 @@
 import { db, auth, googleProvider, storage, isFirebaseInitialized } from "./firebaseConfig.js";
 import { collection, doc, setDoc, query, where, onSnapshot, deleteDoc, getDocs, getDoc } from "firebase/firestore";
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import QRCode from 'qrcode';
 
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Add Google Login Button Click Listener
+        // Add Google Login Button Click Listener (Redirect flow to bypass firewall/cross-origin popup blockage)
         document.getElementById('btn-google-login').addEventListener('click', async () => {
             if (auth.currentUser) {
                 if (confirm("로그아웃 하시겠습니까?")) {
@@ -404,11 +404,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 try {
-                    await signInWithPopup(auth, googleProvider);
+                    await signInWithRedirect(auth, googleProvider);
                 } catch (err) {
                     console.error("Google 로그인 에러:", err);
                     alert("로그인에 실패했습니다: " + err.message);
                 }
+            }
+        });
+
+        // Handle redirect result if returning from Google OAuth page
+        getRedirectResult(auth).catch((err) => {
+            if (err && err.code !== 'auth/popup-closed-by-user') {
+                console.error("Redirect 로그인 에러:", err);
             }
         });
     } else {
