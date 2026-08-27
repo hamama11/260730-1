@@ -1415,29 +1415,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ── Student-Side QR Modal Controls ──
-    const btnShowQrStudent = document.getElementById('btn-show-qr-student');
-    const studentQrModal = document.getElementById('student-qr-modal');
-    const btnCloseStudentQr = document.getElementById('btn-close-student-qr');
-    const btnDoneStudentQr = document.getElementById('btn-done-student-qr');
-    const btnCopyStudentLink = document.getElementById('btn-copy-student-link');
-    const studentQrImg = document.getElementById('student-qr-img');
+    // ── Header Collapsible QR Dropdown Controls ──
+    const btnToggleQrHeader = document.getElementById('btn-toggle-qr-header');
+    const headerQrPanel = document.getElementById('header-qr-panel');
+    const headerQrImg = document.getElementById('header-qr-img');
+    const qrToggleArrow = document.getElementById('qr-toggle-arrow');
+    const btnCloseHeaderQr = document.getElementById('btn-close-header-qr');
+    const btnCopyHeaderLink = document.getElementById('btn-copy-header-link');
 
-    if (btnShowQrStudent && studentQrModal) {
-        btnShowQrStudent.addEventListener('click', () => {
-            const currentStudentUrl = window.location.href;
-            if (studentQrImg) {
-                studentQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(currentStudentUrl)}`;
+    if (btnToggleQrHeader && headerQrPanel) {
+        btnToggleQrHeader.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = headerQrPanel.classList.contains('hidden');
+            if (isHidden) {
+                const currentStudentUrl = window.location.href;
+                if (headerQrImg && (!headerQrImg.src || headerQrImg.src.includes('undefined') || !headerQrImg.complete)) {
+                    headerQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(currentStudentUrl)}`;
+                }
+                headerQrPanel.classList.remove('hidden');
+                if (qrToggleArrow) qrToggleArrow.textContent = '▲';
+            } else {
+                headerQrPanel.classList.add('hidden');
+                if (qrToggleArrow) qrToggleArrow.textContent = '▼';
             }
-            studentQrModal.classList.remove('hidden');
         });
 
-        const hideStudentQr = () => studentQrModal.classList.add('hidden');
-        if (btnCloseStudentQr) btnCloseStudentQr.addEventListener('click', hideStudentQr);
-        if (btnDoneStudentQr) btnDoneStudentQr.addEventListener('click', hideStudentQr);
+        if (btnCloseHeaderQr) {
+            btnCloseHeaderQr.addEventListener('click', () => {
+                headerQrPanel.classList.add('hidden');
+                if (qrToggleArrow) qrToggleArrow.textContent = '▼';
+            });
+        }
 
-        if (btnCopyStudentLink) {
-            btnCopyStudentLink.addEventListener('click', async () => {
+        if (btnCopyHeaderLink) {
+            btnCopyHeaderLink.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(window.location.href);
                     alert("수업 참여 링크가 복사되었습니다!");
@@ -1446,5 +1457,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!headerQrPanel.classList.contains('hidden') && !headerQrPanel.contains(e.target) && e.target !== btnToggleQrHeader) {
+                headerQrPanel.classList.add('hidden');
+                if (qrToggleArrow) qrToggleArrow.textContent = '▼';
+            }
+        });
     }
 });
