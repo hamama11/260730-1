@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnDrawEraser = document.getElementById('btn-draw-eraser');
     const btnDrawClear = document.getElementById('btn-draw-clear');
     const colorPicker = document.getElementById('draw-color-picker');
-    const opacitySlider = document.getElementById('draw-opacity-slider');
-    const thicknessSlider = document.getElementById('draw-thickness-slider');
-    const sliderSizeLabel = document.getElementById('slider-size-label');
-    const sliderSizeVal = document.getElementById('slider-size-val');
+    const penSizeGroup = document.getElementById('pen-size-group');
+    const eraserSizeGroup = document.getElementById('eraser-size-group');
+    const penSizeBtns = document.querySelectorAll('.btn-pen-size');
+    const eraserSizeBtns = document.querySelectorAll('.btn-eraser-size');
     const btnCustomColor = document.getElementById('btn-custom-color');
     const presetBtns = document.querySelectorAll('.preset-btn');
 
@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnDrawMode.style.color = '#ffffff';
                 btnDrawMode.style.borderColor = 'var(--primary)';
             }
+            if (penSizeGroup) penSizeGroup.classList.remove('hidden');
+            if (eraserSizeGroup) eraserSizeGroup.classList.add('hidden');
         } else if (tool === 'pen') {
             if (btnDrawPen) {
                 btnDrawPen.classList.add('active');
@@ -77,9 +79,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnDrawPen.style.borderColor = 'var(--primary)';
             }
             strokeWidth = penWidth;
-            if (sliderSizeLabel) sliderSizeLabel.textContent = '펜 굵기';
-            if (thicknessSlider) thicknessSlider.value = penWidth;
-            if (sliderSizeVal) sliderSizeVal.textContent = `${penWidth}px`;
+            if (penSizeGroup) penSizeGroup.classList.remove('hidden');
+            if (eraserSizeGroup) eraserSizeGroup.classList.add('hidden');
         } else if (tool === 'eraser') {
             if (btnDrawEraser) {
                 btnDrawEraser.classList.add('active');
@@ -88,9 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnDrawEraser.style.borderColor = 'var(--primary)';
             }
             strokeWidth = eraserWidth;
-            if (sliderSizeLabel) sliderSizeLabel.textContent = '지우개 크기';
-            if (thicknessSlider) thicknessSlider.value = eraserWidth;
-            if (sliderSizeVal) sliderSizeVal.textContent = `${eraserWidth}px`;
+            if (penSizeGroup) penSizeGroup.classList.add('hidden');
+            if (eraserSizeGroup) eraserSizeGroup.classList.remove('hidden');
         }
 
         updateCanvasPointerEvents();
@@ -99,19 +99,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnDrawMode) btnDrawMode.addEventListener('click', () => setTool('interact'));
     if (btnDrawPen) btnDrawPen.addEventListener('click', () => setTool('pen'));
     if (btnDrawEraser) btnDrawEraser.addEventListener('click', () => setTool('eraser'));
+    
+    // iPad Pen Size Presets
+    penSizeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            penSizeBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.borderColor = 'rgba(255,255,255,0.2)';
+            });
+            btn.classList.add('active');
+            btn.style.borderColor = 'var(--primary)';
+            penWidth = parseInt(btn.dataset.size);
+            strokeWidth = penWidth;
+        });
+    });
+
+    // iPad Eraser Size Presets (소/중/대)
+    eraserSizeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            eraserSizeBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.background = '#221f1e';
+                b.style.color = '#f1f5f9';
+                b.style.borderColor = 'rgba(255,255,255,0.2)';
+                b.style.fontWeight = 'normal';
+            });
+            btn.classList.add('active');
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.fontWeight = '700';
+            eraserWidth = parseInt(btn.dataset.size);
+            strokeWidth = eraserWidth;
+        });
+    });
+
     if (btnDrawClear) btnDrawClear.addEventListener('click', () => {
         if (confirm("현재 화면의 필기 내용을 모두 지우시겠습니까?")) {
             if (isGlobalCanvas) {
                 globalCanvasHistory = [];
             } else {
-                // Find visible/active file ID and clear its drawing history
                 const activeWrapper = document.querySelector('.mealkit-viewport-wrapper:not(.hidden)');
                 if (activeWrapper) {
                     const fileId = activeWrapper.dataset.fileid;
                     drawingHistory[fileId] = [];
-                } else {
-                    // For split or scroll where multiple are visible, clear all
-                    filesList.forEach(f => { drawingHistory[f.id] = []; });
                 }
             }
             activeCanvases.forEach(canvas => {
@@ -153,19 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    if (thicknessSlider) {
-        thicknessSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            strokeWidth = val;
-            if (currentTool === 'eraser') {
-                eraserWidth = val;
-            } else {
-                penWidth = val;
-            }
-            if (sliderSizeVal) sliderSizeVal.textContent = `${val}px`;
-        });
-    }
-
     if (opacitySlider) {
         opacitySlider.addEventListener('input', (e) => {
             opacity = parseFloat(e.target.value);
@@ -179,45 +197,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const updateCurrentTabTemplate = (newType, newTheme) => {
         const activeTabBtn = mealkitTabsHeader ? mealkitTabsHeader.querySelector('.tab-btn.active') : null;
-        if (!activeTabBtn) return;
-        const currentTabId = activeTabBtn.dataset.tabid;
-        const currentTab = tabsDataList.find(t => t.id === currentTabId);
-        if (!currentTab) return;
+        let currentTabId = activeTabBtn ? activeTabBtn.dataset.tabid : (tabsDataList.length > 0 ? tabsDataList[0].id : null);
+        let currentTab = tabsDataList.find(t => t.id === currentTabId);
 
-        // If tab has items, update first note-type item or replace it
-        let noteItem = currentTab.items.find(i => ['blank', 'coordinate', 'grid', 'lined'].includes(i.type));
-        if (!noteItem) {
-            if (currentTab.items.length === 0) {
-                noteItem = {
-                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: '노트',
-                    type: newType || 'blank',
-                    bgTheme: newTheme || 'white',
-                    url: '',
-                    fileObject: null,
-                    storagePath: ''
-                };
-                currentTab.items.push(noteItem);
-            } else {
-                noteItem = currentTab.items[0];
-            }
+        if (!currentTab) {
+            currentTabId = 'tab_' + Math.random().toString(36).substr(2, 9);
+            currentTab = {
+                id: currentTabId,
+                title: '노트 필기',
+                layout: 'split',
+                template: newType || 'none',
+                bgTheme: newTheme || 'white',
+                items: []
+            };
+            tabsDataList.push(currentTab);
         }
 
-        if (newType) noteItem.type = newType;
-        if (newTheme) noteItem.bgTheme = newTheme;
+        // Set Tab-level template and bgTheme so entire page background sits underneath all items
+        currentTab.template = newType;
+        currentTab.bgTheme = newTheme;
 
-        renderStudentTabsLayout(tabsDataList, currentTabId);
+        // Also update individual note items if any
+        currentTab.items.forEach(item => {
+            if (['blank', 'coordinate', 'grid', 'lined'].includes(item.type)) {
+                if (newType && newType !== 'none') item.type = newType;
+                if (newTheme) item.bgTheme = newTheme;
+            }
+        });
+
+        buildMealkitLayout(currentTabId);
     };
 
     if (selectPageTemplate) {
         selectPageTemplate.addEventListener('change', (e) => {
-            updateCurrentTabTemplate(e.target.value, selectPageBgtheme ? selectPageBgtheme.value : 'white');
+            const currentTheme = selectPageBgtheme ? selectPageBgtheme.value : 'white';
+            updateCurrentTabTemplate(e.target.value, currentTheme);
         });
     }
 
     if (selectPageBgtheme) {
         selectPageBgtheme.addEventListener('change', (e) => {
-            updateCurrentTabTemplate(selectPageTemplate ? selectPageTemplate.value : 'blank', e.target.value);
+            const currentTemplate = selectPageTemplate ? selectPageTemplate.value : 'none';
+            updateCurrentTabTemplate(currentTemplate, e.target.value);
         });
     }
 
@@ -743,16 +764,78 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isScrollMode = (tab.layout === 'scroll');
             const items = tab.items || [];
 
+            const theme = getTemplateThemeColors(tab.bgTheme || 'white');
+            const templateType = tab.template || 'none';
+
             const tabBody = document.createElement('div');
+            tabBody.className = 'tab-body-container';
+            
+            // Apply note template SVG / background underneath all materials
+            let bgSvg = '';
+            if (templateType === 'coordinate') {
+                bgSvg = `
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                        <defs>
+                            <pattern id="tab-grid-small-${tab.id}" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="${theme.line}" stroke-width="0.8"/>
+                            </pattern>
+                            <pattern id="tab-grid-large-${tab.id}" width="100" height="100" patternUnits="userSpaceOnUse">
+                                <rect width="100" height="100" fill="url(#tab-grid-small-${tab.id})"/>
+                                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="${theme.line}" stroke-width="1.4"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#tab-grid-large-${tab.id})"/>
+                        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="${theme.axis}" stroke-width="2.5" />
+                        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="${theme.axis}" stroke-width="2.5" />
+                        <polygon points="100%,50% calc(100% - 10px),calc(50% - 5px) calc(100% - 10px),calc(50% + 5px)" fill="${theme.axis}" />
+                        <polygon points="50%,0 calc(50% - 5px),10px calc(50% + 5px),10px" fill="${theme.axis}" />
+                        <text x="calc(100% - 18px)" y="calc(50% + 22px)" font-size="16" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">x</text>
+                        <text x="calc(50% + 12px)" y="20" font-size="16" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">y</text>
+                        <text x="calc(50% - 18px)" y="calc(50% + 20px)" font-size="15" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">O</text>
+                    </svg>
+                `;
+            } else if (templateType === 'grid') {
+                bgSvg = `
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                        <defs>
+                            <pattern id="tab-grid-pat-${tab.id}" width="28" height="28" patternUnits="userSpaceOnUse">
+                                <path d="M 28 0 L 0 0 0 28" fill="none" stroke="${theme.line}" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#tab-grid-pat-${tab.id})"/>
+                    </svg>
+                `;
+            } else if (templateType === 'lined') {
+                bgSvg = `
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                        <defs>
+                            <pattern id="tab-lined-pat-${tab.id}" width="100%" height="36" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="35" x2="100%" y2="35" stroke="${theme.line}" stroke-width="1.2"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#tab-lined-pat-${tab.id})"/>
+                    </svg>
+                `;
+            }
+
             if (isScrollMode) {
-                tabBody.style.cssText = 'display: flex; flex-direction: column; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; gap: 1.5rem; padding: 1rem; background: var(--bg-primary);';
+                tabBody.style.cssText = `display: flex; flex-direction: column; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; gap: 1.5rem; padding: 1rem; background: ${theme.bg}; position: relative;`;
             } else {
-                // Split view (horizontal multi-column with resizers)
-                tabBody.style.cssText = 'display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; position: relative; background: #0f172a;';
+                tabBody.style.cssText = `display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; position: relative; background: ${theme.bg};`;
+            }
+
+            if (bgSvg) {
+                const bgLayer = document.createElement('div');
+                bgLayer.className = 'tab-background-layer';
+                bgLayer.innerHTML = bgSvg;
+                tabBody.appendChild(bgLayer);
             }
 
             if (items.length === 0) {
-                tabBody.innerHTML = '<p style="text-align: center; padding: 3rem; color: var(--text-secondary); width: 100%;">이 탭에 등록된 자료가 없습니다.</p>';
+                const emptyMsg = document.createElement('p');
+                emptyMsg.style.cssText = 'text-align: center; padding: 3rem; color: var(--text-secondary); width: 100%; position: relative; z-index: 2;';
+                emptyMsg.textContent = '이 탭에 등록된 자료가 없습니다.';
+                tabBody.appendChild(emptyMsg);
             } else {
                 const count = items.length;
 
@@ -762,10 +845,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     wrapper.dataset.fileid = item.id;
 
                     if (isScrollMode) {
-                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;';
                     } else {
                         const shareWidth = (100 / count).toFixed(2);
-                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: #0f172a; overflow: hidden; display: flex; align-items: center; justify-content: center;`;
+                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: #0f172a; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2;`;
                     }
 
                     const viewer = createViewerElement(item);
@@ -1329,4 +1412,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnSubmit.disabled = false;
         }
     });
+
+    // ── Student-Side QR Modal Controls ──
+    const btnShowQrStudent = document.getElementById('btn-show-qr-student');
+    const studentQrModal = document.getElementById('student-qr-modal');
+    const btnCloseStudentQr = document.getElementById('btn-close-student-qr');
+    const btnDoneStudentQr = document.getElementById('btn-done-student-qr');
+    const btnCopyStudentLink = document.getElementById('btn-copy-student-link');
+    const studentQrImg = document.getElementById('student-qr-img');
+
+    if (btnShowQrStudent && studentQrModal) {
+        btnShowQrStudent.addEventListener('click', () => {
+            const currentStudentUrl = window.location.href;
+            if (studentQrImg) {
+                studentQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(currentStudentUrl)}`;
+            }
+            studentQrModal.classList.remove('hidden');
+        });
+
+        const hideStudentQr = () => studentQrModal.classList.add('hidden');
+        if (btnCloseStudentQr) btnCloseStudentQr.addEventListener('click', hideStudentQr);
+        if (btnDoneStudentQr) btnDoneStudentQr.addEventListener('click', hideStudentQr);
+
+        if (btnCopyStudentLink) {
+            btnCopyStudentLink.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert("수업 참여 링크가 복사되었습니다!");
+                } catch (e) {
+                    prompt("아래 링크를 복사하세요:", window.location.href);
+                }
+            });
+        }
+    }
 });

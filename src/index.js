@@ -797,6 +797,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : '이미지';
                     }
 
+                    // Generate other tabs options for Move/Copy
+                    const otherTabsOptions = tabsList
+                        .map((otherTab, oIdx) => {
+                            if (otherTab.id === tab.id) return `<option value="" disabled selected>📦 탭으로 이동/복사...</option>`;
+                            return `<option value="move:${otherTab.id}">➡️ [이동] 탭 #${oIdx + 1}: ${otherTab.title}</option><option value="copy:${otherTab.id}">📋 [복사] 탭 #${oIdx + 1}: ${otherTab.title}</option>`;
+                        })
+                        .join('');
+
                     itemRow.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 240px; overflow: hidden;">
                             <span style="font-size: 1.2rem;">${icon}</span>
@@ -806,12 +814,47 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 0.3rem;">
+                        <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                            ${tabsList.length > 1 ? `
+                                <select class="item-move-tab-select" style="padding: 0.3rem 0.5rem; font-size: 0.78rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
+                                    ${otherTabsOptions}
+                                </select>
+                            ` : ''}
                             <button type="button" class="btn btn-secondary btn-sm btn-item-up" title="자료 순서 위로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === 0 ? 'disabled' : ''}>▲</button>
                             <button type="button" class="btn btn-secondary btn-sm btn-item-down" title="자료 순서 아래로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === tab.items.length - 1 ? 'disabled' : ''}>▼</button>
-                            <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);">🗑️</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);" title="삭제">🗑️</button>
                         </div>
                     `;
+
+                    // Handle move / copy to other tab
+                    const moveSelect = itemRow.querySelector('.item-move-tab-select');
+                    if (moveSelect) {
+                        moveSelect.addEventListener('change', (e) => {
+                            const val = e.target.value;
+                            if (!val) return;
+                            const [action, targetTabId] = val.split(':');
+                            const targetTab = tabsList.find(t => t.id === targetTabId);
+                            if (!targetTab) return;
+
+                            if (action === 'move') {
+                                // Remove from current tab and push to target tab
+                                tab.items.splice(itemIdx, 1);
+                                targetTab.items.push(item);
+                                selectedTabId = targetTab.id;
+                                renderTabsStructure();
+                            } else if (action === 'copy') {
+                                // Clone item into target tab
+                                const clonedItem = {
+                                    ...item,
+                                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                                    name: item.name
+                                };
+                                targetTab.items.push(clonedItem);
+                                selectedTabId = targetTab.id;
+                                renderTabsStructure();
+                            }
+                        });
+                    }
 
                     // Item name change
                     const nameInput = itemRow.querySelector('.item-name-input');
