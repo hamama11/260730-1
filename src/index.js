@@ -426,10 +426,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add Google Login Button Click Listener (Redirect flow to bypass firewall/cross-origin popup blockage)
         document.getElementById('btn-google-login').addEventListener('click', async () => {
-            if (auth.currentUser || localStorage.getItem('local_teacher_uid')) {
-                if (confirm("로그아웃 하시겠습니까?")) {
-                    localStorage.removeItem('local_teacher_uid');
-                    if (auth.currentUser) await signOut(auth);
+            if (auth.currentUser) {
+                if (confirm("Google 계정에서 로그아웃 하시겠습니까?")) {
+                    await signOut(auth);
                     window.location.reload();
                 }
             } else {
