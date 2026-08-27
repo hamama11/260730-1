@@ -742,21 +742,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
-                    <!-- Per-tab visibility selector (공개/미공개) -->
-                    <div style="display: flex; align-items: center; gap: 0.45rem; background: rgba(255, 255, 255, 0.05); padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <!-- Per-tab visibility slide toggle ON/OFF switch (공개/미공개) -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; background: #ffffff; padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
                         <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">학생 공개:</span>
-                        <select class="tab-visible-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: ${tab.published !== false ? '#dcfce7' : '#fee2e2'}; color: ${tab.published !== false ? '#15803d' : '#b91c1c'}; cursor: pointer; outline: none;">
-                            <option value="true" ${tab.published !== false ? 'selected' : ''}>🔓 공개 중</option>
-                            <option value="false" ${tab.published === false ? 'selected' : ''}>🔒 개봉 예정 (미공개)</option>
-                        </select>
+                        <label class="switch-toggle" title="클릭하여 학생 공개 ON/OFF 전환">
+                            <input type="checkbox" class="tab-visible-toggle" ${tab.published !== false ? 'checked' : ''}>
+                            <span class="switch-slider"></span>
+                            <span class="switch-label-text" style="color: ${tab.published !== false ? '#15803d' : '#94a3b8'};">${tab.published !== false ? 'ON (공개)' : 'OFF (개봉예정)'}</span>
+                        </label>
                     </div>
 
                     <!-- Per-tab layout selector -->
-                    <div style="display: flex; align-items: center; gap: 0.45rem; background: rgba(255, 255, 255, 0.05); padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
                         <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
-                        <select class="tab-layout-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
-                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할 뷰</option>
+                        <select class="tab-layout-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-primary); cursor: pointer; outline: none;">
                             <option value="scroll" ${tab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤 뷰</option>
+                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할 뷰</option>
                         </select>
                     </div>
 
@@ -781,13 +782,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.title = e.target.value.trim() || `탐구 활동 ${tabIdx + 1}`;
             });
 
-            // Visibility select listener
-            const visibleSelect = tabHeader.querySelector('.tab-visible-select');
-            visibleSelect.addEventListener('change', (e) => {
-                tab.published = (e.target.value === 'true');
-                visibleSelect.style.background = tab.published ? '#dcfce7' : '#fee2e2';
-                visibleSelect.style.color = tab.published ? '#15803d' : '#b91c1c';
-            });
+            // Visibility switch listener (Slide ON/OFF)
+            const visibleToggle = tabHeader.querySelector('.tab-visible-toggle');
+            const switchLabel = tabHeader.querySelector('.switch-label-text');
+            if (visibleToggle) {
+                visibleToggle.addEventListener('change', (e) => {
+                    tab.published = e.target.checked;
+                    if (switchLabel) {
+                        switchLabel.textContent = tab.published ? 'ON (공개)' : 'OFF (개봉예정)';
+                        switchLabel.style.color = tab.published ? '#15803d' : '#94a3b8';
+                    }
+                });
+            }
 
             // Layout select listener
             const layoutSelect = tabHeader.querySelector('.tab-layout-select');

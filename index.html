@@ -119,25 +119,22 @@
                                             style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
                                             <input type="radio" name="canvas-option" value="independent" checked
                                                 style="width: 17px; height: 17px; accent-color: var(--primary);">
-                                            <span>📑 탭/자료별 독립 필기 (자료마다 각각 기록)</span>
+                                            <span>📑 탭별 각각 기록</span>
                                         </label>
                                         <label
                                             style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
                                             <input type="radio" name="canvas-option" value="global"
                                                 style="width: 17px; height: 17px; accent-color: var(--primary);">
-                                            <span>🌍 화면 전체 글로벌 필기 (어느 자료든 동일 판서 유지)</span>
+                                            <span>🌍 전체 수업 동일 필기 유지</span>
                                         </label>
                                     </div>
                                 </div>
 
-                                <!-- Time Tracking Option -->
+                                <!-- Time Tracking Option (No separate title, description only) -->
                                 <div class="form-group"
-                                    style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 0.9rem;">
+                                    style="margin: 0; border-top: 1px dashed var(--border-color); padding-top: 0.8rem;">
                                     <label
-                                        style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary); margin-bottom: 0.4rem;">⏱️
-                                        소요시간 체크</label>
-                                    <label
-                                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; color: var(--text-primary); font-weight: 500;">
                                         <input type="checkbox" id="check-time-tracking" checked
                                             style="width: 17px; height: 17px; accent-color: var(--primary);">
                                         <span>⏱️ 학생 탐구 활동 소요시간 기록 (답안 제출 시 총 경과 시간 집계)</span>
@@ -218,10 +215,10 @@
                     <label>🙋‍♂️ 학생 접속용 링크 (학생에게 복사해서 공유)</label>
                     <div class="input-copy-group" style="display: flex; gap: 0.5rem; width: 100%;">
                         <input type="text" id="student-link-input" readonly style="flex: 1;">
-                        <button type="button" id="btn-copy-student" class="btn btn-accent"
-                            style="flex-shrink: 0; min-width: 60px;">복사</button>
+                        <button type="button" id="btn-copy-student" class="btn btn-secondary"
+                            style="flex-shrink: 0; min-width: 60px; font-weight: 700; background: #ffffff; color: var(--text-primary); border: 1.5px solid var(--border-color);">복사</button>
                         <button type="button" id="btn-enter-student" class="btn btn-primary"
-                            style="flex-shrink: 0; min-width: 80px; background: #6366f1;">방 입장</button>
+                            style="flex-shrink: 0; min-width: 90px; font-weight: 700;">방 입장</button>
                     </div>
                 </div>
 
@@ -229,10 +226,10 @@
                     <label>🛡️ 교사용 실시간 모니터링 링크 (절대 노출 금지 / 즐겨찾기 권장)</label>
                     <div class="input-copy-group" style="display: flex; gap: 0.5rem; width: 100%;">
                         <input type="text" id="dashboard-link-input" readonly style="flex: 1;">
-                        <button type="button" id="btn-copy-dashboard" class="btn btn-primary"
-                            style="flex-shrink: 0; min-width: 60px;">복사</button>
-                        <button type="button" id="btn-enter-dashboard" class="btn btn-accent"
-                            style="flex-shrink: 0; min-width: 100px; background: #10b981;">모니터링 입장</button>
+                        <button type="button" id="btn-copy-dashboard" class="btn btn-secondary"
+                            style="flex-shrink: 0; min-width: 60px; font-weight: 700; background: #ffffff; color: var(--text-primary); border: 1.5px solid var(--border-color);">복사</button>
+                        <button type="button" id="btn-enter-dashboard" class="btn btn-primary"
+                            style="flex-shrink: 0; min-width: 100px; font-weight: 700;">모니터링 입장</button>
                     </div>
                 </div>
 

@@ -160,13 +160,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis;">${itemsSummary || '자료 없음'}</span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-                    <button type="button" class="btn btn-secondary btn-sm btn-tab-toggle-publish" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; background: ${isPublished ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${isPublished ? '#4ade80' : '#f87171'}; border-color: ${isPublished ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'};" title="학생에게 공개/비공개 전환">
-                        ${isPublished ? '🔓 공개중' : '🔒 개봉예정'}
-                    </button>
+                <div style="display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;">
+                    <label class="switch-toggle" title="클릭하여 학생 공개 ON/OFF 전환">
+                        <input type="checkbox" class="tab-monitor-publish-toggle" data-tabidx="${idx}" ${isPublished ? 'checked' : ''}>
+                        <span class="switch-slider"></span>
+                        <span class="switch-label-text" style="color: ${isPublished ? '#22c55e' : '#94a3b8'}; font-size: 0.75rem;">${isPublished ? 'ON (공개)' : 'OFF (개봉예정)'}</span>
+                    </label>
                     <select class="tab-monitor-layout" data-tabidx="${idx}" style="padding: 0.25rem 0.4rem; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.4); color: var(--text-primary); cursor: pointer;">
-                        <option value="split" ${!isScroll ? 'selected' : ''}>🪟 분할</option>
                         <option value="scroll" ${isScroll ? 'selected' : ''}>📜 스크롤</option>
+                        <option value="split" ${!isScroll ? 'selected' : ''}>🪟 분할</option>
                     </select>
                     <button type="button" class="btn btn-secondary btn-sm btn-tab-up" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 위로" ${idx === 0 ? 'disabled' : ''}>▲</button>
                     <button type="button" class="btn btn-secondary btn-sm btn-tab-down" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" title="순서 아래로" ${idx === tabs.length - 1 ? 'disabled' : ''}>▼</button>
@@ -174,13 +176,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
 
-            // Toggle publish handler
-            const togglePublishBtn = item.querySelector('.btn-tab-toggle-publish');
-            if (togglePublishBtn) {
-                togglePublishBtn.addEventListener('click', async () => {
+            // Toggle publish switch handler
+            const publishToggle = item.querySelector('.tab-monitor-publish-toggle');
+            if (publishToggle) {
+                publishToggle.addEventListener('change', async (e) => {
                     const newTabs = [...tabs];
-                    const nextStatus = !(newTabs[idx].published !== false);
-                    newTabs[idx] = { ...newTabs[idx], published: nextStatus };
+                    newTabs[idx] = { ...newTabs[idx], published: e.target.checked };
                     try {
                         const roomRef = doc(db, "users", teacherId, "rooms", roomId);
                         await updateDoc(roomRef, { tabs: newTabs });
