@@ -23,6 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const createRoomForm = document.getElementById('create-room-form');
     if (!createRoomForm) return;
 
+    // Toggle header more desc
+    const btnToggleMoreDesc = document.getElementById('btn-toggle-more-desc');
+    const headerMoreDescBox = document.getElementById('header-more-desc-box');
+    if (btnToggleMoreDesc && headerMoreDescBox) {
+        btnToggleMoreDesc.addEventListener('click', () => {
+            const isHidden = headerMoreDescBox.classList.contains('hidden');
+            if (isHidden) {
+                headerMoreDescBox.classList.remove('hidden');
+                btnToggleMoreDesc.textContent = '기능 설명 닫기 ▲';
+            } else {
+                headerMoreDescBox.classList.add('hidden');
+                btnToggleMoreDesc.textContent = '기능 설명 more ▼';
+            }
+        });
+    }
+
     let currentUser = null;
     let unsubscribeMyRooms = null;
     const urlParams = new URLSearchParams(window.location.search);
@@ -348,12 +364,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const authAvatar = document.getElementById('auth-avatar');
 
             const authDesc = document.getElementById('auth-desc');
+            const guestWarning = document.getElementById('guest-warning-text');
+            const guestBtn = document.getElementById('btn-guest-login');
+
             if (user) {
                 currentUser = user;
                 authStatus.textContent = `안녕하세요, ${user.displayName || "교사"}님!`;
                 authEmail.textContent = `(${user.email})`;
                 authEmail.classList.remove('hidden');
                 btnLogin.textContent = "로그아웃";
+                if (guestBtn) guestBtn.style.display = 'none';
+                if (guestWarning) guestWarning.classList.add('hidden');
 
                 if (authDesc) authDesc.classList.add('hidden');
 
@@ -374,47 +395,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupMyRoomsListener(user.uid);
                 checkAndLoadEditMode(user.uid);
             } else {
-                currentUser = null;
-                authStatus.textContent = "로그인해 주세요.";
+                // Default to Non-member (비회원 모드) right away: lightweight & fast!
+                let localTeacherId = localStorage.getItem('local_teacher_uid');
+                if (!localTeacherId) {
+                    localTeacherId = 'teacher_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('local_teacher_uid', localTeacherId);
+                }
+
+                currentUser = { uid: localTeacherId, displayName: '선생님 (비회원)' };
+                authStatus.textContent = "선생님 (비회원 모드)";
                 authEmail.textContent = "";
                 authEmail.classList.add('hidden');
                 authPhoto.classList.add('hidden');
                 authAvatar.classList.remove('hidden');
                 btnLogin.textContent = "Google 로그인";
+                if (guestBtn) guestBtn.style.display = 'none';
+                if (guestWarning) guestWarning.classList.remove('hidden');
 
-                const guestBtn = document.getElementById('btn-guest-login');
-                if (guestBtn) guestBtn.style.display = 'inline-block';
+                if (authDesc) authDesc.classList.add('hidden');
 
-                if (authDesc) authDesc.classList.remove('hidden');
-
-                // Check if already authenticated as guest/anonymous or local teacher
-                const localTeacherId = localStorage.getItem('local_teacher_uid');
-                const guestWarning = document.getElementById('guest-warning-text');
-                if (localTeacherId) {
-                    currentUser = { uid: localTeacherId, displayName: '선생님 (비회원 모드)' };
-                    authStatus.textContent = `안녕하세요, ${currentUser.displayName}님!`;
-                    if (guestBtn) guestBtn.style.display = 'none';
-                    if (guestWarning) guestWarning.classList.remove('hidden');
-                    btnLogin.textContent = "로그아웃";
-                    createRoomForm.classList.remove('hidden');
-                    const myRoomsSection = document.getElementById('my-rooms-section');
-                    if (myRoomsSection) myRoomsSection.classList.remove('hidden');
-                    setupMyRoomsListener(localTeacherId);
-                    checkAndLoadEditMode(localTeacherId);
-                    return;
-                }
-
-                if (guestWarning) guestWarning.classList.add('hidden');
-
-                // Hide room creation form and my rooms section
-                createRoomForm.classList.add('hidden');
+                // Keep room creation form OPEN by default
+                createRoomForm.classList.remove('hidden');
                 const myRoomsSection = document.getElementById('my-rooms-section');
                 if (myRoomsSection) myRoomsSection.classList.remove('hidden');
 
-                if (unsubscribeMyRooms) {
-                    unsubscribeMyRooms();
-                    unsubscribeMyRooms = null;
-                }
+                setupMyRoomsListener(localTeacherId);
+                checkAndLoadEditMode(localTeacherId);
             }
         });
 
@@ -455,7 +461,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Handle redirect result if returning from Google OAuth page
-        getRedirectResult(auth).catch((err) => {
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                currentUser = result.user;
+                console.log("Redirect login successful:", result.user);
+            }
+        }).catch((err) => {
             if (err && err.code !== 'auth/popup-closed-by-user') {
                 console.error("Redirect 로그인 에러:", err);
             }
