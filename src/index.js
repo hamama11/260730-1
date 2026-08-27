@@ -552,6 +552,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    questionsList.addEventListener('click', (e) => {
+        const deleteQBtn = e.target.closest('.btn-delete-question');
+        if (deleteQBtn) {
+            const qIdx = parseInt(deleteQBtn.dataset.index);
+            if (questions.length <= 1) {
+                alert("최소 1개 이상의 탐구 질문이 필요합니다.");
+                return;
+            }
+            questions.splice(qIdx, 1);
+            renderQuestionsConfig();
+            return;
+        }
+
+        const deleteOptBtn = e.target.closest('.btn-delete-option');
+        if (deleteOptBtn) {
+            const qIdx = parseInt(deleteOptBtn.dataset.qidx);
+            const optIdx = parseInt(deleteOptBtn.dataset.optidx);
+            if (questions[qIdx].options.length <= 1) {
+                alert("객관식 질문에는 최소 1개 이상의 선택지가 필요합니다.");
+                return;
+            }
+            questions[qIdx].options.splice(optIdx, 1);
+            renderQuestionsConfig();
+            return;
+        }
+
+        const addOptBtn = e.target.closest('.btn-add-option');
+        if (addOptBtn) {
+            const qIdx = parseInt(addOptBtn.dataset.qidx);
+            if (!questions[qIdx].options) questions[qIdx].options = [];
+            const nextOptNum = questions[qIdx].options.length + 1;
+            questions[qIdx].options.push(`옵션 ${nextOptNum}`);
+            renderQuestionsConfig();
+            return;
+        }
+    });
+
     // ── 2-Tier Tabs Structure State ──
     // Array of Tab objects:
     // {
@@ -842,10 +879,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     🌐 + 웹 링크 추가
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm btn-tab-add-blank" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">
-                    📄 + 화이트보드
+                    📄 + 백지노트
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm btn-tab-add-coord" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(129, 178, 154, 0.08); border-color: rgba(129, 178, 154, 0.2); color: var(--accent);">
                     📐 + 좌표평면
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-grid" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                    ⏹️ + 모눈종이
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-lined" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(244, 162, 97, 0.08); border-color: rgba(244, 162, 97, 0.2); color: #ea580c;">
+                    📑 + 줄노트
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm btn-tab-paste-hint" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(244, 162, 97, 0.1); border-color: rgba(244, 162, 97, 0.3); color: #f97316; margin-left: auto;">
                     📋 Ctrl+V 붙여넣기 지원
@@ -900,8 +943,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const blankNum = tab.items.filter(i => i.type === 'blank').length + 1;
                 tab.items.push({
                     id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: `화이트보드 ${blankNum}`,
+                    name: `백지노트 ${blankNum}`,
                     type: 'blank',
+                    bgTheme: 'white',
                     url: '',
                     fileObject: null,
                     storagePath: ''
@@ -917,6 +961,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: 'item_' + Math.random().toString(36).substr(2, 9),
                     name: `좌표평면 ${coordNum}`,
                     type: 'coordinate',
+                    bgTheme: 'white',
+                    url: '',
+                    fileObject: null,
+                    storagePath: ''
+                });
+                renderTabsStructure();
+            });
+
+            // Add Grid
+            addToolbar.querySelector('.btn-tab-add-grid').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                const gridNum = tab.items.filter(i => i.type === 'grid').length + 1;
+                tab.items.push({
+                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                    name: `모눈종이 ${gridNum}`,
+                    type: 'grid',
+                    bgTheme: 'white',
+                    url: '',
+                    fileObject: null,
+                    storagePath: ''
+                });
+                renderTabsStructure();
+            });
+
+            // Add Lined
+            addToolbar.querySelector('.btn-tab-add-lined').addEventListener('click', () => {
+                selectedTabId = tab.id;
+                const linedNum = tab.items.filter(i => i.type === 'lined').length + 1;
+                tab.items.push({
+                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                    name: `줄노트 ${linedNum}`,
+                    type: 'lined',
+                    bgTheme: 'cream',
                     url: '',
                     fileObject: null,
                     storagePath: ''
@@ -1184,14 +1261,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const customRoomIdInput = document.getElementById('custom-room-id');
         const roomId = customRoomIdInput ? customRoomIdInput.value.trim() : "";
-        const cleanRoomId = roomId.replace(/[^a-zA-Z0-9-]/g, '');
+        // Allow Korean, English, numbers, hyphens, underscores, brackets, commas, dots
+        const cleanRoomId = roomId.replace(/[^\w\s\uAC00-\uD7A3\-_\(\),.\[\]]/g, '');
 
         if (!roomId) {
-            alert("수업방 고유 ID를 입력해 주세요.");
+            alert("수업방 고유 ID(이름)를 입력해 주세요.");
             return;
         }
         if (cleanRoomId !== roomId) {
-            alert("수업방 고유 ID는 영문, 숫자, 하이픈(-)만 사용할 수 있습니다.");
+            alert("수업방 ID에는 특수문자(/, ?, &, # 등 URL 예약어)를 제외한 한글, 영문, 숫자, 하이픈(-), 괄호, 쉼표만 사용할 수 있습니다.");
             return;
         }
 
@@ -1464,8 +1542,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 questions: questions
             };
 
-            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(previewData))));
-            window.open(`student.html?mode=preview&data=${encodeURIComponent(encodedData)}`, '_blank');
+            try {
+                sessionStorage.setItem('student_preview_data', JSON.stringify(previewData));
+                window.open('student.html?mode=preview', '_blank');
+            } catch (storageErr) {
+                console.warn("SessionStorage full or error, falling back to data URL parameter:", storageErr);
+                const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(previewData))));
+                window.open(`student.html?mode=preview&data=${encodeURIComponent(encodedData)}`, '_blank');
+            }
         });
     }
 });

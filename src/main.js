@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentTool = 'interact'; // 'interact', 'pen', 'eraser'
     let strokeColor = '#000000';
     let strokeWidth = 4;
+    let penWidth = 4;
+    let eraserWidth = 24;
     let opacity = 1.0;
     
     // Time tracking variables
@@ -30,6 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const colorPicker = document.getElementById('draw-color-picker');
     const opacitySlider = document.getElementById('draw-opacity-slider');
     const thicknessSlider = document.getElementById('draw-thickness-slider');
+    const sliderSizeLabel = document.getElementById('slider-size-label');
+    const sliderSizeVal = document.getElementById('slider-size-val');
     const btnCustomColor = document.getElementById('btn-custom-color');
     const presetBtns = document.querySelectorAll('.preset-btn');
 
@@ -48,33 +52,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const setTool = (tool) => {
         currentTool = tool;
         
-        // Reset active UI styles
-        if (btnDrawMode) btnDrawMode.classList.remove('active');
-        if (btnDrawPen) btnDrawPen.classList.remove('active');
-        if (btnDrawEraser) btnDrawEraser.classList.remove('active');
-        
-        if (btnDrawMode) { btnDrawMode.style.background = ''; btnDrawMode.style.color = ''; }
-        if (btnDrawPen) { btnDrawPen.style.background = ''; btnDrawPen.style.color = ''; }
-        if (btnDrawEraser) { btnDrawEraser.style.background = ''; btnDrawEraser.style.color = ''; }
+        // Reset inactive UI styles (High contrast light text)
+        [btnDrawMode, btnDrawPen, btnDrawEraser].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('active');
+                btn.style.background = 'rgba(255, 255, 255, 0.08)';
+                btn.style.color = '#f1f5f9';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+            }
+        });
 
         if (tool === 'interact') {
             if (btnDrawMode) {
                 btnDrawMode.classList.add('active');
                 btnDrawMode.style.background = 'var(--primary)';
-                btnDrawMode.style.color = 'white';
+                btnDrawMode.style.color = '#ffffff';
+                btnDrawMode.style.borderColor = 'var(--primary)';
             }
         } else if (tool === 'pen') {
             if (btnDrawPen) {
                 btnDrawPen.classList.add('active');
                 btnDrawPen.style.background = 'var(--primary)';
-                btnDrawPen.style.color = 'white';
+                btnDrawPen.style.color = '#ffffff';
+                btnDrawPen.style.borderColor = 'var(--primary)';
             }
+            strokeWidth = penWidth;
+            if (sliderSizeLabel) sliderSizeLabel.textContent = '펜 굵기';
+            if (thicknessSlider) thicknessSlider.value = penWidth;
+            if (sliderSizeVal) sliderSizeVal.textContent = `${penWidth}px`;
         } else if (tool === 'eraser') {
             if (btnDrawEraser) {
                 btnDrawEraser.classList.add('active');
                 btnDrawEraser.style.background = 'var(--primary)';
-                btnDrawEraser.style.color = 'white';
+                btnDrawEraser.style.color = '#ffffff';
+                btnDrawEraser.style.borderColor = 'var(--primary)';
             }
+            strokeWidth = eraserWidth;
+            if (sliderSizeLabel) sliderSizeLabel.textContent = '지우개 크기';
+            if (thicknessSlider) thicknessSlider.value = eraserWidth;
+            if (sliderSizeVal) sliderSizeVal.textContent = `${eraserWidth}px`;
         }
 
         updateCanvasPointerEvents();
@@ -139,7 +155,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (thicknessSlider) {
         thicknessSlider.addEventListener('input', (e) => {
-            strokeWidth = parseInt(e.target.value);
+            const val = parseInt(e.target.value);
+            strokeWidth = val;
+            if (currentTool === 'eraser') {
+                eraserWidth = val;
+            } else {
+                penWidth = val;
+            }
+            if (sliderSizeVal) sliderSizeVal.textContent = `${val}px`;
         });
     }
 
@@ -147,6 +170,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         opacitySlider.addEventListener('input', (e) => {
             opacity = parseFloat(e.target.value);
             updateCanvasPointerEvents();
+        });
+    }
+
+    // Dynamic Page Template & Background Theme selector in student toolbar
+    const selectPageTemplate = document.getElementById('select-page-template');
+    const selectPageBgtheme = document.getElementById('select-page-bgtheme');
+
+    const updateCurrentTabTemplate = (newType, newTheme) => {
+        const activeTabBtn = mealkitTabsHeader ? mealkitTabsHeader.querySelector('.tab-btn.active') : null;
+        if (!activeTabBtn) return;
+        const currentTabId = activeTabBtn.dataset.tabid;
+        const currentTab = tabsDataList.find(t => t.id === currentTabId);
+        if (!currentTab) return;
+
+        // If tab has items, update first note-type item or replace it
+        let noteItem = currentTab.items.find(i => ['blank', 'coordinate', 'grid', 'lined'].includes(i.type));
+        if (!noteItem) {
+            if (currentTab.items.length === 0) {
+                noteItem = {
+                    id: 'item_' + Math.random().toString(36).substr(2, 9),
+                    name: '노트',
+                    type: newType || 'blank',
+                    bgTheme: newTheme || 'white',
+                    url: '',
+                    fileObject: null,
+                    storagePath: ''
+                };
+                currentTab.items.push(noteItem);
+            } else {
+                noteItem = currentTab.items[0];
+            }
+        }
+
+        if (newType) noteItem.type = newType;
+        if (newTheme) noteItem.bgTheme = newTheme;
+
+        renderStudentTabsLayout(tabsDataList, currentTabId);
+    };
+
+    if (selectPageTemplate) {
+        selectPageTemplate.addEventListener('change', (e) => {
+            updateCurrentTabTemplate(e.target.value, selectPageBgtheme ? selectPageBgtheme.value : 'white');
+        });
+    }
+
+    if (selectPageBgtheme) {
+        selectPageBgtheme.addEventListener('change', (e) => {
+            updateCurrentTabTemplate(selectPageTemplate ? selectPageTemplate.value : 'blank', e.target.value);
         });
     }
 
@@ -188,11 +259,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (stroke.tool === 'eraser') {
                 ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = 24;
+                ctx.lineWidth = stroke.width || eraserWidth || 24;
             } else {
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.strokeStyle = stroke.color;
-                ctx.lineWidth = stroke.width;
+                ctx.lineWidth = stroke.width || 4;
             }
             
             const p0 = stroke.points[0];
@@ -247,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ctx.lineTo(x, y);
             if (currentTool === 'eraser') {
                 ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = 24;
+                ctx.lineWidth = strokeWidth;
             } else {
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.strokeStyle = strokeColor;
@@ -648,6 +719,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Trigger canvas resize update on reveal
                         const canvases = panel.querySelectorAll('canvas');
                         canvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
+
+                        // Sync toolbar selects to this tab's note template and background theme
+                        const noteItem = (tab.items || []).find(i => ['blank', 'coordinate', 'grid', 'lined'].includes(i.type));
+                        if (noteItem) {
+                            if (selectPageTemplate) selectPageTemplate.value = noteItem.type || 'blank';
+                            if (selectPageBgtheme) selectPageBgtheme.value = noteItem.bgTheme || 'white';
+                        }
                     } else {
                         panel.classList.add('hidden');
                     }
@@ -777,54 +855,103 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function getTemplateThemeColors(bgTheme) {
+        switch (bgTheme) {
+            case 'cream':
+                return { bg: '#FDFBF7', line: 'rgba(74, 62, 61, 0.12)', axis: '#5C4D4A', text: '#5C4D4A' };
+            case 'dark':
+                return { bg: '#18181B', line: 'rgba(255, 255, 255, 0.12)', axis: '#E4E4E7', text: '#E4E4E7' };
+            case 'green':
+                return { bg: '#1E392A', line: 'rgba(255, 255, 255, 0.15)', axis: '#FEF3C7', text: '#FEF3C7' };
+            case 'white':
+            default:
+                return { bg: '#FFFFFF', line: 'rgba(74, 62, 61, 0.10)', axis: '#4A3E3D', text: '#4A3E3D' };
+        }
+    }
+
     function createViewerElement(file) {
         let viewer;
+        const theme = getTemplateThemeColors(file.bgTheme || 'white');
+
         if (file.type === 'blank') {
             viewer = document.createElement('div');
-            viewer.style.cssText = 'width: 100%; height: 100%; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; user-select: none;';
+            viewer.className = 'note-template-surface';
+            viewer.dataset.fileid = file.id;
+            viewer.style.cssText = `width: 100%; height: 100%; background: ${theme.bg}; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; user-select: none; transition: background 0.3s;`;
             viewer.innerHTML = `
-                <div style="position: absolute; top: 1rem; left: 1.2rem; color: rgba(74, 62, 61, 0.4); font-size: 0.85rem; font-weight: 600; pointer-events: none;">
-                    📄 자유 화이트보드 (상단 판서 툴을 이용해 자유롭게 필기하세요)
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: ${theme.text}; opacity: 0.5; font-size: 0.85rem; font-weight: 600; pointer-events: none;">
+                    📄 백지 노트 (상단 툴바에서 템플릿과 배경색을 변경할 수 있습니다)
                 </div>
             `;
         } else if (file.type === 'coordinate') {
             viewer = document.createElement('div');
-            viewer.style.cssText = 'width: 100%; height: 100%; background: #ffffff; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden;';
+            viewer.className = 'note-template-surface';
+            viewer.dataset.fileid = file.id;
+            viewer.style.cssText = `width: 100%; height: 100%; background: ${theme.bg}; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden; transition: background 0.3s;`;
             
-            // Generate full-size SVG coordinate grid
             viewer.innerHTML = `
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
                     <defs>
-                        <!-- Small grid (10px) -->
-                        <pattern id="grid-small" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(74, 62, 61, 0.08)" stroke-width="0.8"/>
+                        <pattern id="grid-small-${file.id}" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="${theme.line}" stroke-width="0.8"/>
                         </pattern>
-                        <!-- Large grid (100px) -->
-                        <pattern id="grid-large" width="100" height="100" patternUnits="userSpaceOnUse">
-                            <rect width="100" height="100" fill="url(#grid-small)"/>
-                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(74, 62, 61, 0.2)" stroke-width="1.2"/>
+                        <pattern id="grid-large-${file.id}" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#grid-small-${file.id})"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="${theme.line}" stroke-width="1.4"/>
                         </pattern>
                     </defs>
-                    <!-- Background grid -->
-                    <rect width="100%" height="100%" fill="url(#grid-large)"/>
+                    <rect width="100%" height="100%" fill="url(#grid-large-${file.id})"/>
                     
-                    <!-- Axes (centered dynamically via CSS percentages) -->
-                    <!-- X Axis -->
-                    <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#4a3e3d" stroke-width="2.5" />
-                    <!-- Y Axis -->
-                    <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#4a3e3d" stroke-width="2.5" />
-
-                    <!-- Axis Arrows -->
-                    <polygon points="100%,50% calc(100% - 10px),calc(50% - 5px) calc(100% - 10px),calc(50% + 5px)" fill="#4a3e3d" />
-                    <polygon points="50%,0 calc(50% - 5px),10px calc(50% + 5px),10px" fill="#4a3e3d" />
+                    <line x1="0" y1="50%" x2="100%" y2="50%" stroke="${theme.axis}" stroke-width="2.5" />
+                    <line x1="50%" y1="0" x2="50%" y2="100%" stroke="${theme.axis}" stroke-width="2.5" />
                     
-                    <!-- Labels -->
-                    <text x="calc(100% - 18px)" y="calc(50% + 22px)" font-size="16" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">x</text>
-                    <text x="calc(50% + 12px)" y="20" font-size="16" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">y</text>
-                    <text x="calc(50% - 18px)" y="calc(50% + 20px)" font-size="15" font-weight="bold" fill="#4a3e3d" font-family="Outfit, sans-serif">O</text>
+                    <polygon points="100%,50% calc(100% - 10px),calc(50% - 5px) calc(100% - 10px),calc(50% + 5px)" fill="${theme.axis}" />
+                    <polygon points="50%,0 calc(50% - 5px),10px calc(50% + 5px),10px" fill="${theme.axis}" />
+                    
+                    <text x="calc(100% - 18px)" y="calc(50% + 22px)" font-size="16" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">x</text>
+                    <text x="calc(50% + 12px)" y="20" font-size="16" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">y</text>
+                    <text x="calc(50% - 18px)" y="calc(50% + 20px)" font-size="15" font-weight="bold" fill="${theme.text}" font-family="Outfit, sans-serif">O</text>
                 </svg>
-                <div style="position: absolute; top: 1rem; left: 1.2rem; color: rgba(74, 62, 61, 0.5); font-size: 0.85rem; font-weight: 600; pointer-events: none; background: rgba(255,255,255,0.85); padding: 0.2rem 0.5rem; border-radius: 6px;">
-                    📐 좌표평면 (원점 및 격자 기반 판서/그래프 작성)
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: ${theme.text}; opacity: 0.6; font-size: 0.85rem; font-weight: 600; pointer-events: none; padding: 0.2rem 0.5rem; border-radius: 6px;">
+                    📐 좌표평면 (원점 및 격자눈금)
+                </div>
+            `;
+        } else if (file.type === 'grid') {
+            viewer = document.createElement('div');
+            viewer.className = 'note-template-surface';
+            viewer.dataset.fileid = file.id;
+            viewer.style.cssText = `width: 100%; height: 100%; background: ${theme.bg}; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden; transition: background 0.3s;`;
+            
+            viewer.innerHTML = `
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                    <defs>
+                        <pattern id="grid-pattern-${file.id}" width="28" height="28" patternUnits="userSpaceOnUse">
+                            <path d="M 28 0 L 0 0 0 28" fill="none" stroke="${theme.line}" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-pattern-${file.id})"/>
+                </svg>
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: ${theme.text}; opacity: 0.6; font-size: 0.85rem; font-weight: 600; pointer-events: none; padding: 0.2rem 0.5rem; border-radius: 6px;">
+                    ⏹️ 모눈종이 노트 (도형 및 정밀 필기)
+                </div>
+            `;
+        } else if (file.type === 'lined') {
+            viewer = document.createElement('div');
+            viewer.className = 'note-template-surface';
+            viewer.dataset.fileid = file.id;
+            viewer.style.cssText = `width: 100%; height: 100%; background: ${theme.bg}; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; overflow: hidden; transition: background 0.3s;`;
+            
+            viewer.innerHTML = `
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                    <defs>
+                        <pattern id="lined-pattern-${file.id}" width="100%" height="36" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="35" x2="100%" y2="35" stroke="${theme.line}" stroke-width="1.2"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#lined-pattern-${file.id})"/>
+                </svg>
+                <div style="position: absolute; top: 1rem; left: 1.2rem; color: ${theme.text}; opacity: 0.6; font-size: 0.85rem; font-weight: 600; pointer-events: none; padding: 0.2rem 0.5rem; border-radius: 6px;">
+                    📑 줄노트 (개념 정리 및 풀이과정 작성)
                 </div>
             `;
         } else if (file.type === 'html' || file.type === 'url') {
@@ -848,45 +975,124 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function addZoomControls(wrapper, viewer) {
         const zoomBar = document.createElement('div');
-        zoomBar.style.cssText = 'position: absolute; bottom: 0.8rem; right: 0.8rem; display: flex; align-items: center; gap: 0.4rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); padding: 0.35rem 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); z-index: 20;';
+        zoomBar.style.cssText = 'position: absolute; bottom: 0.8rem; right: 0.8rem; display: flex; align-items: center; gap: 0.4rem; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); padding: 0.35rem 0.65rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); z-index: 30; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
 
         let zoomFactor = 1.0;
+        let panX = 0;
+        let panY = 0;
 
-        const updateZoom = (val) => {
-            zoomFactor = Math.max(0.5, Math.min(3.0, val));
-            viewer.style.transform = `scale(${zoomFactor})`;
+        const updateTransform = () => {
+            viewer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomFactor})`;
             viewer.style.transformOrigin = 'center center';
             zoomVal.textContent = `${Math.round(zoomFactor * 100)}%`;
+            if (zoomFactor > 1.0) {
+                wrapper.style.cursor = (currentTool === 'interact') ? 'grab' : 'default';
+            } else {
+                wrapper.style.cursor = 'default';
+            }
         };
+
+        const updateZoom = (val) => {
+            zoomFactor = Math.max(0.5, Math.min(3.5, val));
+            if (zoomFactor === 1.0) {
+                panX = 0;
+                panY = 0;
+            }
+            updateTransform();
+        };
+
+        // Pan/Drag support when zoomed in during 'interact' mode
+        let isPanning = false;
+        let startPanX = 0;
+        let startPanY = 0;
+
+        wrapper.addEventListener('mousedown', (e) => {
+            if (currentTool !== 'interact' || zoomFactor <= 1.0) return;
+            // Ignore click if clicking zoomBar itself
+            if (e.target.closest('button') || e.target.closest('.zoom-bar')) return;
+            isPanning = true;
+            startPanX = e.clientX - panX;
+            startPanY = e.clientY - panY;
+            wrapper.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            panX = e.clientX - startPanX;
+            panY = e.clientY - startPanY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isPanning) {
+                isPanning = false;
+                if (zoomFactor > 1.0 && currentTool === 'interact') {
+                    wrapper.style.cursor = 'grab';
+                }
+            }
+        });
 
         const btnOut = document.createElement('button');
         btnOut.type = 'button';
         btnOut.textContent = '➖';
-        btnOut.style.cssText = 'background:none; border:none; color:white; font-size:0.75rem; cursor:pointer; padding:0.1rem;';
-        btnOut.addEventListener('click', () => updateZoom(zoomFactor - 0.1));
+        btnOut.title = '축소';
+        btnOut.style.cssText = 'background:none; border:none; color:white; font-size:0.8rem; cursor:pointer; padding:0.15rem 0.3rem;';
+        btnOut.addEventListener('click', () => updateZoom(zoomFactor - 0.15));
 
         const zoomVal = document.createElement('span');
         zoomVal.textContent = '100%';
-        zoomVal.style.cssText = 'font-size: 0.75rem; color: white; min-width: 36px; text-align: center; font-weight: 600;';
+        zoomVal.title = '클릭 시 100% 원본 크기 복귀';
+        zoomVal.style.cssText = 'font-size: 0.78rem; color: #f8fafc; min-width: 40px; text-align: center; font-weight: 700; cursor: pointer; user-select: none;';
+        zoomVal.addEventListener('click', () => {
+            panX = 0;
+            panY = 0;
+            updateZoom(1.0);
+        });
 
         const btnIn = document.createElement('button');
         btnIn.type = 'button';
         btnIn.textContent = '➕';
-        btnIn.style.cssText = 'background:none; border:none; color:white; font-size:0.75rem; cursor:pointer; padding:0.1rem;';
-        btnIn.addEventListener('click', () => updateZoom(zoomFactor + 0.1));
+        btnIn.title = '확대';
+        btnIn.style.cssText = 'background:none; border:none; color:white; font-size:0.8rem; cursor:pointer; padding:0.15rem 0.3rem;';
+        btnIn.addEventListener('click', () => updateZoom(zoomFactor + 0.15));
+
+        const btnReset = document.createElement('button');
+        btnReset.type = 'button';
+        btnReset.textContent = '↺';
+        btnReset.title = '화면 위치 및 배율 초기화';
+        btnReset.style.cssText = 'background:none; border:none; color:#94a3b8; font-size:0.85rem; cursor:pointer; padding:0.15rem 0.2rem; margin-left:0.2rem;';
+        btnReset.addEventListener('click', () => {
+            panX = 0;
+            panY = 0;
+            updateZoom(1.0);
+        });
 
         zoomBar.appendChild(btnOut);
         zoomBar.appendChild(zoomVal);
         zoomBar.appendChild(btnIn);
+        zoomBar.appendChild(btnReset);
         wrapper.appendChild(zoomBar);
     }
 
     // Load configs
     if (mode === 'preview') {
         try {
-            const encodedData = urlParams.get('data') || '';
-            const sanitizedBase64 = encodedData.replace(/ /g, '+');
-            const decodedData = JSON.parse(decodeURIComponent(escape(atob(sanitizedBase64))));
+            let decodedData = null;
+            const sessionDataStr = sessionStorage.getItem('student_preview_data');
+            if (sessionDataStr) {
+                try {
+                    decodedData = JSON.parse(sessionDataStr);
+                } catch (e) {
+                    console.warn("SessionStorage parse error, trying URL data:", e);
+                }
+            }
+
+            if (!decodedData) {
+                const encodedData = urlParams.get('data') || '';
+                const sanitizedBase64 = encodedData.replace(/ /g, '+');
+                decodedData = JSON.parse(decodeURIComponent(escape(atob(sanitizedBase64))));
+            }
 
             if (decodedData.tabs && Array.isArray(decodedData.tabs)) {
                 tabsDataList = decodedData.tabs;

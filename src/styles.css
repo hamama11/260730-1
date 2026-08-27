@@ -236,30 +236,33 @@ textarea:focus {
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 0.8rem;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    opacity: 0.75;
+    padding: 0.6rem 1.1rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: #4A3E3D;
+    opacity: 0.95;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     cursor: pointer;
     border-radius: 10px;
     transition: var(--transition);
+    box-shadow: 0 2px 5px rgba(74, 62, 61, 0.05);
 }
 
 .tab-btn:hover {
     opacity: 1;
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.4);
+    color: var(--primary);
+    background: #FFFDF9;
+    border-color: var(--primary);
+    transform: translateY(-1px);
 }
 
 .tab-btn.active {
     background: var(--primary);
-    color: #ffffff;
+    color: #ffffff !important;
+    border-color: var(--primary);
     opacity: 1;
-    box-shadow: 0 4px 14px rgba(224, 122, 95, 0.25);
+    box-shadow: 0 4px 14px rgba(224, 122, 95, 0.35);
 }
 
 /* Buttons */
@@ -415,11 +418,12 @@ textarea:focus {
 
 /* Student 2-Column Split Screen */
 .student-layout {
-    position: relative; /* relative parent for absolute toggle btn */
+    position: relative;
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 380px;
     height: 100vh;
+    max-height: 100vh;
     overflow: hidden;
     transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1), grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -433,6 +437,9 @@ textarea:focus {
     flex-direction: column;
     background: #000;
     position: relative;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
     border-right: 1px solid var(--border-color);
 }
 
@@ -508,6 +515,8 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     padding: 2rem 1.5rem;
+    height: 100vh;
+    max-height: 100vh;
     overflow-y: auto;
     box-shadow: -4px 0 24px rgba(74, 62, 61, 0.05);
     border-left: 1px solid var(--border-color);
@@ -562,20 +571,28 @@ textarea:focus {
 }
 
 .panel-header {
-    margin-bottom: 1.8rem;
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 50;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    margin: 0 -1.5rem 1.2rem -1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .panel-header h2 {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 700;
-    margin-top: 0.4rem;
+    margin-top: 0.3rem;
 }
 
 .panel-desc {
     color: var(--text-secondary);
     font-size: 0.85rem;
     line-height: 1.5;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
 }
 
 .student-form {
