@@ -18,14 +18,14 @@
         <!-- Left Pane: Simulation Frame -->
         <section class="simulation-container">
             <div class="simulation-header"
-                style="justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; display: flex; align-items: center; background: #1e1b1b; padding: 0.75rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 50;">
-                <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-                    <span class="pulse-indicator"></span>
-                    <span class="sim-title" id="student-room-title" style="color: #ffffff; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em;">실시간 탐구 활동</span>
-                    <span id="student-room-badge" style="font-size: 0.78rem; background: rgba(255,255,255,0.12); color: #cbd5e1; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">ID: -</span>
+                style="justify-content: space-between; flex-wrap: wrap; gap: 0.35rem; display: flex; align-items: center; background: #1e1b1b; padding: 0.3rem 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 50;">
+                <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span class="pulse-indicator" style="width: 7px; height: 7px;"></span>
+                    <span class="sim-title" id="student-room-title" style="color: #ffffff; font-weight: 700; font-size: 0.8rem; letter-spacing: -0.01em;">실시간 탐구 활동</span>
+                    <span id="student-room-badge" style="font-size: 0.68rem; background: rgba(255,255,255,0.12); color: #cbd5e1; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600;">ID: -</span>
                     <button type="button" id="btn-toggle-qr-header" class="btn btn-secondary btn-sm"
-                        style="padding: 0.35rem 0.75rem; font-size: 0.82rem; background: rgba(255,255,255,0.08); color: #f1f5f9; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" title="헤더에서 QR 코드 열기/접기">
-                        📱 QR 코드 <span id="qr-toggle-arrow" style="font-size: 0.75rem;">▼</span>
+                        style="padding: 0.15rem 0.45rem; font-size: 0.7rem; background: rgba(255,255,255,0.08); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.2rem;" title="QR 코드 열기/접기">
+                        📱 QR <span id="qr-toggle-arrow" style="font-size: 0.6rem;">▼</span>
                     </button>
                 </div>
 
@@ -41,67 +41,66 @@
                         <button type="button" id="btn-close-header-qr" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.82rem; padding: 0.45rem;">접기 ▲</button>
                     </div>
                 </div>
-                <!-- Drawing Toolbar -->
+                <!-- Drawing Toolbar (Compact 70% Scale) -->
                 <div id="drawing-toolbar"
-                    style="display: flex; align-items: center; gap: 0.5rem; background: #2b2625; padding: 0.4rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); flex-wrap: wrap;">
+                    style="display: flex; align-items: center; gap: 0.35rem; background: #2b2625; padding: 0.25rem 0.55rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); flex-wrap: wrap;">
                     <button type="button" id="btn-draw-mode" class="btn btn-secondary btn-sm active"
-                        style="padding: 0.4rem 0.75rem; font-size: 0.82rem; background: var(--primary); color: #ffffff; font-weight: 700; border: none; border-radius: 8px;">🖱️
-                        조작</button>
+                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; background: var(--primary); color: #ffffff; font-weight: 700; border: none; border-radius: 6px;">🖱️ 조작</button>
                     <button type="button" id="btn-draw-pen" class="btn btn-secondary btn-sm"
-                        style="padding: 0.4rem 0.75rem; font-size: 0.82rem; color: #f1f5f9; background: rgba(255,255,255,0.08); font-weight: 600; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;">✏️ 펜</button>
+                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; color: #f1f5f9; background: rgba(255,255,255,0.08); font-weight: 600; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;">✏️ 펜</button>
                     <button type="button" id="btn-draw-eraser" class="btn btn-secondary btn-sm"
-                        style="padding: 0.4rem 0.75rem; font-size: 0.82rem; color: #f1f5f9; background: rgba(255,255,255,0.08); font-weight: 600; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;">🧽 지우개</button>
+                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; color: #f1f5f9; background: rgba(255,255,255,0.08); font-weight: 600; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;">🧽 지우개</button>
                     <button type="button" id="btn-draw-clear" class="btn btn-secondary btn-sm"
-                        style="padding: 0.4rem 0.75rem; font-size: 0.82rem; background: rgba(223, 94, 94, 0.2); color: #ff8a8a; border: 1px solid rgba(223, 94, 94, 0.35); border-radius: 8px; font-weight: 600;">전체 지우기</button>
+                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; background: rgba(223, 94, 94, 0.2); color: #ff8a8a; border: 1px solid rgba(223, 94, 94, 0.35); border-radius: 6px; font-weight: 600;">전체지우기</button>
 
                     <!-- Color Quick Presets -->
                     <div class="color-presets"
-                        style="display: flex; align-items: center; gap: 0.35rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.6rem;">
+                        style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.45rem;">
                         <button type="button" class="preset-btn active" data-color="#000000"
-                            style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; background-color: #000000; cursor: pointer; box-shadow: 0 0 0 2px var(--primary); transform: scale(1.15); transition: transform 0.1s;"></button>
+                            style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid white; background-color: #000000; cursor: pointer; box-shadow: 0 0 0 1.5px var(--primary);"></button>
                         <button type="button" class="preset-btn" data-color="#DF5E5E"
-                            style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3); transition: transform 0.1s;"></button>
+                            style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid white; background-color: #DF5E5E; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3);"></button>
                         <button type="button" class="preset-btn" data-color="#4F8FC4"
-                            style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3); transition: transform 0.1s;"></button>
+                            style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid white; background-color: #4F8FC4; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3);"></button>
                         <button type="button" class="preset-btn" data-color="#81B29A"
-                            style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3); transition: transform 0.1s;"></button>
+                            style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid white; background-color: #81B29A; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3);"></button>
                         <button type="button" class="preset-btn" data-color="#F4A261"
-                            style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3); transition: transform 0.1s;"></button>
+                            style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid white; background-color: #F4A261; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,0.3);"></button>
                     </div>
 
                     <!-- Custom Color Trigger -->
                     <button type="button" id="btn-custom-color"
-                        style="background: none; border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; padding: 0;"
+                        style="background: none; border: none; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; padding: 0;"
                         title="세밀한 색상 조절">🎨</button>
                     <input type="color" id="draw-color-picker" value="#000000" style="display: none;">
 
                     <!-- iPad-Style Pen Thickness & Eraser Size Presets -->
                     <div id="pen-size-group"
-                        style="display: flex; align-items: center; gap: 0.35rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.6rem;">
-                        <span style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; margin-right: 0.2rem;">굵기:</span>
+                        style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.45rem;">
+                        <span style="font-size: 0.7rem; font-weight: 600; color: #cbd5e1;">굵기:</span>
                         <button type="button" class="btn-pen-size active" data-size="3"
-                            style="width: 26px; height: 26px; border-radius: 50%; background: #221f1e; border: 1.5px solid var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="가는 펜 (3px)">
-                            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+                            style="width: 18px; height: 18px; border-radius: 50%; background: #221f1e; border: 1.2px solid var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="가는 펜 (3px)">
+                            <span style="width: 3px; height: 3px; background: white; border-radius: 50%;"></span>
                         </button>
                         <button type="button" class="btn-pen-size" data-size="6"
-                            style="width: 26px; height: 26px; border-radius: 50%; background: #221f1e; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="보통 펜 (6px)">
-                            <span style="width: 7px; height: 7px; background: white; border-radius: 50%;"></span>
+                            style="width: 18px; height: 18px; border-radius: 50%; background: #221f1e; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="보통 펜 (6px)">
+                            <span style="width: 5px; height: 5px; background: white; border-radius: 50%;"></span>
                         </button>
                         <button type="button" class="btn-pen-size" data-size="12"
-                            style="width: 26px; height: 26px; border-radius: 50%; background: #221f1e; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="굵은 펜 (12px)">
-                            <span style="width: 11px; height: 11px; background: white; border-radius: 50%;"></span>
+                            style="width: 18px; height: 18px; border-radius: 50%; background: #221f1e; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="굵은 펜 (12px)">
+                            <span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span>
                         </button>
                     </div>
 
                     <div id="eraser-size-group" class="hidden"
-                        style="display: flex; align-items: center; gap: 0.35rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.6rem;">
-                        <span style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; margin-right: 0.2rem;">지우개:</span>
+                        style="display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.45rem;">
+                        <span style="font-size: 0.7rem; font-weight: 600; color: #cbd5e1;">지우개:</span>
                         <button type="button" class="btn-eraser-size" data-size="12"
-                            style="padding: 0.25rem 0.55rem; font-size: 0.75rem; border-radius: 6px; background: #221f1e; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;" title="작은 지우개">소</button>
+                            style="padding: 0.15rem 0.4rem; font-size: 0.68rem; border-radius: 4px; background: #221f1e; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;" title="작은 지우개">소</button>
                         <button type="button" class="btn-eraser-size active" data-size="28"
-                            style="padding: 0.25rem 0.55rem; font-size: 0.75rem; border-radius: 6px; background: var(--primary); color: #ffffff; border: 1.5px solid var(--primary); font-weight: 700; cursor: pointer;" title="중간 지우개">중</button>
+                            style="padding: 0.15rem 0.4rem; font-size: 0.68rem; border-radius: 4px; background: var(--primary); color: #ffffff; border: 1.2px solid var(--primary); font-weight: 700; cursor: pointer;" title="중간 지우개">중</button>
                         <button type="button" class="btn-eraser-size" data-size="52"
-                            style="padding: 0.25rem 0.55rem; font-size: 0.75rem; border-radius: 6px; background: #221f1e; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;" title="큰 지우개">대</button>
+                            style="padding: 0.15rem 0.4rem; font-size: 0.68rem; border-radius: 4px; background: #221f1e; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;" title="큰 지우개">대</button>
                     </div>
 
                     <!-- Hidden slider for fine-tuning -->
@@ -109,16 +108,16 @@
                     <input type="range" id="draw-opacity-slider" min="0.1" max="1.0" step="0.05" value="1.0" style="display: none;">
 
                     <!-- GoodNotes Style Page Template & Background Controls -->
-                    <div style="display: flex; align-items: center; gap: 0.4rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.6rem;">
-                        <span style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1;">배경:</span>
-                        <select id="select-page-template" title="노트 서식(템플릿) 변경" style="background: #1e1b1b; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.35rem 0.6rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none;">
+                    <div style="display: flex; align-items: center; gap: 0.3rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.45rem;">
+                        <span style="font-size: 0.7rem; font-weight: 600; color: #cbd5e1;">배경:</span>
+                        <select id="select-page-template" title="노트 서식(템플릿) 변경" style="background: #1e1b1b; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.2rem 0.45rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; outline: none;">
                             <option value="none">기본 (자료만)</option>
                             <option value="blank">📄 백지노트</option>
                             <option value="coordinate">📐 좌표평면</option>
                             <option value="grid">⏹️ 모눈종이</option>
                             <option value="lined">📑 줄노트</option>
                         </select>
-                        <select id="select-page-bgtheme" title="배경색 테마 변경" style="background: #1e1b1b; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.35rem 0.6rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none;">
+                        <select id="select-page-bgtheme" title="배경색 테마 변경" style="background: #1e1b1b; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.2rem 0.45rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; outline: none;">
                             <option value="white">⚪ 화이트</option>
                             <option value="cream">🟡 크림미색</option>
                             <option value="dark">⚫ 다크흑판</option>
@@ -132,7 +131,7 @@
                 style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; border-radius: 0 0 16px 16px;">
                 <!-- Tab headers will appear here dynamically if in Tab mode -->
                 <div id="mealkit-tabs-header" class="hidden"
-                    style="display: flex; gap: 0.5rem; background: #262120; padding: 0.6rem 1rem; border-bottom: 2px solid rgba(255,255,255,0.12); flex-wrap: wrap; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                    style="display: flex; gap: 0.4rem; background: #262120; padding: 0.35rem 0.8rem; border-bottom: 1.5px solid rgba(255,255,255,0.12); flex-wrap: wrap; align-items: center; position: sticky; top: 0; z-index: 40; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
                 </div>
 
                 <!-- Layout viewport body (holds viewports for Tab / Split / Scroll) -->
@@ -148,14 +147,14 @@
 
         <!-- Right Pane: Inquiry Activity Form -->
         <aside class="student-panel" style="padding-top: 0;">
-            <header class="panel-header" style="position: sticky; top: 0; background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; padding: 1.5rem 0 1rem 0; margin: 0 0 1.2rem 0; border-bottom: 1.5px solid var(--border-color);">
+            <header class="panel-header" style="position: sticky; top: 0; background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; padding: 1.05rem 0 0.7rem 0; margin: 0 0 0.84rem 0; border-bottom: 1.5px solid var(--border-color);">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem;">
                     <span class="badge badge-accent" style="margin-bottom: 0;">Inquiry Worksheet</span>
                     <div id="student-timer-container" class="hidden" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.65rem; background: rgba(224, 122, 95, 0.08); border: 1px solid rgba(224, 122, 95, 0.2); border-radius: 9999px; color: var(--primary); font-weight: 600; font-size: 0.78rem;">
                         <span style="font-size: 0.85rem;">⏱️</span> <span id="student-elapsed-timer">0분 0초</span>
                     </div>
                 </div>
-                <h2 id="student-worksheet-title" style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0.2rem 0;">🔬 실시간 탐구 활동지</h2>
+                <h2 id="student-worksheet-title" style="font-size: 0.91rem; font-weight: 700; color: var(--text-primary); margin: 0.14rem 0;">🔬 실시간 탐구 활동지</h2>
                 <p class="panel-desc" style="margin-top: 0.3rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">시뮬레이션을 탐구하고 관찰/추론한 내용을 아래 양식에 작성해 주세요.</p>
             </header>
 

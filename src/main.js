@@ -729,9 +729,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tabBtn = document.createElement('button');
             tabBtn.type = 'button';
             tabBtn.className = 'tab-btn' + (isActive ? ' active' : '');
-            tabBtn.style.padding = '0.5rem 1rem';
-            tabBtn.style.fontSize = '0.85rem';
-            tabBtn.innerHTML = `${isTabPublished ? '📑' : '🔒'} ${tab.title || ('탭 ' + (index + 1))}${!isTabPublished ? ' <span style="font-size:0.7rem; color:#f43f5e; font-weight:600; margin-left:2px;">[개봉예정]</span>' : ''}`;
+            tabBtn.style.padding = '0.25rem 0.65rem';
+            tabBtn.style.fontSize = '0.78rem';
+            tabBtn.innerHTML = `${isTabPublished ? '📑' : '🔒'} ${tab.title || ('탭 ' + (index + 1))}${!isTabPublished ? ' <span style="font-size:0.65rem; color:#f43f5e; font-weight:600; margin-left:2px;">[개봉예정]</span>' : ''}`;
             tabBtn.dataset.tabid = tab.id;
 
             tabBtn.addEventListener('click', () => {
@@ -882,16 +882,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 const count = items.length;
 
+                // Count how many items are marked as auxiliary/collapsible screens
+                const auxiliaryItems = items.filter(item => item.collapsedByDefault);
+                const hasAuxiliaryItems = (auxiliaryItems.length > 0);
+
+                // Keep track of collapsed states
+                const itemWrappers = [];
+
                 items.forEach((item, itemIndex) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'mealkit-viewport-wrapper';
                     wrapper.dataset.fileid = item.id;
+                    wrapper.dataset.itemindex = itemIndex;
+
+                    const isCollapsible = !!item.collapsedByDefault;
+                    const isInitiallyCollapsed = isCollapsible;
 
                     if (isScrollMode) {
-                        wrapper.style.cssText = 'position: relative; width: 100%; height: 680px; min-height: 480px; background: transparent; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;';
+                        wrapper.style.cssText = `position: relative; width: 100%; height: 680px; min-height: 480px; background: transparent; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2; transition: all 0.25s ease; ${isInitiallyCollapsed ? 'display: none;' : ''}`;
                     } else {
-                        const shareWidth = (100 / count).toFixed(2);
-                        wrapper.style.cssText = `position: relative; width: ${shareWidth}%; height: 100%; background: transparent; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2;`;
+                        wrapper.style.cssText = `position: relative; flex: 1; min-width: 200px; height: 100%; background: transparent; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2; transition: flex 0.25s ease, min-width 0.25s ease, width 0.25s ease; ${isInitiallyCollapsed ? 'display: none; flex: 0; min-width: 0;' : ''}`;
                     }
 
                     const viewer = createViewerElement(item);
@@ -902,6 +912,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                     wrapper.appendChild(viewer);
                     wrapper.appendChild(canvas);
 
+                    // Material Header with Collapse Toggle Button (ONLY for items designated as 보조 화면 by teacher)
+                    if (isCollapsible) {
+                        const itemHeader = document.createElement('div');
+                        itemHeader.className = 'item-viewport-header';
+                        itemHeader.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; display: flex; align-items: center; gap: 0.4rem; z-index: 25;';
+                        
+                        const btnCollapse = document.createElement('button');
+                        btnCollapse.type = 'button';
+                        btnCollapse.className = 'btn btn-secondary btn-sm';
+                        btnCollapse.style.cssText = 'padding: 0.3rem 0.65rem; font-size: 0.75rem; background: rgba(30, 27, 27, 0.88); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; backdrop-filter: blur(6px); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; box-shadow: 0 2px 8px rgba(0,0,0,0.4);';
+                        btnCollapse.innerHTML = `<span>화면 접기</span> ◀`;
+                        btnCollapse.title = '이 보조 화면을 접습니다';
+
+                        btnCollapse.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleItemCollapse(item.id, true);
+                        });
+
+                        itemHeader.appendChild(btnCollapse);
+                        wrapper.appendChild(itemHeader);
+                    }
+
                     // Add warning banner if external link URL
                     appendUrlBannerIfNeeded(wrapper, item, viewer);
                     addZoomControls(wrapper, viewer);
@@ -909,10 +941,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     tabBody.appendChild(wrapper);
                     activeCanvases.push(canvas);
                     setupDrawingCanvas(canvas, item.id);
+                    itemWrappers.push({ item, wrapper, canvas, isCollapsible });
 
                     // If in Split mode and not last item, add resizer bar
                     if (!isScrollMode && itemIndex < count - 1) {
                         const resizer = document.createElement('div');
+                        resizer.className = 'split-resizer-bar';
+                        resizer.dataset.resizerIndex = itemIndex;
                         resizer.style.cssText = 'width: 8px; background: rgba(74, 62, 61, 0.25); cursor: col-resize; transition: background 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
                         resizer.innerHTML = '<div style="width: 2px; height: 30px; background: rgba(255,255,255,0.4); border-radius: 1px;"></div>';
 
@@ -957,7 +992,86 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         tabBody.appendChild(resizer);
                     }
+
+                    // Render In-Tab Docked Bar for Collapsed Auxiliary Screen
+                    if (isCollapsible) {
+                        const collapsedDock = document.createElement('div');
+                        collapsedDock.className = 'collapsed-material-dock';
+                        collapsedDock.dataset.dockfileid = item.id;
+
+                        if (isScrollMode) {
+                            // Top/Bottom horizontal banner for Scroll Mode
+                            collapsedDock.style.cssText = `width: 100%; height: 42px; background: #262120; border: 1.5px dashed rgba(224, 122, 95, 0.4); border-radius: 10px; display: ${isInitiallyCollapsed ? 'flex' : 'none'}; align-items: center; justify-content: center; cursor: pointer; padding: 0.5rem 1rem; user-select: none; transition: background 0.2s; z-index: 25; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.25);`;
+                            collapsedDock.title = `'${item.name || '보조 화면'}' 펼치기`;
+                            collapsedDock.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 0.6rem; color: #f8fafc; font-size: 0.85rem; font-weight: 700;">
+                                    <span style="font-size: 0.95rem; color: var(--primary);">▼</span>
+                                    <span>${item.name || '보조 화면'}</span>
+                                    <span style="font-size: 0.75rem; color: var(--primary); background: rgba(224, 122, 95, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 700;">아래로 열기 ▼</span>
+                                </div>
+                            `;
+                        } else {
+                            // Left/Right vertical sidebar dock for Split Mode
+                            collapsedDock.style.cssText = `width: 38px; height: 100%; background: #262120; border-left: 2px solid rgba(224, 122, 95, 0.4); display: ${isInitiallyCollapsed ? 'flex' : 'none'}; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 0.6rem 0.2rem; user-select: none; transition: background 0.2s, width 0.2s; z-index: 25; flex-shrink: 0; box-shadow: -3px 0 10px rgba(0,0,0,0.3);`;
+                            collapsedDock.title = `'${item.name || '보조 화면'}' 펼치기`;
+                            collapsedDock.innerHTML = `
+                                <div style="writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; gap: 0.5rem; color: #f8fafc; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em;">
+                                    <span style="font-size: 0.95rem; color: var(--primary);">◀</span>
+                                    <span>${item.name || '보조 화면'}</span>
+                                    <span style="font-size: 0.72rem; color: #94a3b8; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px;">열기</span>
+                                </div>
+                            `;
+                        }
+
+                        collapsedDock.addEventListener('mouseenter', () => {
+                            collapsedDock.style.background = 'rgba(224, 122, 95, 0.15)';
+                        });
+                        collapsedDock.addEventListener('mouseleave', () => {
+                            collapsedDock.style.background = '#262120';
+                        });
+
+                        collapsedDock.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleItemCollapse(item.id, false);
+                        });
+
+                        tabBody.appendChild(collapsedDock);
+                    }
                 });
+
+                // Helper to toggle item collapse / expand inside the tab area
+                function toggleItemCollapse(targetItemId, forceCollapse = null) {
+                    const itemObj = itemWrappers.find(w => w.item.id === targetItemId);
+                    if (!itemObj || !itemObj.isCollapsible) return;
+
+                    const isCurrentlyHidden = (itemObj.wrapper.style.display === 'none');
+                    const shouldCollapse = (forceCollapse !== null) ? forceCollapse : !isCurrentlyHidden;
+
+                    const dockEl = tabBody.querySelector(`.collapsed-material-dock[data-dockfileid="${targetItemId}"]`);
+
+                    if (shouldCollapse) {
+                        itemObj.wrapper.style.display = 'none';
+                        if (!isScrollMode) {
+                            itemObj.wrapper.style.flex = '0';
+                            itemObj.wrapper.style.minWidth = '0';
+                            itemObj.wrapper.style.width = '';
+                        }
+                        if (dockEl) dockEl.style.display = 'flex';
+                    } else {
+                        itemObj.wrapper.style.display = 'flex';
+                        if (!isScrollMode) {
+                            itemObj.wrapper.style.flex = '1';
+                            itemObj.wrapper.style.minWidth = '200px';
+                            itemObj.wrapper.style.width = '';
+                        }
+                        if (dockEl) dockEl.style.display = 'none';
+                    }
+
+                    // Trigger resize for all active drawing canvases
+                    setTimeout(() => {
+                        activeCanvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
+                    }, 50);
+                }
             }
 
             panel.appendChild(tabBody);

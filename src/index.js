@@ -285,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: item.type || (item.name && item.name.endsWith('.pdf') ? 'pdf' : (item.name && item.name.endsWith('.html') ? 'html' : 'image')),
                             url: item.url || '',
                             storagePath: item.storagePath || '',
+                            collapsedByDefault: !!item.collapsedByDefault,
                             fileObject: null
                         }))
                     }));
@@ -1005,7 +1006,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: var(--text-secondary); cursor: pointer; user-select: none; background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);" title="체크 시 이 자료를 보조 화면으로 지정하여 학생이 접었다 펼 수 있게 합니다 (처음엔 접힌 채 시작)">
+                                <input type="checkbox" class="item-collapsed-toggle" ${item.collapsedByDefault ? 'checked' : ''} style="cursor: pointer;">
+                                <span>🖥️ 보조 화면으로 지정 (접기/펴기)</span>
+                            </label>
+
                             ${tabsList.length > 1 ? `
                                 <select class="item-move-tab-select" style="padding: 0.3rem 0.5rem; font-size: 0.78rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
                                     ${otherTabsOptions}
@@ -1016,6 +1022,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);" title="삭제">🗑️</button>
                         </div>
                     `;
+
+                    // Handle initial collapsed state toggle
+                    const collapsedToggle = itemRow.querySelector('.item-collapsed-toggle');
+                    if (collapsedToggle) {
+                        collapsedToggle.addEventListener('change', (e) => {
+                            item.collapsedByDefault = e.target.checked;
+                        });
+                    }
 
                     // Handle move / copy to other tab
                     const moveSelect = itemRow.querySelector('.item-move-tab-select');
@@ -1106,8 +1120,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addToolbar.style.cssText = 'display: flex; gap: 0.4rem; flex-wrap: wrap; background: rgba(255,255,255,0.015); border: 1px dashed var(--border-color); border-radius: 8px; padding: 0.6rem; align-items: center;';
 
             addToolbar.innerHTML = `
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;">
-                    📁 + 파일 올리기 (.html, .pdf, 이미지)
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;" title="AI(GPT/Claude/Gemini)에서 다운로드한 .html 또는 PDF, 이미지를 올립니다">
+                    📁 + 파일 올리기 (AI 생성 .html, .pdf, 이미지)
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm btn-tab-add-url" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(224, 122, 95, 0.08); border-color: rgba(224, 122, 95, 0.2); color: var(--primary);">
                     🌐 + 웹 링크 추가
@@ -1488,6 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: item.name,
                             type: 'url',
                             url: item.url,
+                            collapsedByDefault: !!item.collapsedByDefault,
                             storagePath: ''
                         });
                     } else if (['blank', 'coordinate', 'grid', 'lined'].includes(item.type)) {
@@ -1496,6 +1511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: item.name,
                             type: item.type,
                             bgTheme: item.bgTheme || 'white',
+                            collapsedByDefault: !!item.collapsedByDefault,
                             url: '',
                             storagePath: ''
                         });
@@ -1506,6 +1522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: item.name,
                             type: item.type || (item.name.endsWith('.pdf') ? 'pdf' : (item.name.endsWith('.html') ? 'html' : 'image')),
                             url: item.url,
+                            collapsedByDefault: !!item.collapsedByDefault,
                             storagePath: item.storagePath || ''
                         });
                     } else if (item.fileObject) {
@@ -1522,6 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: item.name,
                             type: item.type || (item.name.endsWith('.pdf') ? 'pdf' : (item.name.endsWith('.html') ? 'html' : 'image')),
                             url: downloadUrl,
+                            collapsedByDefault: !!item.collapsedByDefault,
                             storagePath: storagePath
                         });
                     }
