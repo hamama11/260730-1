@@ -498,8 +498,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Populate room header info
+        const displayTitle = roomData.title || roomId;
+        const infoTitleEl = document.getElementById('info-room-title');
+        if (infoTitleEl) infoTitleEl.textContent = displayTitle;
         document.getElementById('info-room-id').textContent = roomId;
-        document.getElementById('info-sim-source').textContent = roomData.simType === 'url' ? '웹 주소 (URL)' : 'HTML 코드';
+        document.getElementById('info-sim-source').textContent = roomData.simType === 'url' ? '웹 주소 (URL)' : 'HTML 코드 / 탭 밀키트';
+        document.title = `${displayTitle} - 실시간 모니터링`;
 
         // Check authentication and verify room ownership
         if (isFirebaseInitialized && auth) {

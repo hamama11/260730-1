@@ -1273,6 +1273,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const roomData = roomSnap.data();
 
+                // Synchronize room title to student view & document title
+                const displayTitle = roomData.title || roomId;
+                const studentRoomTitleEl = document.getElementById('student-room-title');
+                const studentRoomBadgeEl = document.getElementById('student-room-badge');
+                const studentWorksheetTitleEl = document.getElementById('student-worksheet-title');
+
+                if (studentRoomTitleEl) studentRoomTitleEl.textContent = displayTitle;
+                if (studentRoomBadgeEl) studentRoomBadgeEl.textContent = `ID: ${roomId}`;
+                if (studentWorksheetTitleEl) studentWorksheetTitleEl.textContent = `🔬 ${displayTitle}`;
+                document.title = `${displayTitle} - 학생용 활동지`;
+
                 // Track currently selected tab ID before updating
                 const activeTabBtn = mealkitTabsHeader ? mealkitTabsHeader.querySelector('.tab-btn.active') : null;
                 const currentActiveTabId = activeTabBtn ? activeTabBtn.dataset.tabid : null;

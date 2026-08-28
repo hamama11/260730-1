@@ -19,9 +19,10 @@
         <section class="simulation-container">
             <div class="simulation-header"
                 style="justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; display: flex; align-items: center; background: #1e1b1b; padding: 0.75rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 50;">
-                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                     <span class="pulse-indicator"></span>
-                    <span class="sim-title" style="color: #ffffff; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em;">실시간 탐구 시뮬레이션 연결됨</span>
+                    <span class="sim-title" id="student-room-title" style="color: #ffffff; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em;">실시간 탐구 활동</span>
+                    <span id="student-room-badge" style="font-size: 0.78rem; background: rgba(255,255,255,0.12); color: #cbd5e1; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">ID: -</span>
                     <button type="button" id="btn-toggle-qr-header" class="btn btn-secondary btn-sm"
                         style="padding: 0.35rem 0.75rem; font-size: 0.82rem; background: rgba(255,255,255,0.08); color: #f1f5f9; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" title="헤더에서 QR 코드 열기/접기">
                         📱 QR 코드 <span id="qr-toggle-arrow" style="font-size: 0.75rem;">▼</span>
@@ -154,7 +155,7 @@
                         <span style="font-size: 0.85rem;">⏱️</span> <span id="student-elapsed-timer">0분 0초</span>
                     </div>
                 </div>
-                <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0.2rem 0;">🔬 실시간 탐구 활동지</h2>
+                <h2 id="student-worksheet-title" style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0.2rem 0;">🔬 실시간 탐구 활동지</h2>
                 <p class="panel-desc" style="margin-top: 0.3rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">시뮬레이션을 탐구하고 관찰/추론한 내용을 아래 양식에 작성해 주세요.</p>
             </header>
 

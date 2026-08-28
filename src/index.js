@@ -236,12 +236,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Set room title and lock room ID
                 const customTitleInput = document.getElementById('custom-room-title');
-                if (customTitleInput) customTitleInput.value = data.title || editRoomId;
+                if (customTitleInput) {
+                    customTitleInput.value = data.title || editRoomId;
+                }
 
                 const customRoomIdInput = document.getElementById('custom-room-id');
                 if (customRoomIdInput) {
                     customRoomIdInput.value = editRoomId;
                     customRoomIdInput.readOnly = true;
+                    customRoomIdInput.disabled = true;
                     customRoomIdInput.style.backgroundColor = '#f1f5f9';
                     customRoomIdInput.style.cursor = 'not-allowed';
                 }
@@ -272,10 +275,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (Array.isArray(data.tabs) && data.tabs.length > 0) {
                     tabsList = data.tabs.map(t => ({
                         id: t.id || ('tab_' + Math.random().toString(36).substr(2, 9)),
-                        title: t.title || '탐구 활동',
-                        layout: t.layout || 'scroll',
+                        title: t.title || t.name || '탐구 활동',
+                        layout: t.layout || 'split',
                         published: t.published !== false,
-                        items: (t.items || []).map(i => ({ ...i }))
+                        items: (t.items || []).map(item => ({
+                            id: item.id || ('item_' + Math.random().toString(36).substr(2, 9)),
+                            name: item.name || '자료',
+                            size: item.size || 0,
+                            type: item.type || (item.name && item.name.endsWith('.pdf') ? 'pdf' : (item.name && item.name.endsWith('.html') ? 'html' : 'image')),
+                            url: item.url || '',
+                            storagePath: item.storagePath || '',
+                            fileObject: null
+                        }))
+                    }));
+                    if (tabsList.length > 0) selectedTabId = tabsList[0].id;
+                    renderTabsStructure();
+                } else if (data.files && Array.isArray(data.files)) {
+                    tabsList = data.files.map(f => ({
+                        id: f.id,
+                        title: f.label || f.name,
+                        layout: f.layout || 'split',
+                        published: true,
+                        items: [{
+                            id: 'item_' + f.id,
+                            name: f.name || f.label,
+                            size: f.size || 0,
+                            type: f.type || 'url',
+                            url: f.url || '',
+                            storagePath: f.storagePath || '',
+                            fileObject: null
+                        }]
                     }));
                     if (tabsList.length > 0) selectedTabId = tabsList[0].id;
                     renderTabsStructure();
@@ -1353,97 +1382,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function checkAndLoadEditMode(uid) {
-        if (!editRoomId) return;
-        if (editTeacherId !== uid) {
-            console.warn("Edit uid mismatch. Logged in uid:", uid, "URL teacherId:", editTeacherId);
-            return;
-        }
-
-        try {
-            if (!isFirebaseInitialized || !db) return;
-            const roomRef = doc(db, "users", editTeacherId, "rooms", editRoomId);
-            const roomSnap = await getDoc(roomRef);
-            if (roomSnap.exists()) {
-                const roomData = roomSnap.data();
-                
-                // 1. Populate tabsList (supporting both new tabs structure and legacy flat files)
-                if (roomData.tabs && Array.isArray(roomData.tabs) && roomData.tabs.length > 0) {
-                    tabsList = roomData.tabs.map(t => ({
-                        id: t.id || ('tab_' + Math.random().toString(36).substr(2, 9)),
-                        title: t.title || t.name || '탐구 활동',
-                        layout: t.layout || 'split',
-                        items: (t.items || []).map(item => ({
-                            id: item.id || ('item_' + Math.random().toString(36).substr(2, 9)),
-                            name: item.name || '자료',
-                            size: item.size || 0,
-                            type: item.type || (item.name && item.name.endsWith('.pdf') ? 'pdf' : (item.name && item.name.endsWith('.html') ? 'html' : 'image')),
-                            url: item.url || '',
-                            storagePath: item.storagePath || '',
-                            fileObject: null
-                        }))
-                    }));
-                } else if (roomData.files && Array.isArray(roomData.files)) {
-                    // Normalize flat files into 2-tier tabs
-                    tabsList = roomData.files.map(f => ({
-                        id: f.id,
-                        title: f.label || f.name,
-                        layout: f.layout || 'split',
-                        items: [{
-                            id: 'item_' + f.id,
-                            name: f.name || f.label,
-                            size: f.size || 0,
-                            type: f.type || 'url',
-                            url: f.url || '',
-                            storagePath: f.storagePath || '',
-                            fileObject: null
-                        }]
-                    }));
-                }
-
-                // 2. Populate questions
-                questions = roomData.questions || [];
-
-                // 3. Update UI: Canvas Option Radio
-                const canvasIndependent = document.querySelector('input[name="canvas-option"][value="independent"]');
-                const canvasGlobal = document.querySelector('input[name="canvas-option"][value="global"]');
-                if (roomData.globalCanvas) {
-                    if (canvasGlobal) canvasGlobal.checked = true;
-                } else {
-                    if (canvasIndependent) canvasIndependent.checked = true;
-                }
-
-                // 3-2. Update UI: Time Tracking Checkbox
-                const checkTimeTracking = document.getElementById('check-time-tracking');
-                if (checkTimeTracking) {
-                    checkTimeTracking.checked = roomData.enableTimeTracking !== false;
-                }
-
-                // 4. Update UI: Room ID input (Disable it)
-                const customRoomIdInput = document.getElementById('custom-room-id');
-                if (customRoomIdInput) {
-                    customRoomIdInput.value = editRoomId;
-                    customRoomIdInput.disabled = true;
-                }
-
-                // 5. Update UI: Submit Button Text
-                const btnCreateRoom = document.getElementById('btn-create-room');
-                if (btnCreateRoom) {
-                    const btnText = btnCreateRoom.querySelector('.btn-text');
-                    if (btnText) btnText.textContent = '🛠️ 수업 밀키트 수정 완료';
-                }
-
-                // Render lists
-                renderTabsStructure();
-                renderQuestionsConfig();
-
-                console.log("Room settings loaded for editing:", editRoomId);
-            }
-        } catch (err) {
-            console.error("수업방 수정 정보 불러오기 실패:", err);
-        }
-    }
-
     // Render initial empty or default tab
     renderTabsStructure();
 
@@ -1465,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const customTitleInput = document.getElementById('custom-room-title');
-        const roomTitle = customTitleInput ? (customTitleInput.value.trim() || "탐구 활동 수업") : "탐구 활동 수업";
+        let roomTitle = customTitleInput ? customTitleInput.value.trim() : "";
 
         const customRoomIdInput = document.getElementById('custom-room-id');
         const roomId = customRoomIdInput ? customRoomIdInput.value.trim() : "";
@@ -1479,6 +1417,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cleanRoomId !== roomId) {
             alert("수업방 ID에는 특수문자(/, ?, &, # 등 URL 예약어)를 제외한 한글, 영문, 숫자, 하이픈(-), 괄호, 쉼표만 사용할 수 있습니다.");
             return;
+        }
+
+        // If title is left blank, fallback to roomId
+        if (!roomTitle) {
+            roomTitle = roomId;
+            if (customTitleInput) customTitleInput.value = roomTitle;
         }
 
         const teacherUid = auth.currentUser ? auth.currentUser.uid : "offline";
