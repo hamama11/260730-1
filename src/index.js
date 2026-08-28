@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="font-weight: 700; color: var(--primary); font-size: 1.05rem; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;">
                         📑 탭 #${tabIdx + 1} ${isSelected ? '<span style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">선택됨 (Ctrl+V 대상)</span>' : ''}
                     </span>
-                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목을 입력하세요 (예: 1단원 지오지브라 탐구)" style="flex: 1; min-width: 220px; padding: 0.55rem 0.9rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: rgba(255, 255, 255, 0.08); color: var(--text-primary); outline: none; transition: border-color 0.2s;">
+                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목을 입력하세요 (예: 1단원 지오지브라 탐구)" style="flex: 1; min-width: 220px; padding: 0.55rem 0.9rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #2C2221; outline: none; transition: border-color 0.2s; box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
@@ -965,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 tab.items.forEach((item, itemIdx) => {
                     const itemRow = document.createElement('div');
-                    itemRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; background: rgba(15,23,42,0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.8rem; flex-wrap: wrap;';
+                    itemRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 0.6rem 0.9rem; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(74,62,61,0.04);';
 
                     let icon = '📄';
                     let desc = item.name || '';
@@ -978,6 +978,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (item.type === 'coordinate') {
                         icon = '📐';
                         desc = '수학 좌표평면';
+                    } else if (item.type === 'grid') {
+                        icon = '⏹️';
+                        desc = '모눈종이 서식';
+                    } else if (item.type === 'lined') {
+                        icon = '📑';
+                        desc = '줄노트 서식';
                     } else if (item.type === 'pdf' || (item.name && item.name.endsWith('.pdf'))) {
                         icon = '📕';
                         desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'PDF 문서';
@@ -998,11 +1004,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         .join('');
 
                     itemRow.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 240px; overflow: hidden;">
-                            <span style="font-size: 1.2rem;">${icon}</span>
+                        <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 240px; overflow: hidden;">
+                            <span style="font-size: 1.3rem;">${icon}</span>
                             <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 320px; padding: 0.4rem 0.65rem; font-size: 0.9rem; font-weight: 500; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.08); color: var(--text-primary); outline: none;">
-                                <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 3px;">${desc}</span>
+                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 340px; padding: 0.45rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #FAF6F0; color: #2C2221; outline: none;">
+                                <span style="font-size: 0.76rem; color: #786664; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;">${desc}</span>
                             </div>
                         </div>
 
@@ -1120,8 +1126,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addToolbar.style.cssText = 'display: flex; gap: 0.4rem; flex-wrap: wrap; background: rgba(255,255,255,0.015); border: 1px dashed var(--border-color); border-radius: 8px; padding: 0.6rem; align-items: center;';
 
             addToolbar.innerHTML = `
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;" title="AI(GPT/Claude/Gemini)에서 다운로드한 .html 또는 PDF, 이미지를 올립니다">
-                    📁 + 파일 올리기 (AI 생성 .html, .pdf, 이미지)
+                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;" title="파일(.html, .pdf, 이미지)을 업로드합니다">
+                    📁 + 파일
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm btn-tab-add-url" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(224, 122, 95, 0.08); border-color: rgba(224, 122, 95, 0.2); color: var(--primary);">
                     🌐 + 웹 링크 추가
@@ -1723,6 +1729,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(previewData))));
                 window.open(`student.html?mode=preview&data=${encodeURIComponent(encodedData)}`, '_blank');
             }
+        });
+    }
+
+    // Connect Floating Action Dock buttons
+    const btnFloatingPreview = document.getElementById('btn-floating-preview');
+    if (btnFloatingPreview && btnPreview) {
+        btnFloatingPreview.addEventListener('click', () => {
+            btnPreview.click();
+        });
+    }
+
+    const btnFloatingCreate = document.getElementById('btn-floating-create');
+    const createRoomSubmitBtn = document.getElementById('btn-create-room');
+    if (btnFloatingCreate && createRoomSubmitBtn) {
+        btnFloatingCreate.addEventListener('click', () => {
+            createRoomForm.requestSubmit();
         });
     }
 });

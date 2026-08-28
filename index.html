@@ -313,12 +313,28 @@
         </div>
     </div>
 
-    <!-- Floating Help Button -->
-    <button type="button" id="btn-open-help"
-        style="position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.4rem; border-radius: 30px; background: var(--primary); color: white; border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(224, 122, 95, 0.35); z-index: 2500; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: transform 0.2s, background-color 0.2s;"
-        title="서비스 사용법 보기">
-        📖 사용자 가이드
-    </button>
+    <!-- Floating Bottom-Right Corner Action Dock -->
+    <div id="floating-action-dock"
+        style="position: fixed; bottom: 1.2rem; right: 1.5rem; background: rgba(30, 27, 27, 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 30px; padding: 0.35rem 0.6rem; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); z-index: 2500; display: flex; align-items: center; gap: 0.4rem;">
+        
+        <button type="button" id="btn-floating-preview" class="btn btn-secondary btn-sm"
+            style="padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 700; background: rgba(255, 255, 255, 0.1); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+            👀 미리보기
+        </button>
+
+        <button type="button" id="btn-floating-create" class="btn btn-primary btn-sm"
+            style="padding: 0.35rem 0.85rem; font-size: 0.8rem; font-weight: 800; background: var(--primary); color: #ffffff; border: none; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; box-shadow: 0 2px 8px rgba(224, 122, 95, 0.35);">
+            <span>🚀 방 만들기</span>
+        </button>
+
+        <div style="width: 1px; height: 16px; background: rgba(255, 255, 255, 0.2); margin: 0 0.1rem;"></div>
+
+        <button type="button" id="btn-open-help"
+            style="padding: 0.35rem 0.65rem; border-radius: 20px; background: transparent; color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem;"
+            title="사용자 가이드 열기">
+            📖 가이드
+        </button>
+    </div>
 
     <!-- Help Modal -->
     <div id="help-modal" class="modal hidden"

@@ -1099,8 +1099,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         switch (bgTheme) {
             case 'cream':
                 return { bg: '#FDFBF7', line: 'rgba(74, 62, 61, 0.12)', axis: '#5C4D4A', text: '#5C4D4A' };
-            case 'dark':
-                return { bg: '#18181B', line: 'rgba(255, 255, 255, 0.12)', axis: '#E4E4E7', text: '#E4E4E7' };
             case 'green':
                 return { bg: '#1E392A', line: 'rgba(255, 255, 255, 0.15)', axis: '#FEF3C7', text: '#FEF3C7' };
             case 'white':
