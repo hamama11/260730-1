@@ -949,7 +949,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Add warning banner if external link URL
                     appendUrlBannerIfNeeded(wrapper, item, viewer);
-                    addZoomControls(wrapper, viewer);
+                    addZoomControls(wrapper, viewer, item);
 
                     tabBody.appendChild(wrapper);
                     activeCanvases.push(canvas);
@@ -1224,9 +1224,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return viewer;
     }
 
-    function addZoomControls(wrapper, viewer) {
+    function addZoomControls(wrapper, viewer, item) {
+        const isUrl = (item && item.type === 'url');
         const zoomBar = document.createElement('div');
-        zoomBar.style.cssText = 'position: absolute; bottom: 0.8rem; right: 0.8rem; display: flex; align-items: center; gap: 0.4rem; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); padding: 0.35rem 0.65rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); z-index: 30; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        zoomBar.className = 'material-zoom-toolbar';
+        // Position at top right (leave room for URL banner if present)
+        const topOffset = isUrl ? '2.4rem' : '0.6rem';
+        zoomBar.style.cssText = `position: absolute; top: ${topOffset}; right: 0.6rem; display: flex; align-items: center; gap: 0.3rem; background: rgba(30, 27, 27, 0.9); backdrop-filter: blur(8px); padding: 0.25rem 0.55rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); z-index: 28; box-shadow: 0 4px 14px rgba(0,0,0,0.35);`;
 
         let zoomFactor = 1.0;
         let panX = 0;
@@ -1236,6 +1240,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             viewer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomFactor})`;
             viewer.style.transformOrigin = 'center center';
             zoomVal.textContent = `${Math.round(zoomFactor * 100)}%`;
+            if (zoomSlider) zoomSlider.value = Math.round(zoomFactor * 100);
+            
+            // Highlight active preset button
+            presetBtns.forEach(btn => {
+                const targetFactor = parseFloat(btn.dataset.factor);
+                const isMatch = Math.abs(zoomFactor - targetFactor) < 0.05;
+                btn.style.background = isMatch ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
+                btn.style.color = isMatch ? '#ffffff' : '#e2e8f0';
+                btn.style.borderColor = isMatch ? 'var(--primary)' : 'rgba(255,255,255,0.2)';
+            });
+
             if (zoomFactor > 1.0) {
                 wrapper.style.cursor = (currentTool === 'interact') ? 'grab' : 'default';
             } else {
@@ -1260,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         wrapper.addEventListener('mousedown', (e) => {
             if (currentTool !== 'interact' || zoomFactor <= 1.0) return;
             // Ignore click if clicking zoomBar itself
-            if (e.target.closest('button') || e.target.closest('.zoom-bar')) return;
+            if (e.target.closest('.material-zoom-toolbar') || e.target.closest('button')) return;
             isPanning = true;
             startPanX = e.clientX - panX;
             startPanY = e.clientY - panY;
@@ -1284,18 +1299,66 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // Quick Preset Buttons: [소 (80%)], [중 (100%)], [대 (150%)]
+        const presetContainer = document.createElement('div');
+        presetContainer.style.cssText = 'display: flex; gap: 0.2rem; align-items: center; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 0.35rem; margin-right: 0.2rem;';
+
+        const presetDefs = [
+            { label: '소', factor: 0.8, title: '작게 (80%)' },
+            { label: '중', factor: 1.0, title: '기본 크기 (100%)' },
+            { label: '대', factor: 1.5, title: '크게 (150%)' }
+        ];
+
+        const presetBtns = [];
+        presetDefs.forEach(def => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.dataset.factor = def.factor;
+            btn.textContent = def.label;
+            btn.title = def.title;
+            btn.style.cssText = 'padding: 0.15rem 0.45rem; font-size: 0.72rem; font-weight: 700; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #e2e8f0; cursor: pointer; transition: all 0.15s ease;';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panX = 0;
+                panY = 0;
+                updateZoom(def.factor);
+            });
+            presetBtns.push(btn);
+            presetContainer.appendChild(btn);
+        });
+
+        // Zoom In/Out Buttons
         const btnOut = document.createElement('button');
         btnOut.type = 'button';
         btnOut.textContent = '➖';
         btnOut.title = '축소';
-        btnOut.style.cssText = 'background:none; border:none; color:white; font-size:0.8rem; cursor:pointer; padding:0.15rem 0.3rem;';
-        btnOut.addEventListener('click', () => updateZoom(zoomFactor - 0.15));
+        btnOut.style.cssText = 'background:none; border:none; color:white; font-size:0.75rem; cursor:pointer; padding:0.15rem 0.25rem;';
+        btnOut.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const nextVal = Math.max(0.5, zoomFactor - 0.1);
+            updateZoom(nextVal);
+        });
+
+        const zoomSlider = document.createElement('input');
+        zoomSlider.type = 'range';
+        zoomSlider.min = '50';
+        zoomSlider.max = '300';
+        zoomSlider.step = '5';
+        zoomSlider.value = '100';
+        zoomSlider.title = '배율 조절 슬라이더 (50% ~ 300%)';
+        zoomSlider.style.cssText = 'width: 65px; height: 5px; cursor: pointer; accent-color: var(--primary); vertical-align: middle; margin: 0 0.2rem;';
+        zoomSlider.addEventListener('input', (e) => {
+            e.stopPropagation();
+            const val = parseInt(e.target.value, 10) / 100;
+            updateZoom(val);
+        });
 
         const zoomVal = document.createElement('span');
         zoomVal.textContent = '100%';
         zoomVal.title = '클릭 시 100% 원본 크기 복귀';
-        zoomVal.style.cssText = 'font-size: 0.78rem; color: #f8fafc; min-width: 40px; text-align: center; font-weight: 700; cursor: pointer; user-select: none;';
-        zoomVal.addEventListener('click', () => {
+        zoomVal.style.cssText = 'font-size: 0.75rem; color: #f8fafc; min-width: 40px; text-align: center; font-weight: 700; cursor: pointer; user-select: none; font-variant-numeric: tabular-nums;';
+        zoomVal.addEventListener('click', (e) => {
+            e.stopPropagation();
             panX = 0;
             panY = 0;
             updateZoom(1.0);
@@ -1305,25 +1368,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnIn.type = 'button';
         btnIn.textContent = '➕';
         btnIn.title = '확대';
-        btnIn.style.cssText = 'background:none; border:none; color:white; font-size:0.8rem; cursor:pointer; padding:0.15rem 0.3rem;';
-        btnIn.addEventListener('click', () => updateZoom(zoomFactor + 0.15));
+        btnIn.style.cssText = 'background:none; border:none; color:white; font-size:0.75rem; cursor:pointer; padding:0.15rem 0.25rem;';
+        btnIn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const nextVal = Math.min(3.0, zoomFactor + 0.1);
+            updateZoom(nextVal);
+        });
 
         const btnReset = document.createElement('button');
         btnReset.type = 'button';
         btnReset.textContent = '↺';
         btnReset.title = '화면 위치 및 배율 초기화';
-        btnReset.style.cssText = 'background:none; border:none; color:#94a3b8; font-size:0.85rem; cursor:pointer; padding:0.15rem 0.2rem; margin-left:0.2rem;';
-        btnReset.addEventListener('click', () => {
+        btnReset.style.cssText = 'background:none; border:none; color:#94a3b8; font-size:0.8rem; cursor:pointer; padding:0.15rem 0.2rem; margin-left:0.1rem;';
+        btnReset.addEventListener('click', (e) => {
+            e.stopPropagation();
             panX = 0;
             panY = 0;
             updateZoom(1.0);
         });
 
+        zoomBar.appendChild(presetContainer);
         zoomBar.appendChild(btnOut);
+        zoomBar.appendChild(zoomSlider);
         zoomBar.appendChild(zoomVal);
         zoomBar.appendChild(btnIn);
         zoomBar.appendChild(btnReset);
         wrapper.appendChild(zoomBar);
+        updateTransform();
     }
 
     // Load configs
@@ -1691,14 +1762,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!headerQrPanel.classList.contains('hidden') && !headerQrPanel.contains(e.target) && e.target !== btnToggleQrHeader) {
-                headerQrPanel.classList.add('hidden');
-                if (qrToggleArrow) qrToggleArrow.textContent = '▼';
-            }
-        });
     }
 
     // ── Worksheet Header Collapsible QR Controls ──
@@ -1749,13 +1812,5 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!worksheetQrPanel.classList.contains('hidden') && !worksheetQrPanel.contains(e.target) && e.target !== btnToggleQrWorksheet) {
-                worksheetQrPanel.classList.add('hidden');
-                if (qrWorksheetArrow) qrWorksheetArrow.textContent = '▼';
-            }
-        });
     }
 });
