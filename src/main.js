@@ -1318,6 +1318,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // Toggle Collapse/Expand Button for the Zoom Bar
+        const btnToggleBar = document.createElement('button');
+        btnToggleBar.type = 'button';
+        btnToggleBar.className = 'btn-toggle-zoom-bar';
+        btnToggleBar.textContent = '🔍';
+        btnToggleBar.title = '화면 배율 조절 접기/펼치기';
+        btnToggleBar.style.cssText = 'background:none; border:none; color:#f8fafc; font-size:0.82rem; cursor:pointer; padding:0.15rem 0.25rem; display:flex; align-items:center; justify-content:center; border-radius:4px;';
+
+        // Container holding all the controls that can be collapsed
+        const controlsContainer = document.createElement('div');
+        controlsContainer.className = 'zoom-controls-body';
+        controlsContainer.style.cssText = 'display: flex; align-items: center; gap: 0.3rem; transition: all 0.2s ease;';
+
+        let isBarCollapsed = false;
+        btnToggleBar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isBarCollapsed = !isBarCollapsed;
+            if (isBarCollapsed) {
+                controlsContainer.style.display = 'none';
+                zoomBar.style.padding = '0.25rem 0.4rem';
+                btnToggleBar.title = '화면 배율 조절 펼치기';
+                btnToggleBar.style.background = 'rgba(255,255,255,0.15)';
+            } else {
+                controlsContainer.style.display = 'flex';
+                zoomBar.style.padding = '0.25rem 0.55rem';
+                btnToggleBar.title = '화면 배율 조절 접기';
+                btnToggleBar.style.background = 'none';
+            }
+        });
+
         // Quick Preset Buttons: [소 (80%)], [중 (100%)], [대 (150%)]
         const presetContainer = document.createElement('div');
         presetContainer.style.cssText = 'display: flex; gap: 0.2rem; align-items: center; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 0.35rem; margin-right: 0.2rem;';
@@ -1406,12 +1436,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateZoom(1.0);
         });
 
-        zoomBar.appendChild(presetContainer);
-        zoomBar.appendChild(btnOut);
-        zoomBar.appendChild(zoomSlider);
-        zoomBar.appendChild(zoomVal);
-        zoomBar.appendChild(btnIn);
-        zoomBar.appendChild(btnReset);
+        controlsContainer.appendChild(presetContainer);
+        controlsContainer.appendChild(btnOut);
+        controlsContainer.appendChild(zoomSlider);
+        controlsContainer.appendChild(zoomVal);
+        controlsContainer.appendChild(btnIn);
+        controlsContainer.appendChild(btnReset);
+
+        zoomBar.appendChild(btnToggleBar);
+        zoomBar.appendChild(controlsContainer);
         wrapper.appendChild(zoomBar);
         updateTransform();
     }
