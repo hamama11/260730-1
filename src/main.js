@@ -980,47 +980,80 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const resizer = document.createElement('div');
                         resizer.className = 'split-resizer-bar';
                         resizer.dataset.resizerIndex = itemIndex;
-                        resizer.style.cssText = 'width: 8px; background: rgba(74, 62, 61, 0.25); cursor: col-resize; transition: background 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
-                        resizer.innerHTML = '<div style="width: 2px; height: 30px; background: rgba(255,255,255,0.4); border-radius: 1px;"></div>';
+                        resizer.style.cssText = 'width: 10px; background: rgba(74, 62, 61, 0.2); cursor: col-resize; transition: background 0.15s; position: relative; z-index: 15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; user-select: none;';
+                        resizer.innerHTML = '<div style="width: 3px; height: 36px; background: rgba(255,255,255,0.6); border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>';
 
                         resizer.addEventListener('mouseover', () => { resizer.style.background = 'var(--primary)'; });
-                        resizer.addEventListener('mouseout', () => { resizer.style.background = 'rgba(74, 62, 61, 0.25)'; });
+                        resizer.addEventListener('mouseout', () => { resizer.style.background = 'rgba(74, 62, 61, 0.2)'; });
 
                         let startX = 0;
                         let startLeftWidth = 0;
+                        let animationFrameId = null;
+
+                        // Create transparent drag shield to prevent iframes (GeoGebra/Desmos/PDF) from intercepting mouse events during drag
+                        let dragShield = null;
 
                         const onDrag = (e) => {
-                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                            const deltaX = clientX - startX;
-                            let newWidth = startLeftWidth + deltaX;
+                            if (animationFrameId) return;
+                            animationFrameId = requestAnimationFrame(() => {
+                                animationFrameId = null;
+                                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                                if (clientX === undefined) return;
+                                const deltaX = clientX - startX;
+                                const parentWidth = tabBody.getBoundingClientRect().width;
+                                let newWidth = startLeftWidth + deltaX;
 
-                            const parentWidth = tabBody.getBoundingClientRect().width;
-                            if (newWidth > 100 && newWidth < parentWidth - 100) {
-                                wrapper.style.width = newWidth + 'px';
-                                wrapper.style.flex = 'none';
+                                // Constrain between 15% and 85% of parent width
+                                const minW = parentWidth * 0.15;
+                                const maxW = parentWidth * 0.85;
 
-                                activeCanvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
-                            }
+                                if (newWidth >= minW && newWidth <= maxW) {
+                                    const percent = (newWidth / parentWidth) * 100;
+                                    wrapper.style.flex = `0 0 ${percent}%`;
+                                    wrapper.style.width = `${percent}%`;
+                                }
+                            });
                         };
 
                         const stopDrag = () => {
+                            if (animationFrameId) {
+                                cancelAnimationFrame(animationFrameId);
+                                animationFrameId = null;
+                            }
+                            if (dragShield && dragShield.parentNode) {
+                                dragShield.parentNode.removeChild(dragShield);
+                                dragShield = null;
+                            }
+                            document.body.style.cursor = '';
+                            document.body.style.userSelect = '';
                             document.removeEventListener('mousemove', onDrag);
                             document.removeEventListener('mouseup', stopDrag);
                             document.removeEventListener('touchmove', onDrag);
                             document.removeEventListener('touchend', stopDrag);
+
+                            // Trigger crisp canvas redraw once dragging ends
+                            activeCanvases.forEach(c => { if (c.resizeHandler) c.resizeHandler(); });
                         };
 
                         const initDrag = (e) => {
                             startX = e.touches ? e.touches[0].clientX : e.clientX;
                             startLeftWidth = wrapper.getBoundingClientRect().width;
-                            document.addEventListener('mousemove', onDrag);
+                            
+                            // Insert full overlay shield so iframes don't steal drag events
+                            dragShield = document.createElement('div');
+                            dragShield.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; cursor: col-resize; background: transparent;';
+                            document.body.appendChild(dragShield);
+                            document.body.style.cursor = 'col-resize';
+                            document.body.style.userSelect = 'none';
+
+                            document.addEventListener('mousemove', onDrag, { passive: false });
                             document.addEventListener('mouseup', stopDrag);
-                            document.addEventListener('touchmove', onDrag, { passive: true });
+                            document.addEventListener('touchmove', onDrag, { passive: false });
                             document.addEventListener('touchend', stopDrag);
                         };
 
                         resizer.addEventListener('mousedown', initDrag);
-                        resizer.addEventListener('touchstart', initDrag, { passive: true });
+                        resizer.addEventListener('touchstart', initDrag, { passive: false });
 
                         tabBody.appendChild(resizer);
                     }
