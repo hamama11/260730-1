@@ -2,6 +2,15 @@ import { db, isFirebaseInitialized } from "./firebaseConfig.js";
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import QRCode from 'qrcode';
 
+// Import illustration image assets for guaranteed bundling
+import brightImg from '../image/bright.png';
+import bright1Img from '../image/bright-1.png';
+import daImg from '../image/da.png';
+import da1Img from '../image/da-1.png';
+import sicImg from '../image/sic.png';
+import sic1Img from '../image/sic-1.png';
+import sic3Img from '../image/sic-3.png';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const studentSubmitForm = document.getElementById('student-submit-form');
     if (!studentSubmitForm) return;
@@ -824,12 +833,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Check if tab is locked/unpublished by teacher
             if (!isTabPublished) {
-                // 3 Sets of cute illustration images
+                // 3 Sets of cute illustration images (using imported bundled URLs with fallback)
                 const imageSets = [
-                    ['image/bright.png', 'image/bright-1.png'],
-                    ['image/da.png', 'image/da-1.png'],
-                    ['image/sic.png', 'image/sic-1.png', 'image/sic-3.png']
+                    [brightImg || 'image/bright.png', bright1Img || 'image/bright-1.png'],
+                    [daImg || 'image/da.png', da1Img || 'image/da-1.png'],
+                    [sicImg || 'image/sic.png', sic1Img || 'image/sic-1.png', sic3Img || 'image/sic-3.png']
                 ];
+
+                // High quality fallback vector image in case external assets are missing or broken
+                const defaultFallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' width='120' height='120'><circle cx='60' cy='60' r='54' fill='%23FAF6F0' stroke='%23e07a5f' stroke-width='3' stroke-dasharray='6 4'/><text x='50%' y='58%' dominant-baseline='middle' text-anchor='middle' font-size='50'>🎁</text></svg>";
 
                 const comingSoonContainer = document.createElement('div');
                 comingSoonContainer.className = 'coming-soon-container';
@@ -852,14 +864,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `;
 
+                const imgEl = comingSoonContainer.querySelector('.coming-soon-img');
+                if (imgEl) {
+                    imgEl.onerror = () => { imgEl.src = defaultFallbackSvg; };
+                }
+
                 // Cycle through the 3 character sets continuously
                 // (e.g. Set 1 frame 1 -> Set 1 frame 2 -> Set 2 frame 1 -> Set 2 frame 2 -> Set 3 frame 1 -> Set 3 frame 2 -> Set 3 frame 3)
-                const imgEl = comingSoonContainer.querySelector('.coming-soon-img');
                 let currentSetIdx = index % imageSets.length;
                 let currentFrameIdx = 0;
 
-                setInterval(() => {
-                    if (!imgEl) return;
+                const cycleInterval = setInterval(() => {
+                    if (!imgEl || !comingSoonContainer.isConnected) {
+                        clearInterval(cycleInterval);
+                        return;
+                    }
                     currentFrameIdx++;
                     if (currentFrameIdx >= imageSets[currentSetIdx].length) {
                         currentFrameIdx = 0;
