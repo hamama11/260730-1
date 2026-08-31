@@ -1000,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (!confirm("수업을 종료하고 전체 학생 결과 리포트(CSV)를 다운로드하시겠습니까?")) {
+            if (!confirm("학생 제출 결과 리포트(CSV)를 다운로드하시겠습니까?")) {
                 return;
             }
 
@@ -1034,10 +1034,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                     { id: 'q_default_b', question: '질문 B. 관찰을 통해 추론할 수 있는 수학/과학적 원리는 무엇인가요?' }
                 ];
 
+                // Gather all tab items for drawing presence columns
+                const tabItems = [];
+                if (currentRoomData && currentRoomData.tabs && Array.isArray(currentRoomData.tabs)) {
+                    currentRoomData.tabs.forEach((tab, tIdx) => {
+                        const items = tab.items || [];
+                        if (items.length > 0) {
+                            items.forEach(item => {
+                                tabItems.push({
+                                    id: item.id,
+                                    tabTitle: tab.title || `탭 ${tIdx + 1}`,
+                                    name: item.name || '자료'
+                                });
+                            });
+                        } else {
+                            tabItems.push({
+                                id: tab.id,
+                                tabTitle: tab.title || `탭 ${tIdx + 1}`,
+                                name: '기본'
+                            });
+                        }
+                    });
+                } else if (currentRoomData && currentRoomData.files && Array.isArray(currentRoomData.files)) {
+                    currentRoomData.files.forEach((f, fIdx) => {
+                        tabItems.push({
+                            id: f.id,
+                            tabTitle: f.label || `탭 ${fIdx + 1}`,
+                            name: f.name || '자료'
+                        });
+                    });
+                }
+
                 const headers = ["학번", "이름"];
                 questions.forEach((q, idx) => {
                     headers.push(`질문 ${idx + 1}: ${q.question}`);
                 });
+
+                // Add Drawing presence column headers for each tab
+                if (tabItems.length > 0) {
+                    tabItems.forEach(tItem => {
+                        headers.push(`[필기] ${tItem.tabTitle} - ${tItem.name}`);
+                    });
+                } else {
+                    headers.push("[필기] 캔버스 작성 여부");
+                }
+
                 headers.push("소요시간(초)", "제출시간");
 
                 const csvRows = [headers.join(",")];
@@ -1062,6 +1103,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                         row.push(answerText);
                     });
 
+                    // Push Drawing presence status for each tab
+                    if (tabItems.length > 0) {
+                        tabItems.forEach(tItem => {
+                            let hasD = false;
+                            if (doc.drawingsMeta && doc.drawingsMeta[tItem.id]) {
+                                hasD = !!doc.drawingsMeta[tItem.id].hasDrawing;
+                            } else if (doc.drawings && doc.drawings[tItem.id]) {
+                                hasD = doc.drawings[tItem.id].length > 5000;
+                            }
+                            row.push(hasD ? "작성됨" : "미작성");
+                        });
+                    } else {
+                        const hasAnyDrawing = (doc.drawings && Object.keys(doc.drawings).length > 0) || !!doc.drawingImg;
+                        row.push(hasAnyDrawing ? "작성됨" : "미작성");
+                    }
+
                     const elapsedSecStr = doc.elapsedSeconds !== undefined && doc.elapsedSeconds !== null ? `${doc.elapsedSeconds}초` : "";
                     row.push(elapsedSecStr, timeStr);
                     csvRows.push(row.map(escapeCsv).join(","));
@@ -1074,8 +1131,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
+                const safeTitle = (currentRoomData && currentRoomData.title) ? currentRoomData.title.replace(/[\\/:*?"<>|]/g, '_') : roomId;
                 link.setAttribute("href", url);
-                link.setAttribute("download", `수업결과_${roomId}.csv`);
+                link.setAttribute("download", `수업결과_${safeTitle}.csv`);
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
