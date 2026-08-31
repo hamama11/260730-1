@@ -51,7 +51,7 @@
                     <button type="button" id="btn-draw-eraser" class="btn btn-secondary btn-sm"
                         style="padding: 0.25rem 0.55rem; font-size: 0.72rem; color: #f1f5f9; background: rgba(255,255,255,0.08); font-weight: 600; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;">🧽 지우개</button>
                     <button type="button" id="btn-draw-clear" class="btn btn-secondary btn-sm"
-                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; background: rgba(223, 94, 94, 0.2); color: #ff8a8a; border: 1px solid rgba(223, 94, 94, 0.35); border-radius: 6px; font-weight: 600;">전체지우기</button>
+                        style="padding: 0.25rem 0.55rem; font-size: 0.72rem; background: rgba(223, 94, 94, 0.2); color: #ff8a8a; border: 1px solid rgba(223, 94, 94, 0.35); border-radius: 6px; font-weight: 600;" title="현재 탭의 필기 지우기">탭 지우개</button>
 
                     <!-- Color Quick Presets -->
                     <div class="color-presets"
@@ -148,13 +148,32 @@
         <aside class="student-panel" style="padding-top: 0;">
             <header class="panel-header" style="position: sticky; top: 0; background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; padding: 1.05rem 0 0.7rem 0; margin: 0 0 0.84rem 0; border-bottom: 1.5px solid var(--border-color);">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem;">
-                    <span class="badge badge-accent" style="margin-bottom: 0;">Inquiry Worksheet</span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="badge badge-accent" style="margin-bottom: 0;">Inquiry Worksheet</span>
+                        <button type="button" id="btn-toggle-qr-worksheet" class="btn btn-secondary btn-sm"
+                            style="padding: 0.15rem 0.5rem; font-size: 0.72rem; background: rgba(224, 122, 95, 0.08); color: var(--primary); border: 1px solid rgba(224, 122, 95, 0.25); border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.2rem;" title="수업 참여 QR 코드 열기">
+                            📱 QR 코드 <span id="qr-worksheet-arrow" style="font-size: 0.6rem;">▼</span>
+                        </button>
+                    </div>
                     <div id="student-timer-container" class="hidden" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.65rem; background: rgba(224, 122, 95, 0.08); border: 1px solid rgba(224, 122, 95, 0.2); border-radius: 9999px; color: var(--primary); font-weight: 600; font-size: 0.78rem;">
                         <span style="font-size: 0.85rem;">⏱️</span> <span id="student-elapsed-timer">0분 0초</span>
                     </div>
                 </div>
                 <h2 id="student-worksheet-title" style="font-size: 0.91rem; font-weight: 700; color: var(--text-primary); margin: 0.14rem 0;">🔬 실시간 탐구 활동지</h2>
                 <p class="panel-desc" style="margin-top: 0.3rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">시뮬레이션을 탐구하고 관찰/추론한 내용을 아래 양식에 작성해 주세요.</p>
+                
+                <!-- Collapsible Worksheet QR Panel -->
+                <div id="worksheet-qr-panel" class="hidden"
+                    style="margin-top: 0.8rem; background: #1e1b1b; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">📱 수업 참여 QR 코드</span>
+                    <div style="background: white; padding: 8px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+                        <canvas id="worksheet-qr-canvas" style="width: 180px; height: 180px; display: block;"></canvas>
+                    </div>
+                    <div style="display: flex; gap: 0.4rem; width: 100%; max-width: 200px;">
+                        <button type="button" id="btn-copy-worksheet-link" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.75rem; padding: 0.35rem;">🔗 링크 복사</button>
+                        <button type="button" id="btn-close-worksheet-qr" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.75rem; padding: 0.35rem;">접기 ▲</button>
+                    </div>
+                </div>
             </header>
 
             <form id="student-submit-form" class="student-form">

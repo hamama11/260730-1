@@ -98,15 +98,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    const tabsManagerModal = document.getElementById('tabs-manager-modal');
-    if (tabsManagerModal) {
-        const card = tabsManagerModal.querySelector('.draggable-card');
-        const handle = tabsManagerModal.querySelector('.drag-handle');
-        if (card && handle) {
-            makeDraggable(card, handle);
-        }
-    }
-
     if (!roomId || !secretKey || !teacherId) {
         alert("잘못된 접근입니다. 수업 ID, 교사 식별 정보 및 보안 키가 필요합니다.");
         window.location.href = 'index.html';
@@ -424,19 +415,151 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (sub.drawings && Object.keys(sub.drawings).length > 0) {
                     let drawingsTabs = '';
                     let drawingsBodies = '';
+                    const drawingKeys = Object.keys(sub.drawings);
                     
-                    Object.keys(sub.drawings).forEach((fileId, dIdx) => {
-                        const fileObj = (currentRoomData && currentRoomData.files && currentRoomData.files.find(f => f.id === fileId)) || { label: `자료 ${dIdx + 1}` };
-                        drawingsTabs += `<button type="button" class="btn btn-secondary btn-sm ${dIdx === 0 ? 'active' : ''}" style="padding:0.3rem 0.6rem; font-size:0.75rem; border-color: rgba(255,255,255,0.1);" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active')); this.classList.add('active'); const wrapper = this.parentNode.nextElementSibling; wrapper.querySelectorAll('.drawing-tab-body').forEach(b=>b.style.display='none'); wrapper.querySelector('.drawing-body-${fileId}').style.display='block';">${fileObj.label}</button>`;
-                        drawingsBodies += `<div class="drawing-tab-body drawing-body-${fileId}" style="display: ${dIdx === 0 ? 'block' : 'none'}; margin-top: 0.5rem; background: #ffffff; padding: 6px; border-radius: 8px; border: 1px solid var(--border-color); display: inline-block;">
-                            <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; height: auto; border: 1px solid var(--border-color); cursor: zoom-in;" alt="${fileObj.label} Drawing">
-                        </div>`;
+                    // Check how many have actual drawings
+                    let writtenCount = 0;
+                    const checkHasDrawing = (fileId) => {
+                        const meta = (sub.drawingsMeta && sub.drawingsMeta[fileId]) ? sub.drawingsMeta[fileId] : null;
+                        if (meta && typeof meta.hasDrawing === 'boolean') return meta.hasDrawing;
+                        const dataUrl = sub.drawings[fileId] || '';
+                        return dataUrl.length > 5000; // Empty PNG 1280x800 base64 is typically < 3KB
+                    };
+
+                    drawingKeys.forEach(fileId => {
+                        if (checkHasDrawing(fileId)) writtenCount++;
+                    });
+
+                    drawingKeys.forEach((fileId, dIdx) => {
+                        const meta = (sub.drawingsMeta && sub.drawingsMeta[fileId]) ? sub.drawingsMeta[fileId] : null;
+                        
+                        // Find matching item and tab in currentRoomData
+                        let label = `자료 ${dIdx + 1}`;
+                        let tabName = '';
+                        if (meta && meta.tabTitle) {
+                            tabName = meta.tabTitle;
+                            label = `${meta.tabTitle} - ${meta.itemName || '자료'}`;
+                        } else if (currentRoomData && currentRoomData.tabs) {
+                            for (const t of currentRoomData.tabs) {
+                                const found = (t.items || []).find(i => i.id === fileId);
+                                if (found) {
+                                    tabName = t.title;
+                                    label = `${t.title} - ${found.name || '자료'}`;
+                                    break;
+                                }
+                            }
+                        } else if (currentRoomData && currentRoomData.files) {
+                            const found = currentRoomData.files.find(f => f.id === fileId);
+                            if (found) label = found.label || found.name;
+                        }
+
+                        const hasDrawing = checkHasDrawing(fileId);
+                        const statusBadge = hasDrawing 
+                            ? `<span style="background: rgba(34, 197, 94, 0.18); color: #16a34a; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 700; font-size: 0.7rem; margin-left: 4px;">✏️ 작성됨</span>`
+                            : `<span style="background: rgba(148, 163, 184, 0.15); color: #64748b; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 500; font-size: 0.7rem; margin-left: 4px;">미작성</span>`;
+
+                        const isActive = (dIdx === 0);
+
+                        drawingsTabs += `
+                            <button type="button" class="btn btn-secondary btn-sm ${isActive ? 'active' : ''}" 
+                                style="padding:0.3rem 0.65rem; font-size:0.75rem; display:inline-flex; align-items:center; border-color: ${isActive ? 'var(--primary)' : 'var(--border-color)'}; background: ${isActive ? 'rgba(224, 122, 95, 0.1)' : '#ffffff'}; color: #2C2221; font-weight: 600;" 
+                                onclick="this.parentNode.querySelectorAll('button').forEach(b=>{b.classList.remove('active'); b.style.background='#ffffff'; b.style.borderColor='var(--border-color)';}); this.classList.add('active'); this.style.background='rgba(224, 122, 95, 0.1)'; this.style.borderColor='var(--primary)'; const wrapper = this.parentNode.nextElementSibling; wrapper.querySelectorAll('.drawing-tab-body').forEach(b=>b.style.display='none'); wrapper.querySelector('.drawing-body-${fileId}').style.display='block';">
+                                📑 ${label} ${statusBadge}
+                            </button>
+                        `;
+
+                        // Retrieve original file / material object
+                        let originalItem = null;
+                        if (currentRoomData && currentRoomData.tabs) {
+                            for (const t of currentRoomData.tabs) {
+                                const found = (t.items || []).find(i => i.id === fileId);
+                                if (found) { originalItem = { ...found, tabTemplate: t.template, tabBg: t.bgTheme }; break; }
+                            }
+                        } else if (currentRoomData && currentRoomData.files) {
+                            originalItem = currentRoomData.files.find(f => f.id === fileId);
+                        }
+
+                        // Generate background preview HTML for the original material
+                        let materialPreviewHtml = '';
+                        if (originalItem) {
+                            if (['image', 'png', 'jpg', 'jpeg', 'webp'].includes(originalItem.type) || (originalItem.url && (originalItem.url.startsWith('data:image') || originalItem.url.match(/\.(png|jpg|jpeg|webp)$/i)))) {
+                                materialPreviewHtml = `
+                                    <div style="position: relative; width: 100%; max-height: 280px; display: inline-block; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+                                        <img src="${originalItem.url}" style="width: 100%; max-height: 280px; object-fit: contain; display: block;" alt="Original Material">
+                                        <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" alt="Overlay Drawing">
+                                    </div>
+                                `;
+                            } else if (originalItem.type === 'coordinate' || originalItem.tabTemplate === 'coordinate') {
+                                materialPreviewHtml = `
+                                    <div style="position: relative; width: 100%; height: 220px; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+                                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0.6;">
+                                            <defs>
+                                                <pattern id="admin-grid-${fileId}" width="20" height="20" patternUnits="userSpaceOnUse">
+                                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(74,62,61,0.15)" stroke-width="0.8"/>
+                                                </pattern>
+                                            </defs>
+                                            <rect width="100%" height="100%" fill="url(#admin-grid-${fileId})"/>
+                                            <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#4A3E3D" stroke-width="1.8" />
+                                            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#4A3E3D" stroke-width="1.8" />
+                                        </svg>
+                                        <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" alt="Overlay Drawing">
+                                    </div>
+                                `;
+                            } else if (originalItem.type === 'grid' || originalItem.tabTemplate === 'grid') {
+                                materialPreviewHtml = `
+                                    <div style="position: relative; width: 100%; height: 220px; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+                                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0.5;">
+                                            <defs>
+                                                <pattern id="admin-grid-pat-${fileId}" width="24" height="24" patternUnits="userSpaceOnUse">
+                                                    <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(74,62,61,0.12)" stroke-width="1"/>
+                                                </pattern>
+                                            </defs>
+                                            <rect width="100%" height="100%" fill="url(#admin-grid-pat-${fileId})"/>
+                                        </svg>
+                                        <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" alt="Overlay Drawing">
+                                    </div>
+                                `;
+                            } else if (originalItem.url) {
+                                materialPreviewHtml = `
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(99,102,241,0.08); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem;">
+                                            <span style="font-weight: 600; color: var(--primary);">🌐 원본 학습 자료: ${originalItem.name || label}</span>
+                                            <a href="${originalItem.url}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 0.15rem 0.45rem; font-size: 0.7rem;">자료 열기 ↗</a>
+                                        </div>
+                                        <div style="background: #ffffff; border-radius: 8px; padding: 6px; border: 1px solid var(--border-color);">
+                                            <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; max-height: 220px; height: auto; cursor: zoom-in; object-fit: contain;" alt="Student Drawing">
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        if (!materialPreviewHtml) {
+                            materialPreviewHtml = `
+                                <img src="${sub.drawings[fileId]}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; max-height: 240px; height: auto; border: 1px solid var(--border-color); border-radius: 6px; cursor: zoom-in; background: #ffffff; object-fit: contain;" alt="${label} Drawing">
+                            `;
+                        }
+
+                        drawingsBodies += `
+                            <div class="drawing-tab-body drawing-body-${fileId}" style="display: ${isActive ? 'block' : 'none'}; margin-top: 0.6rem; background: #FAF6F0; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                                    <span style="font-weight: 700; color: #2C2221;">📌 ${label}</span>
+                                    <span>${hasDrawing ? '🟢 학생 필기 저장됨 (클릭 시 확대)' : '⚪ 필기 내용 없음 (빈 캔버스)'}</span>
+                                </div>
+                                ${materialPreviewHtml}
+                            </div>
+                        `;
                     });
 
                     drawingHtml = `
-                        <div class="response-block" style="border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 0.8rem;">
-                            <strong>🎨 시뮬레이션 필기 / 그리기 캡처</strong>
-                            <div style="display: flex; gap: 0.35rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <div class="response-block" style="border-top: 1.5px dashed var(--border-color); padding-top: 0.9rem; margin-top: 0.9rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+                                <strong style="font-size: 0.88rem; color: #2C2221;">🎨 탭별 펜 필기 / 그리기 현황</strong>
+                                <span style="font-size: 0.75rem; font-weight: 700; color: ${writtenCount > 0 ? '#16a34a' : '#64748b'}; background: ${writtenCount > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'}; padding: 0.15rem 0.5rem; border-radius: 9999px;">
+                                    총 ${drawingKeys.length}개 탭/자료 중 ${writtenCount}개 작성됨
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap;">
                                 ${drawingsTabs}
                             </div>
                             <div style="display: block;">
@@ -446,10 +569,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                 } else if (sub.drawingImg) {
                     drawingHtml = `
-                        <div class="response-block" style="border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 0.8rem;">
-                            <strong>🎨 시뮬레이션 필기 / 그리기 캡처</strong>
-                            <div style="margin-top: 0.5rem; background: #ffffff; padding: 6px; border-radius: 8px; border: 1px solid var(--border-color); display: inline-block;">
-                                <img src="${sub.drawingImg}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; height: auto; border: 1px solid var(--border-color); cursor: zoom-in;" alt="Student Drawing">
+                        <div class="response-block" style="border-top: 1.5px dashed var(--border-color); padding-top: 0.9rem; margin-top: 0.9rem;">
+                            <strong style="font-size: 0.88rem; color: #2C2221;">🎨 시뮬레이션 필기 / 그리기 캡처</strong>
+                            <div style="margin-top: 0.5rem; background: #FAF6F0; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-block;">
+                                <img src="${sub.drawingImg}" class="submission-attachment-thumb clickable-thumb" style="max-width: 100%; max-height: 240px; height: auto; border: 1px solid var(--border-color); border-radius: 6px; cursor: zoom-in; background: #ffffff;" alt="Student Drawing">
                             </div>
                         </div>
                     `;

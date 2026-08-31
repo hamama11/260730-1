@@ -21,9 +21,6 @@
                 <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary btn-sm">
                     🏠 홈으로
                 </button>
-                <button type="button" id="btn-manage-tabs" class="btn btn-secondary btn-sm" style="background: rgba(99, 102, 241, 0.12); color: #818cf8; border-color: rgba(99, 102, 241, 0.25);">
-                    📑 탭 자료 관리/추가
-                </button>
                 <button type="button" id="btn-enter-student-room" class="btn btn-secondary btn-sm" style="background: rgba(129, 178, 154, 0.12); color: var(--accent); border-color: rgba(129, 178, 154, 0.2);">
                     🚀 학생 화면 입장
                 </button>
@@ -126,103 +123,6 @@
                 <canvas id="monitor-qr-canvas" style="width: 280px; height: 280px; display: block;"></canvas>
             </div>
             <button type="button" id="btn-close-monitor-qr-confirm" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">닫기</button>
-        </div>
-    </div>
-
-    <!-- Manage Tabs Modal -->
-    <div id="tabs-manager-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; z-index: 3500; backdrop-filter: blur(6px);">
-        <div class="card draggable-card" style="max-width: 580px; width: 92%; max-height: 90vh; overflow-y: auto; padding: 2rem; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-            <div class="drag-handle" style="cursor: move; padding: 0.5rem; background: rgba(74,62,61,0.04); margin: -2rem -2rem 1.2rem -2rem; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); user-select: none; text-align: center;">↕️ 이곳을 잡고 드래그하여 이동</div>
-            <button type="button" id="btn-close-tabs-manager" style="position: absolute; top: 2.5rem; right: 1.5rem; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); line-height: 1;">&times;</button>
-            
-            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📑</span> 수업 화면 상단 탭 실시간 관리
-            </h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
-                수업 중 새로운 웹 링크, 빈 화이트보드, 좌표평면을 추가하면 모든 학생 화면에 실시간으로 반영됩니다.
-            </p>
-
-            <!-- Tab Type Selector -->
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.5rem;">
-                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--text-primary);">➕ 새로운 탭 추가하기</h4>
-                
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-secondary btn-sm active" id="btn-tabtype-url" style="flex: 1; min-width: 90px; padding: 0.5rem; background: var(--primary); color: white;">🌐 웹 링크</button>
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-file" style="flex: 1; min-width: 90px; padding: 0.5rem;">📁 파일 업로드</button>
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-blank" style="flex: 1; min-width: 90px; padding: 0.5rem;">📄 빈 페이지</button>
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-tabtype-coord" style="flex: 1; min-width: 90px; padding: 0.5rem;">📐 좌표평면</button>
-                </div>
-
-                <!-- Type 1: URL Input -->
-                <div id="add-tab-url-box" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">외부 웹사이트 / 시뮬레이션 URL</label>
-                        <input type="url" id="new-tab-url" placeholder="https://... 예: GeoGebra, PhET, Desmos 등" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름</label>
-                        <input type="text" id="new-tab-url-label" placeholder="예: 지오지브라 그래프" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                </div>
-
-                <!-- Type 2: File Upload Box -->
-                <div id="add-tab-file-box" class="hidden" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">자료 파일 선택 (.html, .pdf, .png, .jpg, .webp)</label>
-                        <input type="file" id="new-tab-file-input" accept=".html,.pdf,.png,.jpg,.jpeg,.webp" style="width: 100%; padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름 (미입력 시 파일명 사용)</label>
-                        <input type="text" id="new-tab-file-label" placeholder="예: 1단원 탐구활동지" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                </div>
-
-                <!-- Type 2: Blank Page Info -->
-                <div id="add-tab-blank-box" class="hidden" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름</label>
-                        <input type="text" id="new-tab-blank-label" value="자유 화이트보드" placeholder="예: 화이트보드 1" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">💡 자유롭게 판서 및 필기할 수 있는 빈 화이트보드 화면이 추가됩니다.</p>
-                </div>
-
-                <!-- Type 3: Coordinate Info -->
-                <div id="add-tab-coord-box" class="hidden" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                    <div>
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">상단 탭 표시 이름</label>
-                        <input type="text" id="new-tab-coord-label" value="좌표평면" placeholder="예: 좌표평면 1" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary);">
-                    </div>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">💡 x축, y축, 원점 및 정밀 모눈 격자가 표시되는 수학 탐구용 좌표평면이 추가됩니다.</p>
-                </div>
-
-                <!-- Shared Layout Selection for New Tab -->
-                <div style="margin-top: 0.8rem; border-top: 1px dashed var(--border-color); padding-top: 0.8rem;">
-                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">탭 내부 화면 뷰</label>
-                    <select id="new-tab-layout-select" style="width: 100%; padding: 0.6rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(15,23,42,0.5); color: var(--text-primary); cursor: pointer;">
-                        <option value="split" selected>🪟 다단 분할 뷰</option>
-                        <option value="scroll">📜 상하 스크롤 뷰</option>
-                    </select>
-                </div>
-
-                <button type="button" id="btn-submit-add-tab" class="btn btn-primary btn-block" style="margin-top: 1rem; padding: 0.75rem;">
-                    <span class="btn-text">🚀 학생 화면에 탭 즉시 추가</span>
-                    <div class="spinner hidden"></div>
-                </button>
-            </div>
-
-            <!-- Current Tabs List -->
-            <div>
-                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--text-primary);">
-                    📋 현재 등록된 탭 목록 (<span id="monitor-tabs-count">0</span>)
-                </h4>
-                <div id="monitor-tabs-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 200px; overflow-y: auto;">
-                    <!-- Loaded dynamically -->
-                </div>
-            </div>
-
-            <div style="margin-top: 1.5rem;">
-                <button type="button" id="btn-close-tabs-manager-footer" class="btn btn-secondary btn-block" style="padding: 0.75rem;">닫기</button>
-            </div>
         </div>
     </div>
 

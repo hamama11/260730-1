@@ -360,29 +360,42 @@ document.addEventListener('DOMContentLoaded', () => {
             roomsList.forEach((roomData) => {
                 const roomId = roomData.id;
                 const createdDate = roomData.createdAt ? roomData.createdAt.toDate().toLocaleDateString('ko-KR') : "-";
+                const tabsCount = (roomData.tabs || []).length || 1;
+                const questionsCount = (roomData.questions || []).length;
                 
                 const card = document.createElement('div');
                 card.className = 'room-manager-card';
+                card.style.cssText = 'background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; box-shadow: 0 4px 16px rgba(74,62,61,0.04); transition: transform 0.2s, box-shadow 0.2s; min-height: 220px;';
+
                 card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-                        <div>
-                            <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-                                🏷️ ${roomData.title || roomId} <code style="font-size: 0.85rem; color: var(--primary); font-weight: 600; background: rgba(224, 122, 95, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.4rem;">ID: ${roomId}</code>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                            <h4 style="font-size: 1.05rem; font-weight: 800; color: #2C2221; line-height: 1.35; margin: 0; word-break: break-word;">
+                                🏷️ ${roomData.title || roomId}
                             </h4>
-                            <div class="room-meta-info">
-                                <span class="room-meta-item">질문 수: <strong>${(roomData.questions || []).length}개</strong></span>
-                                <span class="room-meta-item">제출 인원: <strong class="student-count-badge-${roomId}">0명</strong></span>
-                                <span class="room-meta-item">생성일: <strong>${createdDate}</strong></span>
-                            </div>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--primary); font-weight: 700; background: rgba(224, 122, 95, 0.08); padding: 0.2rem 0.5rem; border-radius: 6px; display: inline-block; align-self: flex-start;">
+                            ID: ${roomId}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: #786664; margin-top: 0.2rem; background: #FAF6F0; padding: 0.5rem 0.7rem; border-radius: 8px;">
+                            <div>📑 탭: <strong>${tabsCount}개</strong> &nbsp;|&nbsp; ❓ 질문: <strong>${questionsCount}개</strong></div>
+                            <div>👥 제출: <strong class="student-count-badge-${roomId}" style="color: var(--primary);">0명</strong> &nbsp;|&nbsp; 📅 ${createdDate}</div>
                         </div>
                     </div>
-                    <div class="room-actions">
-                        <button type="button" class="btn btn-secondary btn-enter-room" data-id="${roomId}">🔗 방 입장</button>
-                        <button type="button" class="btn btn-secondary btn-show-room-qr" data-id="${roomId}">📱 QR 코드</button>
-                        <button type="button" class="btn btn-secondary btn-edit-room" data-id="${roomId}" style="border-color: rgba(99, 102, 241, 0.3); color: #a5b4fc; background: rgba(99, 102, 241, 0.05);">🛠️ 설정 수정</button>
-                        <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">📊 모니터링</a>
-                        <button type="button" class="btn btn-accent btn-download-room-csv" data-id="${roomId}">📥 CSV 다운로드</button>
-                        <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="background: rgba(223, 94, 94, 0.1); color: var(--danger); border-color: rgba(223, 94, 94, 0.2); max-width: 140px;">🗑️ 삭제</button>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: auto;">
+                        <button type="button" class="btn btn-secondary btn-enter-room" data-id="${roomId}" style="padding: 0.45rem 0.5rem; font-size: 0.82rem; font-weight: 700; background: #ffffff; color: #2C2221; border: 1.5px solid var(--border-color); border-radius: 8px;">
+                            🔗 방 입장
+                        </button>
+                        <a href="teacherMonitor.html?teacherId=${uid}&id=${roomId}&key=${roomData.secretKey}" class="btn btn-primary" style="padding: 0.45rem 0.5rem; font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff; border-radius: 8px;">
+                            📊 모니터링
+                        </a>
+                        <button type="button" class="btn btn-secondary btn-edit-room" data-id="${roomId}" style="padding: 0.45rem 0.5rem; font-size: 0.82rem; font-weight: 700; background: rgba(99, 102, 241, 0.06); color: #4f46e5; border: 1.5px solid rgba(99, 102, 241, 0.2); border-radius: 8px;">
+                            ✏️ 수정
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-delete-room" data-id="${roomId}" style="padding: 0.45rem 0.5rem; font-size: 0.82rem; font-weight: 700; background: rgba(239, 68, 68, 0.06); color: #dc2626; border: 1.5px solid rgba(239, 68, 68, 0.2); border-radius: 8px;">
+                            🗑️ 삭제
+                        </button>
                     </div>
                 `;
 
@@ -401,38 +414,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.open(studentUrl, '_blank');
                 });
 
-                // Bind QR Code modal trigger
-                card.querySelector('.btn-show-room-qr').addEventListener('click', () => {
-                    const studentUrl = `${window.location.origin}/student.html?teacherId=${uid}&id=${roomId}`;
-                    const qModal = document.getElementById('classroom-qr-modal');
-                    const qCanvas = document.getElementById('modal-qr-canvas');
-                    const qRoomId = document.getElementById('qr-modal-room-id');
-                    
-                    if (qModal && qCanvas && qRoomId) {
-                        const draggableCard = qModal.querySelector('.draggable-card');
-                        if (draggableCard) {
-                            draggableCard.style.top = '';
-                            draggableCard.style.left = '';
-                            draggableCard.style.position = '';
-                            draggableCard.style.margin = '';
-                        }
-                        
-                        qRoomId.textContent = roomId;
-                        qModal.classList.remove('hidden');
-                        QRCode.toCanvas(qCanvas, studentUrl, { width: 280, margin: 1 }, function (error) {
-                            if (error) console.error("QR Code generation error:", error);
-                        });
-                    }
-                });
-
                 // Bind room edit
                 card.querySelector('.btn-edit-room').addEventListener('click', () => {
                     window.location.href = `index.html?edit=${roomId}&teacherId=${uid}`;
-                });
-
-                // Bind CSV download
-                card.querySelector('.btn-download-room-csv').addEventListener('click', () => {
-                    downloadRoomCsv(roomId, roomData);
                 });
 
                 // Bind classroom deletion
@@ -758,16 +742,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ── 2-Tier Tabs Structure State ──
-    // Array of Tab objects:
-    // {
-    //    id: 'tab_xxx',
-    //    title: '1단원 탐구',
-    //    layout: 'split' | 'scroll',
-    //    items: [
-    //       { id: 'item_xxx', name: '...', type: 'url'|'html'|'pdf'|'image'|'blank'|'coordinate', url: '...', fileObject: File, storagePath: '...' }
-    //    ]
-    // }
     let tabsList = [
         {
             id: 'tab_' + Math.random().toString(36).substr(2, 9),
@@ -817,472 +791,493 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedTabId = tabsList[0].id;
         }
 
+        // Outer Workspace Wrapper (Like Student View with Top Tabs)
+        const workspaceWrapper = document.createElement('div');
+        workspaceWrapper.style.cssText = 'display: flex; flex-direction: column; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(74,62,61,0.06);';
+
+        // Horizontal Top Tab Bar (Student-like Tab Header)
+        const topTabBar = document.createElement('div');
+        topTabBar.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; background: #262120; padding: 0.45rem 0.8rem; border-bottom: 2px solid rgba(255,255,255,0.12); flex-wrap: wrap; position: relative; z-index: 5;';
+
         tabsList.forEach((tab, tabIdx) => {
             const isSelected = (tab.id === selectedTabId);
-            const tabCard = document.createElement('div');
-            tabCard.className = 'tab-config-card' + (isSelected ? ' active-selected-tab' : '');
-            tabCard.dataset.tabid = tab.id;
-            
-            // Dynamic card border style for active/focused tab
-            const borderStyle = isSelected 
-                ? 'border: 2px solid var(--primary); box-shadow: 0 0 16px rgba(224, 122, 95, 0.18); background: rgba(224, 122, 95, 0.025);'
-                : 'border: 1px solid var(--border-color); background: rgba(255,255,255,0.02);';
+            const isPublished = (tab.published !== false);
 
-            tabCard.style.cssText = `${borderStyle} border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; transition: all 0.2s ease; position: relative;`;
+            const tabChip = document.createElement('button');
+            tabChip.type = 'button';
+            tabChip.className = 'tab-btn' + (isSelected ? ' active' : '');
+            tabChip.style.cssText = `padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.15s ease; ${isSelected ? 'background: var(--primary); color: #ffffff; border: 1.5px solid var(--primary); box-shadow: 0 2px 8px rgba(224,122,95,0.4);' : 'background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2);'}`;
 
-            // Click tab card to select/focus for paste
-            tabCard.addEventListener('click', (e) => {
-                if (['INPUT', 'BUTTON', 'SELECT', 'A'].includes(e.target.tagName)) return;
-                if (selectedTabId !== tab.id) {
-                    selectedTabId = tab.id;
-                    renderTabsStructure();
-                }
-            });
-
-            // Tab Header Controls
-            const tabHeader = document.createElement('div');
-            tabHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.9rem;';
-
-            tabHeader.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 320px;">
-                    <span style="font-weight: 700; color: var(--primary); font-size: 1.05rem; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;">
-                        📑 탭 #${tabIdx + 1} ${isSelected ? '<span style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;">선택됨 (Ctrl+V 대상)</span>' : ''}
-                    </span>
-                    <input type="text" class="tab-title-input" value="${tab.title}" placeholder="탭 제목을 입력하세요 (예: 1단원 지오지브라 탐구)" style="flex: 1; min-width: 220px; padding: 0.55rem 0.9rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #2C2221; outline: none; transition: border-color 0.2s; box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
-                    <!-- Per-tab visibility slide toggle ON/OFF switch (공개/미공개) -->
-                    <div style="display: flex; align-items: center; gap: 0.5rem; background: #ffffff; padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">학생 공개:</span>
-                        <label class="switch-toggle" title="클릭하여 학생 공개 ON/OFF 전환">
-                            <input type="checkbox" class="tab-visible-toggle" ${tab.published !== false ? 'checked' : ''}>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label-text" style="color: ${tab.published !== false ? '#15803d' : '#94a3b8'};">${tab.published !== false ? 'ON (공개)' : 'OFF (개봉예정)'}</span>
-                        </label>
-                    </div>
-
-                    <!-- Per-tab layout selector -->
-                    <div style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
-                        <select class="tab-layout-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-primary); cursor: pointer; outline: none;">
-                            <option value="scroll" ${tab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤 뷰</option>
-                            <option value="split" ${tab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할 뷰</option>
-                        </select>
-                    </div>
-
-                    <!-- Reorder and delete tab -->
-                    <div style="display: flex; gap: 0.35rem;">
-                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-up" title="탭 순서 위로" style="padding: 0.45rem 0.7rem; font-size: 0.85rem;" ${tabIdx === 0 ? 'disabled' : ''}>▲</button>
-                        <button type="button" class="btn btn-secondary btn-sm btn-tab-move-down" title="탭 순서 아래로" style="padding: 0.45rem 0.7rem; font-size: 0.85rem;" ${tabIdx === tabsList.length - 1 ? 'disabled' : ''}>▼</button>
-                        <button type="button" class="btn btn-secondary btn-sm btn-delete-entire-tab" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; color: #f87171; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); font-weight: 600;" title="탭 삭제">🗑️ 탭 삭제</button>
-                    </div>
-                </div>
+            tabChip.innerHTML = `
+                <span>${isPublished ? '📑' : '🔒'} 탭 ${tabIdx + 1}: ${tab.title || '제목 없음'}</span>
+                ${!isPublished ? '<span style="font-size:0.65rem; color:#f87171; font-weight:700;">[미공개]</span>' : ''}
             `;
 
-            // Tab title input listener
-            const titleInput = tabHeader.querySelector('.tab-title-input');
-            titleInput.addEventListener('focus', () => {
-                if (selectedTabId !== tab.id) {
-                    selectedTabId = tab.id;
-                    renderTabsStructure();
-                }
-            });
-            titleInput.addEventListener('input', (e) => {
-                tab.title = e.target.value.trim() || `탐구 활동 ${tabIdx + 1}`;
+            tabChip.addEventListener('click', () => {
+                selectedTabId = tab.id;
+                renderTabsStructure();
             });
 
-            // Visibility switch listener (Slide ON/OFF)
-            const visibleToggle = tabHeader.querySelector('.tab-visible-toggle');
-            const switchLabel = tabHeader.querySelector('.switch-label-text');
-            if (visibleToggle) {
-                visibleToggle.addEventListener('change', (e) => {
-                    tab.published = e.target.checked;
-                    if (switchLabel) {
-                        switchLabel.textContent = tab.published ? 'ON (공개)' : 'OFF (개봉예정)';
-                        switchLabel.style.color = tab.published ? '#15803d' : '#94a3b8';
-                    }
-                });
+            topTabBar.appendChild(tabChip);
+        });
+
+        // Add Tab Button inside Top Bar
+        if (tabsList.length < 10) {
+            const btnAddTabInBar = document.createElement('button');
+            btnAddTabInBar.type = 'button';
+            btnAddTabInBar.className = 'btn btn-secondary btn-sm';
+            btnAddTabInBar.style.cssText = 'padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 800; background: rgba(255,255,255,0.12); color: #f8fafc; border: 1.5px dashed rgba(255,255,255,0.35); border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;';
+            btnAddTabInBar.innerHTML = `<span>➕ 탭 추가</span>`;
+            btnAddTabInBar.title = '새로운 탭 추가하기';
+
+            btnAddTabInBar.addEventListener('click', () => {
+                const tabNum = tabsList.length + 1;
+                const newTab = {
+                    id: 'tab_' + Math.random().toString(36).substr(2, 9),
+                    title: `탐구 활동 ${tabNum}`,
+                    layout: 'scroll',
+                    items: []
+                };
+                tabsList.push(newTab);
+                selectedTabId = newTab.id;
+                renderTabsStructure();
+            });
+
+            topTabBar.appendChild(btnAddTabInBar);
+        }
+
+        workspaceWrapper.appendChild(topTabBar);
+
+        // Active Tab Configuration Panel (Shows details of the currently selected tab)
+        const activeTab = tabsList.find(t => t.id === selectedTabId) || tabsList[0];
+        const activeTabIdx = tabsList.findIndex(t => t.id === selectedTabId);
+
+        const tabConfigPanel = document.createElement('div');
+        tabConfigPanel.className = 'tab-active-content-panel';
+        tabConfigPanel.style.cssText = 'padding: 1.3rem; display: flex; flex-direction: column; gap: 1.2rem; background: #ffffff;';
+
+        // Tab Meta Controls (Title, Layout, Publish Switch, Order, Delete)
+        const tabControlsHeader = document.createElement('div');
+        tabControlsHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; background: #FAF6F0; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 0.8rem 1rem; box-shadow: 0 1px 4px rgba(74,62,61,0.03);';
+
+        tabControlsHeader.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 280px;">
+                <span style="font-weight: 800; color: var(--primary); font-size: 1.05rem; white-space: nowrap; display: flex; align-items: center; gap: 0.35rem;">
+                    🏷️ 탭 #${activeTabIdx + 1} 이름:
+                </span>
+                <input type="text" class="tab-title-input" value="${activeTab.title}" placeholder="탭 제목을 입력하세요 (예: 1단원 지오지브라 탐구)" style="flex: 1; min-width: 200px; padding: 0.5rem 0.85rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #ffffff; color: #2C2221; outline: none; transition: border-color 0.2s;">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <!-- Per-tab visibility slide toggle ON/OFF switch (공개/미공개) -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; background: #ffffff; padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">학생 공개:</span>
+                    <label class="switch-toggle" title="클릭하여 학생 공개 ON/OFF 전환">
+                        <input type="checkbox" class="tab-visible-toggle" ${activeTab.published !== false ? 'checked' : ''}>
+                        <span class="switch-slider"></span>
+                        <span class="switch-label-text" style="color: ${activeTab.published !== false ? '#15803d' : '#94a3b8'};">${activeTab.published !== false ? 'ON (공개)' : 'OFF (개봉예정)'}</span>
+                    </label>
+                </div>
+
+                <!-- Per-tab layout selector -->
+                <div style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(74,62,61,0.04);">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">내부 배치:</span>
+                    <select class="tab-layout-select" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-primary); cursor: pointer; outline: none;">
+                        <option value="scroll" ${activeTab.layout === 'scroll' ? 'selected' : ''}>📜 상하 스크롤 뷰</option>
+                        <option value="split" ${activeTab.layout === 'split' ? 'selected' : ''}>🪟 다단 분할 뷰</option>
+                    </select>
+                </div>
+
+                <!-- Reorder and delete tab -->
+                <div style="display: flex; gap: 0.35rem;">
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-move-up" title="탭 순서 왼쪽(앞)으로" style="padding: 0.4rem 0.65rem; font-size: 0.85rem;" ${activeTabIdx === 0 ? 'disabled' : ''}>◀</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-tab-move-down" title="탭 순서 오른쪽(뒤)으로" style="padding: 0.4rem 0.65rem; font-size: 0.85rem;" ${activeTabIdx === tabsList.length - 1 ? 'disabled' : ''}>▶</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-delete-entire-tab" style="padding: 0.4rem 0.75rem; font-size: 0.82rem; color: #f87171; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); font-weight: 700;" title="탭 삭제">🗑️ 탭 삭제</button>
+                </div>
+            </div>
+        `;
+
+        // Tab title input listener
+        const titleInput = tabControlsHeader.querySelector('.tab-title-input');
+        titleInput.addEventListener('input', (e) => {
+            activeTab.title = e.target.value.trim() || `탐구 활동 ${activeTabIdx + 1}`;
+            // Update chip text live
+            const activeChip = topTabBar.querySelector('.tab-btn.active span');
+            if (activeChip) {
+                const isPub = (activeTab.published !== false);
+                activeChip.textContent = `${isPub ? '📑' : '🔒'} 탭 ${activeTabIdx + 1}: ${activeTab.title}`;
             }
+        });
 
-            // Layout select listener
-            const layoutSelect = tabHeader.querySelector('.tab-layout-select');
-            layoutSelect.addEventListener('change', (e) => {
-                tab.layout = e.target.value;
-            });
-
-            // Tab move up
-            tabHeader.querySelector('.btn-tab-move-up').addEventListener('click', () => {
-                if (tabIdx > 0) {
-                    const temp = tabsList[tabIdx];
-                    tabsList[tabIdx] = tabsList[tabIdx - 1];
-                    tabsList[tabIdx - 1] = temp;
-                    renderTabsStructure();
+        // Visibility switch listener
+        const visibleToggle = tabControlsHeader.querySelector('.tab-visible-toggle');
+        const switchLabel = tabControlsHeader.querySelector('.switch-label-text');
+        if (visibleToggle) {
+            visibleToggle.addEventListener('change', (e) => {
+                activeTab.published = e.target.checked;
+                if (switchLabel) {
+                    switchLabel.textContent = activeTab.published ? 'ON (공개)' : 'OFF (개봉예정)';
+                    switchLabel.style.color = activeTab.published ? '#15803d' : '#94a3b8';
                 }
+                renderTabsStructure();
             });
+        }
 
-            // Tab move down
-            tabHeader.querySelector('.btn-tab-move-down').addEventListener('click', () => {
-                if (tabIdx < tabsList.length - 1) {
-                    const temp = tabsList[tabIdx];
-                    tabsList[tabIdx] = tabsList[tabIdx + 1];
-                    tabsList[tabIdx + 1] = temp;
-                    renderTabsStructure();
+        // Layout select listener
+        const layoutSelect = tabControlsHeader.querySelector('.tab-layout-select');
+        layoutSelect.addEventListener('change', (e) => {
+            activeTab.layout = e.target.value;
+        });
+
+        // Tab move left/up
+        tabControlsHeader.querySelector('.btn-tab-move-up').addEventListener('click', () => {
+            if (activeTabIdx > 0) {
+                const temp = tabsList[activeTabIdx];
+                tabsList[activeTabIdx] = tabsList[activeTabIdx - 1];
+                tabsList[activeTabIdx - 1] = temp;
+                renderTabsStructure();
+            }
+        });
+
+        // Tab move right/down
+        tabControlsHeader.querySelector('.btn-tab-move-down').addEventListener('click', () => {
+            if (activeTabIdx < tabsList.length - 1) {
+                const temp = tabsList[activeTabIdx];
+                tabsList[activeTabIdx] = tabsList[activeTabIdx + 1];
+                tabsList[activeTabIdx + 1] = temp;
+                renderTabsStructure();
+            }
+        });
+
+        // Tab delete
+        tabControlsHeader.querySelector('.btn-delete-entire-tab').addEventListener('click', () => {
+            if (tabsList.length === 1) {
+                alert("수업에는 최소 1개의 탭이 존재해야 합니다.");
+                return;
+            }
+            if (confirm(`'${activeTab.title}' 탭과 탭 내부의 모든 자료를 삭제하시겠습니까?`)) {
+                tabsList.splice(activeTabIdx, 1);
+                selectedTabId = tabsList[0].id;
+                renderTabsStructure();
+            }
+        });
+
+        tabConfigPanel.appendChild(tabControlsHeader);
+
+        // Nested Items List for Active Tab
+        const itemsListBox = document.createElement('div');
+        itemsListBox.style.cssText = 'display: flex; flex-direction: column; gap: 0.6rem; min-height: 80px;';
+
+        if (activeTab.items.length === 0) {
+            itemsListBox.innerHTML = `
+                <div style="text-align: center; padding: 1.6rem 1rem; border: 1.5px dashed var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 0.88rem; background: #FAF6F0;">
+                    현재 <strong>[${activeTab.title}]</strong> 탭에 등록된 자료가 없습니다.<br>
+                    아래 버튼으로 파일(.html, .pdf, 이미지)을 올리거나 웹 링크를 추가하세요. (또는 <strong>Ctrl+V</strong>로 캡처 이미지 즉시 붙여넣기!)
+                </div>
+            `;
+        } else {
+            activeTab.items.forEach((item, itemIdx) => {
+                const itemRow = document.createElement('div');
+                itemRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 0.6rem 0.9rem; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(74,62,61,0.04);';
+
+                let icon = '📄';
+                let desc = item.name || '';
+                if (item.type === 'url') {
+                    icon = '🌐';
+                    desc = item.url;
+                } else if (item.type === 'blank') {
+                    icon = '📄';
+                    desc = '자유 화이트보드';
+                } else if (item.type === 'coordinate') {
+                    icon = '📐';
+                    desc = '수학 좌표평면';
+                } else if (item.type === 'grid') {
+                    icon = '⏹️';
+                    desc = '모눈종이 서식';
+                } else if (item.type === 'lined') {
+                    icon = '📑';
+                    desc = '줄노트 서식';
+                } else if (item.type === 'pdf' || (item.name && item.name.endsWith('.pdf'))) {
+                    icon = '📕';
+                    desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'PDF 문서';
+                } else if (item.type === 'html' || (item.name && item.name.endsWith('.html'))) {
+                    icon = '💻';
+                    desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'HTML 시뮬레이션';
+                } else {
+                    icon = '🖼️';
+                    desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : '이미지';
                 }
-            });
 
-            // Tab delete
-            tabHeader.querySelector('.btn-delete-entire-tab').addEventListener('click', () => {
-                if (tabsList.length === 1) {
-                    alert("수업에는 최소 1개의 탭이 존재해야 합니다.");
-                    return;
-                }
-                if (confirm(`'${tab.title}' 탭과 탭 내부의 모든 자료를 삭제하시겠습니까?`)) {
-                    tabsList.splice(tabIdx, 1);
-                    if (selectedTabId === tab.id) {
-                        selectedTabId = tabsList[0].id;
-                    }
-                    renderTabsStructure();
-                }
-            });
+                // Generate other tabs options for Move/Copy
+                const otherTabsOptions = tabsList
+                    .map((otherTab, oIdx) => {
+                        if (otherTab.id === activeTab.id) return `<option value="" disabled selected>📦 탭으로 이동/복사...</option>`;
+                        return `<option value="move:${otherTab.id}">➡️ [이동] 탭 #${oIdx + 1}: ${otherTab.title}</option><option value="copy:${otherTab.id}">📋 [복사] 탭 #${oIdx + 1}: ${otherTab.title}</option>`;
+                    })
+                    .join('');
 
-            tabCard.appendChild(tabHeader);
+                itemRow.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 240px; overflow: hidden;">
+                        <span style="font-size: 1.3rem;">${icon}</span>
+                        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                            <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 340px; padding: 0.45rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #FAF6F0; color: #2C2221; outline: none;">
+                            <span style="font-size: 0.76rem; color: #786664; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;">${desc}</span>
+                        </div>
+                    </div>
 
-            // Nested Items Area
-            const itemsArea = document.createElement('div');
-            itemsArea.style.cssText = 'display: flex; flex-direction: column; gap: 0.6rem;';
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: #4A3E3D; cursor: pointer; user-select: none; background: #FAF6F0; padding: 0.3rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-weight: 600;" title="체크 시 이 자료를 보조 화면으로 지정하여 학생이 접었다 펼 수 있게 합니다 (처음엔 접힌 채 시작)">
+                            <input type="checkbox" class="item-collapsed-toggle" ${item.collapsedByDefault ? 'checked' : ''} style="cursor: pointer; width: 15px; height: 15px; accent-color: var(--primary);">
+                            <span>🖥️ 보조 화면으로 지정 (접기/펴기)</span>
+                        </label>
 
-            // Items List Box
-            const itemsListBox = document.createElement('div');
-            itemsListBox.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
-
-            if (tab.items.length === 0) {
-                itemsListBox.innerHTML = `
-                    <div style="text-align: center; padding: 1rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-secondary); font-size: 0.85rem;">
-                        이 탭에 담긴 자료가 없습니다. 아래 버튼으로 웹 링크, 파일, 화이트보드를 추가하거나, 탭을 선택하고 <strong>Ctrl+V</strong>로 캡처 이미지를 바로 붙여넣으세요!
+                        ${tabsList.length > 1 ? `
+                            <select class="item-move-tab-select" style="padding: 0.3rem 0.5rem; font-size: 0.78rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
+                                ${otherTabsOptions}
+                            </select>
+                        ` : ''}
+                        <button type="button" class="btn btn-secondary btn-sm btn-item-up" title="자료 순서 위로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === 0 ? 'disabled' : ''}>▲</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-item-down" title="자료 순서 아래로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === activeTab.items.length - 1 ? 'disabled' : ''}>▼</button>
+                        <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);" title="삭제">🗑️</button>
                     </div>
                 `;
-            } else {
-                tab.items.forEach((item, itemIdx) => {
-                    const itemRow = document.createElement('div');
-                    itemRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 0.6rem 0.9rem; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(74,62,61,0.04);';
 
-                    let icon = '📄';
-                    let desc = item.name || '';
-                    if (item.type === 'url') {
-                        icon = '🌐';
-                        desc = item.url;
-                    } else if (item.type === 'blank') {
-                        icon = '📄';
-                        desc = '자유 화이트보드';
-                    } else if (item.type === 'coordinate') {
-                        icon = '📐';
-                        desc = '수학 좌표평면';
-                    } else if (item.type === 'grid') {
-                        icon = '⏹️';
-                        desc = '모눈종이 서식';
-                    } else if (item.type === 'lined') {
-                        icon = '📑';
-                        desc = '줄노트 서식';
-                    } else if (item.type === 'pdf' || (item.name && item.name.endsWith('.pdf'))) {
-                        icon = '📕';
-                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'PDF 문서';
-                    } else if (item.type === 'html' || (item.name && item.name.endsWith('.html'))) {
-                        icon = '💻';
-                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : 'HTML 시뮬레이션';
-                    } else {
-                        icon = '🖼️';
-                        desc = item.size ? `${(item.size/1024).toFixed(1)} KB` : '이미지';
-                    }
+                // Handle initial collapsed state toggle
+                const collapsedToggle = itemRow.querySelector('.item-collapsed-toggle');
+                if (collapsedToggle) {
+                    collapsedToggle.addEventListener('change', (e) => {
+                        item.collapsedByDefault = e.target.checked;
+                    });
+                }
 
-                    // Generate other tabs options for Move/Copy
-                    const otherTabsOptions = tabsList
-                        .map((otherTab, oIdx) => {
-                            if (otherTab.id === tab.id) return `<option value="" disabled selected>📦 탭으로 이동/복사...</option>`;
-                            return `<option value="move:${otherTab.id}">➡️ [이동] 탭 #${oIdx + 1}: ${otherTab.title}</option><option value="copy:${otherTab.id}">📋 [복사] 탭 #${oIdx + 1}: ${otherTab.title}</option>`;
-                        })
-                        .join('');
+                // Handle move / copy to other tab
+                const moveSelect = itemRow.querySelector('.item-move-tab-select');
+                if (moveSelect) {
+                    moveSelect.addEventListener('change', (e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        const [action, targetTabId] = val.split(':');
+                        const targetTab = tabsList.find(t => t.id === targetTabId);
+                        if (!targetTab) return;
 
-                    itemRow.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 240px; overflow: hidden;">
-                            <span style="font-size: 1.3rem;">${icon}</span>
-                            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                                <input type="text" class="item-name-input" value="${item.name}" placeholder="자료 이름" style="width: 100%; max-width: 340px; padding: 0.45rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: #FAF6F0; color: #2C2221; outline: none;">
-                                <span style="font-size: 0.76rem; color: #786664; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;">${desc}</span>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: var(--text-secondary); cursor: pointer; user-select: none; background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);" title="체크 시 이 자료를 보조 화면으로 지정하여 학생이 접었다 펼 수 있게 합니다 (처음엔 접힌 채 시작)">
-                                <input type="checkbox" class="item-collapsed-toggle" ${item.collapsedByDefault ? 'checked' : ''} style="cursor: pointer;">
-                                <span>🖥️ 보조 화면으로 지정 (접기/펴기)</span>
-                            </label>
-
-                            ${tabsList.length > 1 ? `
-                                <select class="item-move-tab-select" style="padding: 0.3rem 0.5rem; font-size: 0.78rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: #1e293b; cursor: pointer; outline: none;">
-                                    ${otherTabsOptions}
-                                </select>
-                            ` : ''}
-                            <button type="button" class="btn btn-secondary btn-sm btn-item-up" title="자료 순서 위로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === 0 ? 'disabled' : ''}>▲</button>
-                            <button type="button" class="btn btn-secondary btn-sm btn-item-down" title="자료 순서 아래로" style="padding: 0.25rem 0.45rem; font-size: 0.75rem;" ${itemIdx === tab.items.length - 1 ? 'disabled' : ''}>▼</button>
-                            <button type="button" class="btn btn-secondary btn-sm btn-delete-item" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05);" title="삭제">🗑️</button>
-                        </div>
-                    `;
-
-                    // Handle initial collapsed state toggle
-                    const collapsedToggle = itemRow.querySelector('.item-collapsed-toggle');
-                    if (collapsedToggle) {
-                        collapsedToggle.addEventListener('change', (e) => {
-                            item.collapsedByDefault = e.target.checked;
-                        });
-                    }
-
-                    // Handle move / copy to other tab
-                    const moveSelect = itemRow.querySelector('.item-move-tab-select');
-                    if (moveSelect) {
-                        moveSelect.addEventListener('change', (e) => {
-                            const val = e.target.value;
-                            if (!val) return;
-                            const [action, targetTabId] = val.split(':');
-                            const targetTab = tabsList.find(t => t.id === targetTabId);
-                            if (!targetTab) return;
-
-                            if (action === 'move') {
-                                // Remove from current tab and push to target tab
-                                tab.items.splice(itemIdx, 1);
-                                targetTab.items.push(item);
-                                selectedTabId = targetTab.id;
-                                renderTabsStructure();
-                            } else if (action === 'copy') {
-                                // Clone item into target tab
-                                const clonedItem = {
-                                    ...item,
-                                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                                    name: item.name
-                                };
-                                targetTab.items.push(clonedItem);
-                                selectedTabId = targetTab.id;
-                                renderTabsStructure();
-                            }
-                        });
-                    }
-
-                    // Item name change
-                    const nameInput = itemRow.querySelector('.item-name-input');
-                    nameInput.addEventListener('focus', () => {
-                        if (selectedTabId !== tab.id) {
-                            selectedTabId = tab.id;
-                            renderTabsStructure();
+                        if (action === 'move') {
+                            activeTab.items.splice(itemIdx, 1);
+                            targetTab.items.push(item);
+                            alert(`'${item.name}' 자료가 [${targetTab.title}] 탭으로 이동되었습니다.`);
+                        } else if (action === 'copy') {
+                            const copiedItem = {
+                                ...item,
+                                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                                name: `${item.name} (복사본)`
+                            };
+                            targetTab.items.push(copiedItem);
+                            alert(`'${item.name}' 자료가 [${targetTab.title}] 탭으로 복사되었습니다.`);
                         }
+                        renderTabsStructure();
                     });
-                    nameInput.addEventListener('input', (e) => {
-                        item.name = e.target.value.trim() || '자료';
-                    });
+                }
 
-                    // Item up
-                    itemRow.querySelector('.btn-item-up').addEventListener('click', () => {
-                        if (itemIdx > 0) {
-                            const temp = tab.items[itemIdx];
-                            tab.items[itemIdx] = tab.items[itemIdx - 1];
-                            tab.items[itemIdx - 1] = temp;
-                            renderTabsStructure();
-                        }
-                    });
-
-                    // Item down
-                    itemRow.querySelector('.btn-item-down').addEventListener('click', () => {
-                        if (itemIdx < tab.items.length - 1) {
-                            const temp = tab.items[itemIdx];
-                            tab.items[itemIdx] = tab.items[itemIdx + 1];
-                            tab.items[itemIdx + 1] = temp;
-                            renderTabsStructure();
-                        }
-                    });
-
-                    // Item delete
-                    itemRow.querySelector('.btn-delete-item').addEventListener('click', async () => {
-                        if (confirm(`'${item.name}' 자료를 이 탭에서 삭제하시겠습니까?`)) {
-                            if (item.storagePath && isFirebaseInitialized && storage) {
-                                try {
-                                    const fileRef = ref(storage, item.storagePath);
-                                    await deleteObject(fileRef);
-                                } catch (e) {
-                                    console.warn("Storage delete error:", e);
-                                }
-                            }
-                            tab.items.splice(itemIdx, 1);
-                            renderTabsStructure();
-                        }
-                    });
-
-                    itemsListBox.appendChild(itemRow);
+                // Item Name change
+                const nameInput = itemRow.querySelector('.item-name-input');
+                nameInput.addEventListener('input', (e) => {
+                    item.name = e.target.value;
                 });
+
+                // Item up
+                itemRow.querySelector('.btn-item-up').addEventListener('click', () => {
+                    if (itemIdx > 0) {
+                        const temp = activeTab.items[itemIdx];
+                        activeTab.items[itemIdx] = activeTab.items[itemIdx - 1];
+                        activeTab.items[itemIdx - 1] = temp;
+                        renderTabsStructure();
+                    }
+                });
+
+                // Item down
+                itemRow.querySelector('.btn-item-down').addEventListener('click', () => {
+                    if (itemIdx < activeTab.items.length - 1) {
+                        const temp = activeTab.items[itemIdx];
+                        activeTab.items[itemIdx] = activeTab.items[itemIdx + 1];
+                        activeTab.items[itemIdx + 1] = temp;
+                        renderTabsStructure();
+                    }
+                });
+
+                // Item delete
+                itemRow.querySelector('.btn-delete-item').addEventListener('click', async () => {
+                    if (confirm(`'${item.name}' 자료를 이 탭에서 삭제하시겠습니까?`)) {
+                        if (item.storagePath && isFirebaseInitialized && storage) {
+                            try {
+                                const fileRef = ref(storage, item.storagePath);
+                                await deleteObject(fileRef);
+                            } catch (e) {
+                                console.warn("Storage delete error:", e);
+                            }
+                        }
+                        activeTab.items.splice(itemIdx, 1);
+                        renderTabsStructure();
+                    }
+                });
+
+                itemsListBox.appendChild(itemRow);
+            });
+        }
+
+        tabConfigPanel.appendChild(itemsListBox);
+
+        // Item Quick Add Toolbar for this active tab
+        const addToolbar = document.createElement('div');
+        addToolbar.style.cssText = 'display: flex; gap: 0.4rem; flex-wrap: wrap; background: rgba(74, 62, 61, 0.03); border: 1.5px dashed var(--border-color); border-radius: 10px; padding: 0.75rem; align-items: center;';
+
+        addToolbar.innerHTML = `
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.25); color: #6366f1; font-weight: 700;" title="파일(.html, .pdf, 이미지)을 업로드합니다">
+                📁 + 파일
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-add-url" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(224, 122, 95, 0.08); border-color: rgba(224, 122, 95, 0.25); color: var(--primary); font-weight: 700;">
+                🌐 + 웹 링크 추가
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-add-blank" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; font-weight: 600;">
+                📄 + 백지노트
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-add-coord" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(129, 178, 154, 0.08); border-color: rgba(129, 178, 154, 0.25); color: var(--accent); font-weight: 600;">
+                📐 + 좌표평면
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-add-grid" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.25); color: #6366f1; font-weight: 600;">
+                ⏹️ + 모눈종이
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-add-lined" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(244, 162, 97, 0.08); border-color: rgba(244, 162, 97, 0.25); color: #ea580c; font-weight: 600;">
+                📑 + 줄노트
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm btn-tab-paste-hint" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; background: rgba(244, 162, 97, 0.1); border-color: rgba(244, 162, 97, 0.3); color: #ea580c; margin-left: auto; font-weight: 600;">
+                📋 Ctrl+V 붙여넣기 지원
+            </button>
+        `;
+
+        // Hidden file input for this tab
+        const tabFileInput = document.createElement('input');
+        tabFileInput.type = 'file';
+        tabFileInput.multiple = true;
+        tabFileInput.accept = '.html,.pdf,.png,.jpg,.jpeg,.webp';
+        tabFileInput.style.display = 'none';
+
+        tabFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                processTabFiles(activeTab, e.target.files);
+            }
+        });
+
+        // Trigger file input
+        addToolbar.querySelector('.btn-tab-upload-file').addEventListener('click', () => {
+            tabFileInput.click();
+        });
+
+        // Add URL Prompt
+        addToolbar.querySelector('.btn-tab-add-url').addEventListener('click', () => {
+            const url = prompt("웹 시뮬레이션 또는 사이트 URL을 입력하세요 (예: https://www.geogebra.org/m/...):");
+            if (!url || !url.trim()) return;
+
+            let validatedUrl = url.trim();
+            if (!validatedUrl.startsWith('http://') && !validatedUrl.startsWith('https://')) {
+                validatedUrl = 'https://' + validatedUrl;
             }
 
-            itemsArea.appendChild(itemsListBox);
-
-            // Item Quick Add Toolbar for this tab
-            const addToolbar = document.createElement('div');
-            addToolbar.style.cssText = 'display: flex; gap: 0.4rem; flex-wrap: wrap; background: rgba(255,255,255,0.015); border: 1px dashed var(--border-color); border-radius: 8px; padding: 0.6rem; align-items: center;';
-
-            addToolbar.innerHTML = `
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-upload-file" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;" title="파일(.html, .pdf, 이미지)을 업로드합니다">
-                    📁 + 파일
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-url" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(224, 122, 95, 0.08); border-color: rgba(224, 122, 95, 0.2); color: var(--primary);">
-                    🌐 + 웹 링크 추가
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-blank" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">
-                    📄 + 백지노트
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-coord" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(129, 178, 154, 0.08); border-color: rgba(129, 178, 154, 0.2); color: var(--accent);">
-                    📐 + 좌표평면
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-grid" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: #818cf8;">
-                    ⏹️ + 모눈종이
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-add-lined" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(244, 162, 97, 0.08); border-color: rgba(244, 162, 97, 0.2); color: #ea580c;">
-                    📑 + 줄노트
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm btn-tab-paste-hint" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: rgba(244, 162, 97, 0.1); border-color: rgba(244, 162, 97, 0.3); color: #f97316; margin-left: auto;">
-                    📋 Ctrl+V 붙여넣기 지원
-                </button>
-            `;
-
-            // Hidden file input for this tab
-            const tabFileInput = document.createElement('input');
-            tabFileInput.type = 'file';
-            tabFileInput.multiple = true;
-            tabFileInput.accept = '.html,.pdf,.png,.jpg,.jpeg,.webp';
-            tabFileInput.style.display = 'none';
-
-            tabFileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                    processTabFiles(tab, e.target.files);
-                }
+            const title = prompt("이 자료의 표시 이름을 입력하세요 (선택사항):", "웹 시뮬레이션") || "웹 시뮬레이션";
+            activeTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: title,
+                type: 'url',
+                url: validatedUrl,
+                fileObject: null,
+                storagePath: ''
             });
-
-            addToolbar.querySelector('.btn-tab-upload-file').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                tabFileInput.click();
-            });
-
-            // Add URL
-            addToolbar.querySelector('.btn-tab-add-url').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                const url = prompt("추가할 외부 웹사이트/시뮬레이션 URL을 입력하세요 (https://...):");
-                if (url && url.trim()) {
-                    let label = '웹 링크';
-                    try {
-                        const parsed = new URL(url.trim());
-                        label = parsed.hostname.replace('www.', '');
-                    } catch (e) {
-                        label = '웹 링크';
-                    }
-                    tab.items.push({
-                        id: 'item_' + Math.random().toString(36).substr(2, 9),
-                        name: label,
-                        type: 'url',
-                        url: url.trim(),
-                        fileObject: null,
-                        storagePath: ''
-                    });
-                    renderTabsStructure();
-                }
-            });
-
-            // Add Blank
-            addToolbar.querySelector('.btn-tab-add-blank').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                const blankNum = tab.items.filter(i => i.type === 'blank').length + 1;
-                tab.items.push({
-                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: `백지노트 ${blankNum}`,
-                    type: 'blank',
-                    bgTheme: 'white',
-                    url: '',
-                    fileObject: null,
-                    storagePath: ''
-                });
-                renderTabsStructure();
-            });
-
-            // Add Coordinate
-            addToolbar.querySelector('.btn-tab-add-coord').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                const coordNum = tab.items.filter(i => i.type === 'coordinate').length + 1;
-                tab.items.push({
-                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: `좌표평면 ${coordNum}`,
-                    type: 'coordinate',
-                    bgTheme: 'white',
-                    url: '',
-                    fileObject: null,
-                    storagePath: ''
-                });
-                renderTabsStructure();
-            });
-
-            // Add Grid
-            addToolbar.querySelector('.btn-tab-add-grid').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                const gridNum = tab.items.filter(i => i.type === 'grid').length + 1;
-                tab.items.push({
-                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: `모눈종이 ${gridNum}`,
-                    type: 'grid',
-                    bgTheme: 'white',
-                    url: '',
-                    fileObject: null,
-                    storagePath: ''
-                });
-                renderTabsStructure();
-            });
-
-            // Add Lined
-            addToolbar.querySelector('.btn-tab-add-lined').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                const linedNum = tab.items.filter(i => i.type === 'lined').length + 1;
-                tab.items.push({
-                    id: 'item_' + Math.random().toString(36).substr(2, 9),
-                    name: `줄노트 ${linedNum}`,
-                    type: 'lined',
-                    bgTheme: 'cream',
-                    url: '',
-                    fileObject: null,
-                    storagePath: ''
-                });
-                renderTabsStructure();
-            });
-
-            // Paste hint button click -> activate tab
-            addToolbar.querySelector('.btn-tab-paste-hint').addEventListener('click', () => {
-                selectedTabId = tab.id;
-                renderTabsStructure();
-                alert(`'${tab.title}' 탭이 선택되었습니다!\n이제 Ctrl+V를 누르면 캡처한 이미지가 이 탭에 바로 추가됩니다.`);
-            });
-
-            // Drag over / drop into individual tab card
-            tabCard.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                tabCard.style.borderColor = 'var(--primary)';
-            });
-            tabCard.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                if (selectedTabId !== tab.id) tabCard.style.borderColor = 'var(--border-color)';
-            });
-            tabCard.addEventListener('drop', (e) => {
-                e.preventDefault();
-                selectedTabId = tab.id;
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    processTabFiles(tab, e.dataTransfer.files);
-                }
-            });
-
-            itemsArea.appendChild(addToolbar);
-            tabCard.appendChild(itemsArea);
-            tabsStructureContainer.appendChild(tabCard);
+            renderTabsStructure();
         });
+
+        // Add Blank
+        addToolbar.querySelector('.btn-tab-add-blank').addEventListener('click', () => {
+            const blankNum = activeTab.items.filter(i => i.type === 'blank').length + 1;
+            activeTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: `백지노트 ${blankNum}`,
+                type: 'blank',
+                bgTheme: 'white',
+                url: '',
+                fileObject: null,
+                storagePath: ''
+            });
+            renderTabsStructure();
+        });
+
+        // Add Coordinate
+        addToolbar.querySelector('.btn-tab-add-coord').addEventListener('click', () => {
+            const coordNum = activeTab.items.filter(i => i.type === 'coordinate').length + 1;
+            activeTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: `좌표평면 ${coordNum}`,
+                type: 'coordinate',
+                bgTheme: 'white',
+                url: '',
+                fileObject: null,
+                storagePath: ''
+            });
+            renderTabsStructure();
+        });
+
+        // Add Grid
+        addToolbar.querySelector('.btn-tab-add-grid').addEventListener('click', () => {
+            const gridNum = activeTab.items.filter(i => i.type === 'grid').length + 1;
+            activeTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: `모눈종이 ${gridNum}`,
+                type: 'grid',
+                bgTheme: 'white',
+                url: '',
+                fileObject: null,
+                storagePath: ''
+            });
+            renderTabsStructure();
+        });
+
+        // Add Lined
+        addToolbar.querySelector('.btn-tab-add-lined').addEventListener('click', () => {
+            const linedNum = activeTab.items.filter(i => i.type === 'lined').length + 1;
+            activeTab.items.push({
+                id: 'item_' + Math.random().toString(36).substr(2, 9),
+                name: `줄노트 ${linedNum}`,
+                type: 'lined',
+                bgTheme: 'cream',
+                url: '',
+                fileObject: null,
+                storagePath: ''
+            });
+            renderTabsStructure();
+        });
+
+        // Paste hint button
+        addToolbar.querySelector('.btn-tab-paste-hint').addEventListener('click', () => {
+            alert(`'${activeTab.title}' 탭이 선택되어 있습니다.\n캡처한 이미지가 있다면 지금 바로 Ctrl+V를 누르시면 이 탭에 즉시 추가됩니다!`);
+        });
+
+        // Drag and drop into active tab panel
+        tabConfigPanel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            tabConfigPanel.style.outline = '2px dashed var(--primary)';
+        });
+        tabConfigPanel.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            tabConfigPanel.style.outline = 'none';
+        });
+        tabConfigPanel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            tabConfigPanel.style.outline = 'none';
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                processTabFiles(activeTab, e.dataTransfer.files);
+            }
+        });
+
+        tabConfigPanel.appendChild(addToolbar);
+        workspaceWrapper.appendChild(tabConfigPanel);
+        tabsStructureContainer.appendChild(workspaceWrapper);
     }
 
     function processTabFiles(targetTab, fileList) {

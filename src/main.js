@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (btnDrawClear) btnDrawClear.addEventListener('click', () => {
-        if (confirm("현재 화면의 필기 내용을 모두 지우시겠습니까?")) {
+        if (confirm("현재 탭의 필기 내용을 모두 지우시겠습니까?")) {
             if (isGlobalCanvas) {
                 globalCanvasHistory = [];
             } else {
@@ -830,34 +830,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ['image/da.png', 'image/da-1.png'],
                     ['image/sic.png', 'image/sic-1.png', 'image/sic-3.png']
                 ];
-                // Pick a set randomly or based on tab index
-                const chosenSet = imageSets[tabIndex % imageSets.length];
 
                 const comingSoonContainer = document.createElement('div');
                 comingSoonContainer.className = 'coming-soon-container';
+                comingSoonContainer.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #FAF6F0; position: relative; padding: 2rem; box-sizing: border-box;';
+
                 comingSoonContainer.innerHTML = `
-                    <div class="coming-soon-card">
-                        <div class="coming-soon-badge">🔒 개봉 예정</div>
-                        <div class="coming-soon-img-frame">
-                            <img class="coming-soon-img" src="${chosenSet[0]}" alt="개봉 예정 캐릭터">
+                    <div class="coming-soon-card" style="background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 20px; padding: 2.5rem 2rem; max-width: 440px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(74, 62, 61, 0.08); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <div class="coming-soon-badge" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(224, 122, 95, 0.12); color: var(--primary); font-size: 0.85rem; font-weight: 800; border: 1px solid rgba(224, 122, 95, 0.25);">
+                            🔒 개봉 준비 중 (잠김)
                         </div>
-                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin: 0;">곧 공개될 탐구 활동입니다</h2>
-                        <p style="font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.5;">선생님이 수업 진행에 맞춰 탭을 오픈하면<br>이곳에 탐구 시뮬레이션 및 활동 자료가 나타납니다!</p>
+                        <div class="coming-soon-img-frame" style="width: 150px; height: 150px; border-radius: 50%; background: #FAF6F0; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; margin: 0.4rem 0;">
+                            <img class="coming-soon-img" src="${imageSets[0][0]}" alt="개봉 예정 캐릭터" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: all 0.25s ease;">
+                        </div>
+                        <h2 style="font-size: 1.25rem; font-weight: 800; color: #2C2221; margin: 0;">곧 공개될 탐구 활동입니다</h2>
+                        <p style="font-size: 0.88rem; color: #786664; margin: 0; line-height: 1.5; font-weight: 500;">선생님이 수업 진행에 맞춰 탭을 오픈하면<br>이곳에 탐구 시뮬레이션 및 활동 자료가 나타납니다!</p>
+                        <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--primary); font-weight: 700; margin-top: 0.4rem;">
+                            <span class="pulse-indicator" style="width: 8px; height: 8px; background: var(--primary);"></span>
+                            <span>실시간 공개 대기 중...</span>
+                        </div>
                     </div>
                 `;
 
-                // Add frame-cycling animation for the chosen image set
-                if (chosenSet.length > 1) {
-                    const imgEl = comingSoonContainer.querySelector('.coming-soon-img');
-                    let frameIdx = 0;
-                    setInterval(() => {
-                        frameIdx = (frameIdx + 1) % chosenSet.length;
-                        if (imgEl) imgEl.src = chosenSet[frameIdx];
-                    }, 800); // cycle frames every 800ms
-                }
+                // Cycle through the 3 character sets continuously
+                // (e.g. Set 1 frame 1 -> Set 1 frame 2 -> Set 2 frame 1 -> Set 2 frame 2 -> Set 3 frame 1 -> Set 3 frame 2 -> Set 3 frame 3)
+                const imgEl = comingSoonContainer.querySelector('.coming-soon-img');
+                let currentSetIdx = index % imageSets.length;
+                let currentFrameIdx = 0;
+
+                setInterval(() => {
+                    if (!imgEl) return;
+                    currentFrameIdx++;
+                    if (currentFrameIdx >= imageSets[currentSetIdx].length) {
+                        currentFrameIdx = 0;
+                        currentSetIdx = (currentSetIdx + 1) % imageSets.length;
+                    }
+                    imgEl.src = imageSets[currentSetIdx][currentFrameIdx];
+                    imgEl.style.transform = (currentFrameIdx % 2 === 1) ? 'scale(1.06) translateY(-3px)' : 'scale(1) translateY(0)';
+                }, 750); // cycle smoothly every 750ms
 
                 panel.appendChild(comingSoonContainer);
-                simulationContainer.appendChild(panel);
+                mealkitViewportsBody.appendChild(panel);
                 return;
             }
 
@@ -1530,11 +1543,61 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Export Drawings to submission
+        // Export Drawings to submission with guaranteed drawingHistory & accurate pixel checks
         const drawings = {};
+        const drawingsMeta = {}; // metadata for each tab/item drawing status
+
+        // Accurately check if canvas has non-transparent pixels (handles eraser erasing everything)
+        const checkCanvasHasVisiblePixels = (cvs) => {
+            if (!cvs.width || !cvs.height) return false;
+            try {
+                const ctx = cvs.getContext('2d');
+                const imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+                const data = imgData.data;
+                let visibleCount = 0;
+                // Sample every 4th pixel for speed (alpha channel > 10)
+                for (let i = 3; i < data.length; i += 16) {
+                    if (data[i] > 10) {
+                        visibleCount++;
+                        if (visibleCount > 15) return true; // Found substantial visible pixels
+                    }
+                }
+                return visibleCount > 15;
+            } catch (e) {
+                return false;
+            }
+        };
+
         activeCanvases.forEach(canvas => {
             const fileId = canvas.dataset.fileid;
-            drawings[fileId] = canvas.toDataURL('image/png');
+
+            // Render to a full standard resolution offscreen canvas to get reliable pixel inspection & capture
+            const renderCanvas = document.createElement('canvas');
+            renderCanvas.width = (canvas.width > 0) ? canvas.width : 1280;
+            renderCanvas.height = (canvas.height > 0) ? canvas.height : 800;
+            redrawCanvas(renderCanvas, fileId);
+
+            // Determine if there are visible markings after pen/eraser actions
+            const hasVisibleDrawing = checkCanvasHasVisiblePixels(renderCanvas);
+
+            // Look up parent tab info
+            let tabTitle = '탐구 활동';
+            let itemName = '자료';
+            for (const t of tabsDataList) {
+                const foundItem = (t.items || []).find(i => i.id === fileId);
+                if (foundItem) {
+                    tabTitle = t.title || '탐구 활동';
+                    itemName = foundItem.name || '자료';
+                    break;
+                }
+            }
+
+            drawings[fileId] = renderCanvas.toDataURL('image/png');
+            drawingsMeta[fileId] = {
+                hasDrawing: hasVisibleDrawing,
+                tabTitle,
+                itemName
+            };
         });
 
         // Direct submission save to Firestore
@@ -1549,6 +1612,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     copyCount,
                     pasteCount,
                     drawings,
+                    drawingsMeta,
                     elapsedSeconds,
                     timestamp: serverTimestamp()
                 };
@@ -1633,6 +1697,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!headerQrPanel.classList.contains('hidden') && !headerQrPanel.contains(e.target) && e.target !== btnToggleQrHeader) {
                 headerQrPanel.classList.add('hidden');
                 if (qrToggleArrow) qrToggleArrow.textContent = '▼';
+            }
+        });
+    }
+
+    // ── Worksheet Header Collapsible QR Controls ──
+    const btnToggleQrWorksheet = document.getElementById('btn-toggle-qr-worksheet');
+    const worksheetQrPanel = document.getElementById('worksheet-qr-panel');
+    const worksheetQrCanvas = document.getElementById('worksheet-qr-canvas');
+    const qrWorksheetArrow = document.getElementById('qr-worksheet-arrow');
+    const btnCloseWorksheetQr = document.getElementById('btn-close-worksheet-qr');
+    const btnCopyWorksheetLink = document.getElementById('btn-copy-worksheet-link');
+
+    if (btnToggleQrWorksheet && worksheetQrPanel) {
+        btnToggleQrWorksheet.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = worksheetQrPanel.classList.contains('hidden');
+            if (isHidden) {
+                const currentStudentUrl = window.location.href;
+                if (worksheetQrCanvas) {
+                    QRCode.toCanvas(worksheetQrCanvas, currentStudentUrl, {
+                        width: 180,
+                        margin: 1,
+                        color: { dark: '#000000', light: '#ffffff' }
+                    }, (err) => {
+                        if (err) console.error("Worksheet QR Code Error:", err);
+                    });
+                }
+                worksheetQrPanel.classList.remove('hidden');
+                if (qrWorksheetArrow) qrWorksheetArrow.textContent = '▲';
+            } else {
+                worksheetQrPanel.classList.add('hidden');
+                if (qrWorksheetArrow) qrWorksheetArrow.textContent = '▼';
+            }
+        });
+
+        if (btnCloseWorksheetQr) {
+            btnCloseWorksheetQr.addEventListener('click', () => {
+                worksheetQrPanel.classList.add('hidden');
+                if (qrWorksheetArrow) qrWorksheetArrow.textContent = '▼';
+            });
+        }
+
+        if (btnCopyWorksheetLink) {
+            btnCopyWorksheetLink.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert("수업 참여 링크가 복사되었습니다!");
+                } catch (e) {
+                    prompt("아래 링크를 복사하세요:", window.location.href);
+                }
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!worksheetQrPanel.classList.contains('hidden') && !worksheetQrPanel.contains(e.target) && e.target !== btnToggleQrWorksheet) {
+                worksheetQrPanel.classList.add('hidden');
+                if (qrWorksheetArrow) qrWorksheetArrow.textContent = '▼';
             }
         });
     }
